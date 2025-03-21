@@ -7,7 +7,7 @@
 
 	let { selected_guardians = $bindable([]) } = $props();
 	let numberConflictGuardian = $state(false);
-	let input_phone = $state('');
+	let search_term = $state('');
 	let guardianForm = $state({
 		name: 'Samiul Basir Fahim',
 		phone: '1728071074',
@@ -15,9 +15,12 @@
 		photo: '',
 		relation: ''
 	});
-	let selected_guardian: Guardian | undefined = $state();
 
+	let selected_guardian: Guardian | undefined = $state();
 	let guardians: Guardian[] = $state([]);
+	let guardians_d = $derived.by(() =>
+		guardians.filter((g1) => !selected_guardians.some((g2) => g1.phone === g2.phone))
+	);
 
 	const add_guardian = () => {
 		if (selected_guardian) {
@@ -28,23 +31,26 @@
 		}
 	};
 
-	const create_guardian = () => {
-		console.log($state.snapshot(guardianForm));
-		document.getElementById('rel-guardian-button')?.click();
-		selected_guardians.push({
+	const create_guardian = async () => {
+		let g = await invoke('guardian_save', {
 			...guardianForm,
 			phone: `+880${guardianForm.phone}`
 		});
-		console.log($state.snapshot(guardianForm));
+
+		console.log(g);
+
 		document.getElementById('create-guardian-button')?.click();
 	};
 
 	const guardian_search = () => {
-		invoke('guardian_search', { phone: input_phone }).then((d: Guardian[]) => {
+		invoke('guardian_search', { term: search_term }).then((d: Guardian[]) => {
 			guardians = d;
 		});
 	};
-	onMount(guardian_search);
+
+	$effect(() => {
+		console.log($state.snapshot(guardians));
+	});
 </script>
 
 <input type="checkbox" id="create-guardian" class="modal-toggle" />
@@ -96,12 +102,45 @@
 				/>
 			</InputContainer>
 
+			<InputContainer name="relation" label="Phone: ">
+				<input
+					type="text"
+					class="input w-full"
+					id="relation"
+					placeholder="Relation"
+					list="relations"
+					required
+					bind:value={guardianForm.relation}
+				/>
+				<datalist id="relations">
+					{#each ['Father', 'Mother', 'Uncle', 'Grandpa'] as rel (rel)}
+						<option value={rel}> </option>
+					{/each}
+					>
+				</datalist></InputContainer
+			>
+
 			<InputContainer name="photo" label="Photo: ">
 				<input
 					type="file"
 					class="file-input file-input-primary w-full"
 					name="photo"
 					accept="image/*"
+					onchange={(e) => {
+						let files = (e.target as HTMLInputElement).files;
+						if (!files) return;
+
+						let file = files[0];
+
+						const reader = new FileReader();
+
+						reader.onload = (ev) => {
+							const base64String = ev.target.result.split(',')[1];
+							guardianForm.photo = 'data:image/png;base64,' + base64String;
+						};
+
+						reader.readAsDataURL(file);
+					}}
 				/>
 			</InputContainer>
 		</div>
@@ -128,12 +167,12 @@
 		<h3 class="text-lg font-bold">Find Guardian</h3>
 
 		<InputContainer name="phone" label="Phone: " class="bg-base-200 py-4">
-			<input type="phone" bind:value={input_phone} class="input w-full" oninput={guardian_search} />
+			<input type="text" bind:value={search_term} class="input w-full" oninput={guardian_search} />
 		</InputContainer>
 		<div
 			class="list card rounded-box grid max-h-[60vh] w-full grow grid-cols-1 gap-4 overflow-y-auto p-4"
 		>
-			{#each guardians as guardian (guardian.id)}
+			{#each guardians_d as guardian (guardian.id)}
 				<li class="list-row bg-base-100 flex items-center justify-between">
 					<div class="flex items-center justify-start">
 						<div class="avatar">

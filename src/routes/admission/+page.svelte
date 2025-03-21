@@ -1,9 +1,20 @@
 <script lang="ts">
 	import InputContainer from '$lib/components/global/InputContainer.svelte';
-
 	import Icon from '@iconify/svelte';
 	import Modal from '$lib/components/admission/Modal.svelte';
 	import type { Guardian } from '$lib/type/guardian';
+
+	let admission_form = $state({
+		name: '',
+		phone: '',
+		previous_school: '',
+		address: '',
+		class: '',
+		section: '',
+		blood_group: '',
+		resident: '',
+		photo: ''
+	});
 
 	let classes = ['primary', 'secondery', 'intermediate', 'higher'];
 
@@ -17,7 +28,7 @@
 <div class="flex w-full flex-col p-8 lg:flex-row">
 	<div class="flex items-start justify-start">
 		<div
-			class="card bg-base-300 rounded-box grid grow grid-cols-1 place-items-center gap-6 p-6 sm:grid-cols-2 lg:grid-cols-1 2xl:grid-cols-2"
+			class="card bg-base-300 rounded-box grid grow grid-cols-1 place-items-center gap-4 p-4 sm:grid-cols-2 lg:grid-cols-1 2xl:grid-cols-2"
 		>
 			<InputContainer name="name" label="Full name: ">
 				<input type="text" name="name" class="input w-full" />
@@ -37,6 +48,22 @@
 					/>
 					<p class="validator-hint">Must be 10 digits</p>
 				</label>
+			</InputContainer>
+
+			<InputContainer name="name" label="Full name: ">
+				<input type="text" name="name" class="input w-full" />
+			</InputContainer>
+
+			<InputContainer name="name" label="Full name: ">
+				<input type="text" name="name" class="input w-full" />
+			</InputContainer>
+
+			<InputContainer name="name" label="Full name: ">
+				<input type="text" name="name" class="input w-full" />
+			</InputContainer>
+
+			<InputContainer name="name" label="Full name: ">
+				<input type="text" name="name" class="input w-full" />
 			</InputContainer>
 
 			<InputContainer
@@ -82,7 +109,7 @@
 	<div class="divider lg:divider-horizontal"></div>
 	<div class="flex items-start justify-start">
 		<div
-			class="card bg-base-300 rounded-box grid grow grid-cols-1 place-items-center gap-6 p-6 sm:grid-cols-2 lg:grid-cols-1 2xl:grid-cols-2"
+			class="card bg-base-300 rounded-box grid grow grid-cols-1 place-items-center gap-4 p-4 sm:grid-cols-2 lg:grid-cols-1 2xl:grid-cols-2"
 		>
 			<InputContainer name="class" label="Class: ">
 				<select class="select" id="class">
