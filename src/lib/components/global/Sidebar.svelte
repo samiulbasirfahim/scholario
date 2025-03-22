@@ -12,7 +12,7 @@
 		class="flex items-center justify-start gap-4 p-2
 		{page.url.pathname.split('/')[1] === href.split('/')[1]
 			? 'bg-base-300 font-semibold'
-			: 'font-light'}"
+			: 'opacity-60'}"
 	>
 		<Icon {icon} font-size="20" />
 		{title}
@@ -35,7 +35,11 @@
 				<li>{@render link('/admission', 'mingcute:user-add-fill', 'Admission')}</li>
 				<li>{@render link('/students', 'fa6-solid:user-graduate', 'Students')}</li>
 				<li>{@render link('/attendance', 'fa-solid:tasks', 'Attendance')}</li>
-				<li>{@render link('/teachers', 'fa-solid:chalkboard-teacher', 'Teachers')}</li>
+				<li>{@render link('/teachers', 'streamline:class-lesson-solid', 'Teachers')}</li>
+				<li>{@render link('/classes', 'fa-solid:chalkboard-teacher', 'Classes')}</li>
+				<li>{@render link('/subjects', 'material-symbols:book', 'Subjects')}</li>
+				<li>{@render link('/exams', 'healthicons:i-exam-multiple-choice', 'Exams')}</li>
+				<li>{@render link('/events', 'material-symbols:event-rounded', 'Events')}</li>
 				<li>{@render link('/transaction', 'fa6-solid:sack-dollar', 'Transaction')}</li>
 			</ul>
 			<div class="flex items-center justify-between">

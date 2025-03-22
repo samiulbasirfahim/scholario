@@ -4,23 +4,23 @@ mod utility;
 use database::{
     guardian::{Guardian, StudentGuardian},
     student::Student,
+    teacher::Teacher,
 };
 
-#[tauri::command]
-fn guardian_search(term: &str) -> Vec<Guardian> {
-    Guardian::search(term).expect("Failed to search for guardian")
-}
-
-#[tauri::command]
-fn guardian_save(name: &str, phone: &str, address: &str, photo: &str) -> Guardian {
-    Guardian::push(name, phone, address, photo).expect("Failed to save guardian")
-}
+use utility::{
+    guardian::{guardian_save, guardian_search},
+    teacher::{
+        teacher_delete, teacher_get_all, teacher_get_by_id, teacher_save, teacher_subject_delete,
+        teacher_subject_get_subjects,
+    },
+};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
+            Teacher::init().expect("Failed to initialize teacher table");
             Guardian::init().expect("Failed to initialize guardian table");
             Student::init().expect("Failed to initialize student table");
             StudentGuardian::init().expect("Failed to initialize student_guardian table");
@@ -34,7 +34,16 @@ pub fn run() {
             }
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![guardian_search, guardian_save])
+        .invoke_handler(tauri::generate_handler![
+            guardian_search,
+            guardian_save,
+            teacher_save,
+            teacher_get_by_id,
+            teacher_delete,
+            teacher_subject_delete,
+            teacher_subject_get_subjects,
+            teacher_get_all
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

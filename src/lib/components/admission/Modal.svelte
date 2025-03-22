@@ -6,7 +6,7 @@
 	import Icon from '@iconify/svelte';
 
 	let { selected_guardians = $bindable([]) } = $props();
-	let numberConflictGuardian = $state(false);
+	let error_message = $state('');
 	let search_term = $state('');
 	let guardianForm = $state({
 		name: 'Samiul Basir Fahim',
@@ -31,15 +31,19 @@
 		}
 	};
 
-	const create_guardian = async () => {
-		let g = await invoke('guardian_save', {
+	const create_guardian = () => {
+		invoke('guardian_save', {
 			...guardianForm,
 			phone: `+880${guardianForm.phone}`
-		});
-
-		console.log(g);
-
-		document.getElementById('create-guardian-button')?.click();
+		})
+			.then((d) => {
+				selected_guardians.push(d as Guardian);
+				document.getElementById('create-guardian-button')?.click();
+			})
+			.catch((p) => {
+				error_message = p as string;
+				setTimeout(() => (error_message = ''), 4000);
+			});
 	};
 
 	const guardian_search = () => {
@@ -47,10 +51,6 @@
 			guardians = d;
 		});
 	};
-
-	$effect(() => {
-		console.log($state.snapshot(guardians));
-	});
 </script>
 
 <input type="checkbox" id="create-guardian" class="modal-toggle" />
@@ -145,9 +145,9 @@
 			</InputContainer>
 		</div>
 
-		{#if numberConflictGuardian}
+		{#if error_message.length > 0}
 			<div class="alert alert-error">
-				<span>You cant have two guardian with same phone number.</span>
+				<span>{error_message}</span>
 			</div>
 		{/if}
 		<div class="modal-action">
@@ -188,7 +188,7 @@
 					</div>
 
 					<button
-						class="btn btn-primary"
+						class="btn btn-square btn-ghost"
 						onclick={() => {
 							selected_guardian = guardian;
 							document.getElementById('rel-guardian-button')?.click();
