@@ -1,0 +1,16 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/typography';
+@plugin "daisyui" {
+	themes: business --default;
+}
+
+@font-face {
+	font-family: 'victor-mono';
+	src: url('/fonts/VictorMono-Regular.ttf') format('truetype');
+	font-weight: normal;
+	font-style: normal;
+}
+
+body {
+	font-family: 'victor-mono', sans-serif;
+}
