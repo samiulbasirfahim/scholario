@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
 @plugin "daisyui" {
-	themes: business --default;
+	themes: corporate --default;
 }
 
 @font-face {
@@ -11,6 +11,6 @@
 	font-style: normal;
 }
 
-body {
-	font-family: 'victor-mono', sans-serif;
+* {
+	font-family: 'IBM Plex Mono';
 }
