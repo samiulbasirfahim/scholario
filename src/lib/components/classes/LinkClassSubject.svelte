@@ -5,6 +5,7 @@
 	import { invoke } from '@tauri-apps/api/core';
 	import Icon from '@iconify/svelte';
 	import Toast from '../global/Toast.svelte';
+	import type { ClassSubject } from '$lib/types/class';
 
 	let { selectedClass } = $props();
 
@@ -32,14 +33,13 @@
 				isMandatory: s.is_mandatory
 			});
 		});
-
 		selectedSubjects = selected;
 	});
 
 	const toggleSubject = (subject_id: number) => {
-		const exists = selectedSubjects.some((s) => s.id === subject_id);
+		const exists = selectedSubjects.some((s) => s.subject_id === subject_id);
 		if (exists) {
-			selectedSubjects = selectedSubjects.filter((s) => s.id !== subject_id);
+			selectedSubjects = selectedSubjects.filter((s) => s.subject_id !== subject_id);
 		} else {
 			selectedSubjects = [...selectedSubjects, { subject_id, isMandatory: false }];
 		}
@@ -54,32 +54,79 @@
 	const isSelected = (id: number) => selectedSubjects.some((s) => s.subject_id === id);
 	const isMandatory = (id: number) =>
 		selectedSubjects.find((s) => s.subject_id === id)?.isMandatory ?? false;
-
 	const submit = async () => {
 		if (!selectedClass || selectedSubjects.length === 0) {
 			toast.set({ message: 'Please select at least one subject', type: 'warning' });
 			return;
 		}
 
+		const existing = classSubjects.get(selectedClass);
+		const selected = selectedSubjects;
+
+		const existingMap = new Map<number, ClassSubject>();
+		existing.forEach((e) => existingMap.set(e.subject_id, e));
+
+		const added: SelectedSubject[] = [];
+		const changed: SelectedSubject[] = [];
+
+		for (const sel of selected) {
+			const prev = existingMap.get(sel.subject_id);
+			if (!prev) {
+				added.push(sel);
+			} else if (prev.is_mandatory !== sel.isMandatory) {
+				changed.push({ ...sel, id: prev.id });
+			}
+		}
+
+		const removed = existing.filter((e) => !selected.some((s) => s.subject_id === e.subject_id));
+
+		console.log('➕ Added:', added);
+		console.log('✏️ Changed:', changed);
+		console.log(
+			'➖ Removed:',
+			removed.map((r) => r.id)
+		);
+
 		try {
-			for (const { subject_id: id, isMandatory } of selectedSubjects) {
-				await invoke('create_class_subject', {
+			// Add new subjects
+			for (const { subject_id, isMandatory } of added) {
+				const created = await invoke<ClassSubject>('create_class_subject', {
 					class_id: selectedClass,
-					subject_id: id,
+					subject_id,
 					is_mandatory: isMandatory
 				});
+
+				classSubjects.add(selectedClass, created); // ✅ Update store
 			}
 
-			for (const { id, subject_id, isMandatory } of selectedSubjects) {
-				classSubjects.add(selectedClass, {
-					id,
-					is_mandatory: isMandatory,
-					class_id: selectedClass,
-					subject_id: subject_id
-				});
+			// Update is_mandatory changes
+			for (const { id, subject_id, isMandatory } of changed) {
+				if (id != null) {
+					const updated = await invoke<ClassSubject>('edit_class_subject', {
+						id,
+						class_id: selectedClass,
+						subject_id,
+						is_mandatory: isMandatory
+					});
+
+					// ✅ Update in store
+					const list = classSubjects.data[selectedClass];
+					const index = list.findIndex((s) => s.id === id);
+					if (index !== -1) {
+						classSubjects.data[selectedClass][index] = updated;
+					}
+				}
+			}
+
+			// Remove unselected subjects
+			for (const r of removed) {
+				await invoke('delete_class_subject', { id: r.id });
+				classSubjects.remove(selectedClass, r.id); // ✅ Update store
 			}
 
 			toast.set({ message: 'Subjects linked to class successfully', type: 'success' });
+
+			// Reset selection and close modal
 			selectedSubjects = [];
 			(document.getElementById('link-subjects-modal') as HTMLDialogElement).close();
 		} catch (err) {
