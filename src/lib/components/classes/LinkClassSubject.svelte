@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { toast } from '$lib/store/toast.svelte';
-	import { subjects } from '$lib/store/class.svelte';
+	import { classSubjects, subjects } from '$lib/store/class.svelte';
 	import { onMount } from 'svelte';
 	import { invoke } from '@tauri-apps/api/core';
 	import Icon from '@iconify/svelte';
@@ -9,36 +9,51 @@
 	let { selectedClass } = $props();
 
 	interface SelectedSubject {
-		id: number;
+		id?: number;
+		subject_id: number;
 		isMandatory: boolean;
 	}
 
 	let selectedSubjects = $state<SelectedSubject[]>([]);
 
 	onMount(() => {
-		if (subjects.subjects.length === 0) {
+		if (subjects.data.length === 0) {
 			subjects.fetch();
 		}
 	});
 
-	const toggleSubject = (id: number) => {
-		const exists = selectedSubjects.some((s) => s.id === id);
+	$effect(() => {
+		if (selectedClass != null) classSubjects.fetch(selectedClass);
+		let selected: SelectedSubject[] = [];
+		classSubjects.get(selectedClass).forEach((s) => {
+			selected.push({
+				id: s.id,
+				subject_id: s.subject_id,
+				isMandatory: s.is_mandatory
+			});
+		});
+
+		selectedSubjects = selected;
+	});
+
+	const toggleSubject = (subject_id: number) => {
+		const exists = selectedSubjects.some((s) => s.id === subject_id);
 		if (exists) {
-			selectedSubjects = selectedSubjects.filter((s) => s.id !== id);
+			selectedSubjects = selectedSubjects.filter((s) => s.id !== subject_id);
 		} else {
-			selectedSubjects = [...selectedSubjects, { id, isMandatory: false }];
+			selectedSubjects = [...selectedSubjects, { subject_id, isMandatory: false }];
 		}
 	};
 
 	const toggleMandatory = (id: number) => {
 		selectedSubjects = selectedSubjects.map((s) =>
-			s.id === id ? { ...s, isMandatory: !s.isMandatory } : s
+			s.subject_id === id ? { ...s, isMandatory: !s.isMandatory } : s
 		);
 	};
 
-	const isSelected = (id: number) => selectedSubjects.some((s) => s.id === id);
+	const isSelected = (id: number) => selectedSubjects.some((s) => s.subject_id === id);
 	const isMandatory = (id: number) =>
-		selectedSubjects.find((s) => s.id === id)?.isMandatory ?? false;
+		selectedSubjects.find((s) => s.subject_id === id)?.isMandatory ?? false;
 
 	const submit = async () => {
 		if (!selectedClass || selectedSubjects.length === 0) {
@@ -47,11 +62,20 @@
 		}
 
 		try {
-			for (const { id, isMandatory } of selectedSubjects) {
+			for (const { subject_id: id, isMandatory } of selectedSubjects) {
 				await invoke('create_class_subject', {
 					class_id: selectedClass,
 					subject_id: id,
 					is_mandatory: isMandatory
+				});
+			}
+
+			for (const { id, subject_id, isMandatory } of selectedSubjects) {
+				classSubjects.add(selectedClass, {
+					id,
+					is_mandatory: isMandatory,
+					class_id: selectedClass,
+					subject_id: subject_id
 				});
 			}
 
@@ -74,8 +98,8 @@
 		<h3 class="mb-4 text-lg font-bold">Assign Subjects to Class</h3>
 
 		<div class="max-h-60 space-y-2 overflow-y-auto pr-2">
-			{#if subjects.subjects.length > 0}
-				{#each subjects.subjects as subject, i (i)}
+			{#if subjects.data.length > 0}
+				{#each subjects.data as subject, i (i)}
 					<div class="flex items-center justify-between gap-4">
 						<label class="fieldset-label">
 							<input
@@ -116,7 +140,7 @@
 				Create Subject
 			</button>
 
-			{#if subjects.subjects.length > 0}
+			{#if subjects.data.length > 0}
 				<button
 					class="btn btn-primary"
 					onclick={(e) => {

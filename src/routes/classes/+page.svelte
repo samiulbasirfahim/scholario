@@ -52,7 +52,7 @@
 </div>
 
 <ul>
-	{#each classes.classes as cls, i (i)}
+	{#each classes.data as cls, i (i)}
 		<li>
 			<button
 				onclick={() => {

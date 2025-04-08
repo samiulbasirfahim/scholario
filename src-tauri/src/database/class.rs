@@ -373,7 +373,8 @@ impl ClassSubject {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             class_id INTEGER NOT NULL,
             subject_id INTEGER NOT NULL,
-            is_mandatory BOOLEAN NOT NULL
+            is_mandatory BOOLEAN NOT NULL,
+            UNIQUE (class_id, subject_id)
         )",
             params![],
         )?;
@@ -395,6 +396,24 @@ impl ClassSubject {
             subject_id,
             is_mandatory,
         })
+    }
+
+    pub fn get_by_class(class_id: i32) -> Result<Vec<Self>> {
+        let db = conn()?;
+        let mut stmt = db.prepare(
+            "SELECT id, class_id, subject_id, is_mandatory FROM class_subjects WHERE class_id = ?1",
+        )?;
+
+        let class_subject_iter = stmt.query_map([class_id], |row| {
+            Ok(ClassSubject {
+                id: row.get(0)?,
+                class_id: row.get(1)?,
+                subject_id: row.get(2)?,
+                is_mandatory: row.get(3)?,
+            })
+        })?;
+
+        class_subject_iter.collect()
     }
 
     pub fn get() -> Result<Vec<Self>> {

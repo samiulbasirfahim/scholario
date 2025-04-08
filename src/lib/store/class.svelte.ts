@@ -1,71 +1,108 @@
 import { invoke } from '@tauri-apps/api/core';
 import { toast } from './toast.svelte';
 
-import type { Section, Subject, Class } from '$lib/types/class';
+import type { Section, Subject, Class, ClassSubject } from '$lib/types/class';
 
 export const classes = $state({
-    classes: [] as Class[],
-    set(list: Class[]) {
-        this.classes = list;
-    },
-    add(item: Class) {
-        this.classes.push(item);
-    },
-    remove(id: number) {
-        this.classes = this.classes.filter((c) => c.id !== id);
-    },
-    async fetch() {
-        try {
-            const fetched = await invoke<Class[]>('get_classes');
-            this.set(fetched);
-        } catch (err) {
-            console.error('Error fetching classes:', err);
-            toast.set({ message: 'Failed to fetch classes', type: 'error' });
-        }
-    }
+	data: [] as Class[],
+	set(list: Class[]) {
+		this.data = list;
+	},
+	add(item: Class) {
+		this.data.push(item);
+	},
+	remove(id: number) {
+		this.data = this.data.filter((c) => c.id !== id);
+	},
+	async fetch() {
+		try {
+			const fetched = await invoke<Class[]>('get_classes');
+			this.set(fetched);
+		} catch (err) {
+			console.error('Error fetching classes:', err);
+			toast.set({ message: 'Failed to fetch classes', type: 'error' });
+		}
+	}
 });
 
 export const sections = $state({
-    sections: [] as Section[],
-    set(list: Section[]) {
-        this.sections = list;
-    },
-    add(item: Section) {
-        this.sections.push(item);
-    },
-    remove(id: number) {
-        this.sections = this.sections.filter((s) => s.id !== id);
-    },
-    async fetch() {
-        try {
-            const fetched = await invoke<Section[]>('get_sections');
-            console.log(fetched);
-            this.set(fetched);
-        } catch (err) {
-            console.error('Error fetching sections:', err);
-            toast.set({ message: 'Failed to fetch sections', type: 'error' });
-        }
-    }
+	data: [] as Section[],
+	set(list: Section[]) {
+		this.data = list;
+	},
+	add(item: Section) {
+		this.data.push(item);
+	},
+	remove(id: number) {
+		this.data = this.data.filter((s) => s.id !== id);
+	},
+	async fetch() {
+		try {
+			const fetched = await invoke<Section[]>('get_sections');
+			console.log(fetched);
+			this.set(fetched);
+		} catch (err) {
+			console.error('Error fetching sections:', err);
+			toast.set({ message: 'Failed to fetch sections', type: 'error' });
+		}
+	}
 });
 
 export const subjects = $state({
-    subjects: [] as Subject[],
-    set(list: Subject[]) {
-        this.subjects = list;
-    },
-    add(item: Subject) {
-        this.subjects.push(item);
-    },
-    remove(id: number) {
-        this.subjects = this.subjects.filter((s) => s.id !== id);
-    },
-    async fetch() {
-        try {
-            const fetched = await invoke<Subject[]>('get_subjects');
-            this.set(fetched);
-        } catch (err) {
-            console.error('Error fetching subjects:', err);
-            toast.set({ message: 'Failed to fetch subjects', type: 'error' });
-        }
-    }
+	data: [] as Subject[],
+	set(list: Subject[]) {
+		this.data = list;
+	},
+	add(item: Subject) {
+		this.data.push(item);
+	},
+	remove(id: number) {
+		this.data = this.data.filter((s) => s.id !== id);
+	},
+	async fetch() {
+		try {
+			const fetched = await invoke<Subject[]>('get_subjects');
+			this.set(fetched);
+		} catch (err) {
+			console.error('Error fetching subjects:', err);
+			toast.set({ message: 'Failed to fetch subjects', type: 'error' });
+		}
+	}
+});
+
+export const classSubjects = $state({
+	data: {} as Record<number, ClassSubject[]>,
+
+	set(class_id: number, items: ClassSubject[]) {
+		this.data[class_id] = items;
+	},
+
+	add(class_id: number, item: ClassSubject) {
+		if (!this.data[class_id]) {
+			this.data[class_id] = [];
+		}
+		this.data[class_id].push(item);
+	},
+
+	remove(classId: number, id: number) {
+		if (!this.data[classId]) return;
+		this.data[classId] = this.data[classId].filter((s) => s.id !== id);
+	},
+
+	get(classId: number): ClassSubject[] {
+		return this.data[classId] ?? [];
+	},
+
+	async fetch(class_id: number) {
+		if (this.data[class_id]) return; // already cached
+
+		try {
+			const fetched = await invoke<ClassSubject[]>('get_class_subjects_by_class', { class_id });
+			console.log(fetched);
+			this.set(class_id, fetched);
+		} catch (err) {
+			console.error(`Error fetching class subjects for class ${class_id}:`, err);
+			toast.set({ message: `Failed to fetch subjects for class ${class_id}`, type: 'error' });
+		}
+	}
 });

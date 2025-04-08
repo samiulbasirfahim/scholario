@@ -18,3 +18,15 @@ export interface Subject {
     name: string;
     code: number;
 }
+
+export interface ClassSubject {
+    id: number;
+    class_id: number;
+    subject_id: number;
+    is_mandatory: boolean;
+}
+
+export interface ClassSubjectGroup {
+    classId: number;
+    subjects: ClassSubject[];
+}

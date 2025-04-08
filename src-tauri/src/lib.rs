@@ -31,6 +31,7 @@ pub fn run() {
             delete_section,
             edit_section,
             create_class_subject,
+            get_class_subjects_by_class,
             get_class_subjects,
             delete_class_subject,
             edit_class_subject,

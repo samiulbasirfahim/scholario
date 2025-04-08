@@ -58,7 +58,7 @@
 				</label>
 				<select class="select select-bordered w-full" required bind:value={formData.class_id}>
 					<option value="" disabled selected>Select class</option>
-					{#each classes.classes as cls, i (i)}
+					{#each classes.data as cls, i (i)}
 						<option value={cls.id}>{cls.name}</option>
 					{/each}
 				</select>
