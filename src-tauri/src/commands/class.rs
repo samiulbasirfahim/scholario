@@ -3,13 +3,9 @@ use tauri::command;
 
 // --- SUBJECT ---
 
-#[command]
-pub fn create_subject(
-    name: String,
-    code: i32,
-    description: Option<String>,
-) -> Result<Subject, String> {
-    Subject::create(&name, code, description.as_deref()).map_err(|e| e.to_string())
+#[command(rename_all = "snake_case")]
+pub fn create_subject(name: String, code: i32) -> Result<Subject, String> {
+    Subject::create(&name, code).map_err(|e| e.to_string())
 }
 
 #[command]
@@ -22,19 +18,14 @@ pub fn delete_subject(id: i32) -> Result<(), String> {
     Subject::delete(id).map_err(|e| e.to_string())
 }
 
-#[command]
-pub fn edit_subject(
-    id: i32,
-    name: String,
-    code: i32,
-    description: Option<String>,
-) -> Result<Subject, String> {
-    Subject::edit(id, &name, code, description.as_deref()).map_err(|e| e.to_string())
+#[command(rename_all = "snake_case")]
+pub fn edit_subject(id: i32, name: String, code: i32) -> Result<Subject, String> {
+    Subject::edit(id, &name, code).map_err(|e| e.to_string())
 }
 
 // ---- CLASS ----
 
-#[command]
+#[command(rename_all = "snake_case")]
 pub fn create_class(
     name: String,
     level: i32,
@@ -56,7 +47,7 @@ pub fn delete_class(id: i32) -> Result<(), String> {
     Class::delete(id).map_err(|e| e.to_string())
 }
 
-#[command]
+#[command(rename_all = "snake_case")]
 pub fn edit_class(
     id: i32,
     name: String,
@@ -78,7 +69,7 @@ pub fn edit_class(
 
 // ---- SECTION ----
 
-#[command]
+#[command(rename_all = "snake_case")]
 pub fn create_section(class_id: i32, name: String) -> Result<Section, String> {
     Section::create(class_id, &name).map_err(|e| e.to_string())
 }
@@ -93,14 +84,14 @@ pub fn delete_section(id: i32) -> Result<(), String> {
     Section::delete(id).map_err(|e| e.to_string())
 }
 
-#[command]
+#[command(rename_all = "snake_case")]
 pub fn edit_section(id: i32, class_id: i32, name: String) -> Result<Section, String> {
     Section::edit(id, class_id, &name).map_err(|e| e.to_string())
 }
 
 // ---- CLASS SUBJECT ----
 
-#[command]
+#[command(rename_all = "snake_case")]
 pub fn create_class_subject(
     class_id: i32,
     subject_id: i32,
@@ -119,7 +110,7 @@ pub fn delete_class_subject(id: i32) -> Result<(), String> {
     ClassSubject::delete(id).map_err(|e| e.to_string())
 }
 
-#[command]
+#[command(rename_all = "snake_case")]
 pub fn edit_class_subject(
     id: i32,
     class_id: i32,

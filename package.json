@@ -10,6 +10,7 @@
 		"@sveltejs/vite-plugin-svelte": "^5.0.0",
 		"@tailwindcss/typography": "^0.5.15",
 		"@tailwindcss/vite": "^4.0.0",
+		"@tauri-apps/api": "^2.4.1",
 		"@tauri-apps/cli": "^2.4.1",
 		"daisyui": "^5.0.12",
 		"eslint": "^9.18.0",

@@ -28,7 +28,7 @@
 				<h1 class="text-center opacity-60">Dapunia, Mymensingh</h1>
 			</div>
 			<div class="divider"></div>
-			<div class="space-y-2">
+			<div class="">
 				{#each links as link, i (i)}
 					<li>
 						<a

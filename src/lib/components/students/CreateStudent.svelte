@@ -1,6 +1,8 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import Guardians from './Guardians.svelte';
+	import { classes, sections } from '$lib/store/class.svelte';
+	import { onMount } from 'svelte';
 
 	type Guardian = {
 		id: number;
@@ -57,8 +59,8 @@
 	// Using your $state approach for form data
 	let form_data = $state({
 		name: '',
-		class: '',
-		section: '',
+		class_id: '',
+		section_id: '',
 		dob: '',
 		gender: '',
 		religion: '',
@@ -87,6 +89,10 @@
 
 	$effect(() => {
 		console.log($state.snapshot(form_data));
+		console.log(form_data.class_id);
+		console.log(
+			sections.sections.filter((section) => section.class_id === Number(form_data.class_id))
+		);
 	});
 
 	function openGuardiansModal() {
@@ -96,6 +102,11 @@
 		studentModal.close();
 		guardianModal.showModal();
 	}
+
+	onMount(() => {
+		classes.fetch();
+		sections.fetch();
+	});
 </script>
 
 <dialog id="create-student-modal" class="modal">
@@ -127,10 +138,10 @@
 						name="class"
 						class="input input-bordered w-full"
 						required
-						bind:value={form_data.class}
+						bind:value={form_data.class_id}
 					>
 						<option value="" selected>Class</option>
-						{#each fetched_data.classes as cls, i (i)}
+						{#each classes.classes as cls, i (i)}
 							<option value={cls.id}>{cls.name}</option>
 						{/each}
 					</select>
@@ -143,10 +154,10 @@
 						name="section"
 						class="input input-bordered w-full"
 						required
-						bind:value={form_data.section}
+						bind:value={form_data.section_id}
 					>
 						<option value="" selected>Section</option>
-						{#each fetched_data.sections as section, i (i)}
+						{#each sections.sections.filter((section) => section.class_id === Number(form_data.class_id)) as section, i (i)}
 							<option value={section.id}>{section.name}</option>
 						{/each}
 					</select>

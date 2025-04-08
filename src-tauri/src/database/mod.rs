@@ -5,13 +5,13 @@ use chrono::{NaiveDate, NaiveTime};
 use rusqlite::{Connection, Result};
 use serde::{Deserialize, Serialize};
 
-use self::class::{Class, ClassSubject, Subject};
+use self::class::{Class, ClassSubject, Section, Subject};
 
 static DB: OnceLock<Mutex<Connection>> = OnceLock::new();
 
 pub fn conn() -> Result<MutexGuard<'static, Connection>> {
     let conn = DB
-        .get_or_init(|| Mutex::new(Connection::open("school.db").expect("Failed to open database")))
+        .get_or_init(|| Mutex::new(Connection::open("/home/rxen/scholario.db").expect("Failed to open database")))
         .lock()
         .expect("Failed to lock mutex");
     Ok(conn)
@@ -21,6 +21,7 @@ pub fn init() -> Result<()> {
     Subject::init()?;
     ClassSubject::init()?;
     Class::init()?;
+    Section::init()?;
     Ok(())
 }
 

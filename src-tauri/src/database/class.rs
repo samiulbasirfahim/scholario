@@ -7,16 +7,14 @@ pub struct Subject {
     pub id: i32,
     pub name: String,
     pub code: i32,
-    pub description: Option<String>,
 }
 
 impl Subject {
-    pub fn new(id: i32, name: &str, code: i32, description: Option<&str>) -> Self {
+    pub fn new(id: i32, name: &str, code: i32) -> Self {
         Self {
             id,
             name: name.to_string(),
             code,
-            description: description.map(|v| v.to_string()),
         }
     }
 
@@ -25,35 +23,33 @@ impl Subject {
         db.execute(
             "CREATE TABLE IF NOT EXISTS subjects (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                code INTEGER NOT NULL,
-                description TEXT
+                name TEXT NOT NULL UNIQUE,
+                code INTEGER NOT NULL UNIQUE
             )",
             [],
         )?;
         Ok(())
     }
 
-    pub fn create(name: &str, code: i32, description: Option<&str>) -> Result<Self> {
+    pub fn create(name: &str, code: i32) -> Result<Self> {
         let db = conn()?;
         db.execute(
-            "INSERT INTO subjects (name, code, description) VALUES (?1, ?2, ?3)",
-            params![name, code, description],
+            "INSERT INTO subjects (name, code) VALUES (?1, ?2)",
+            params![name, code],
         )?;
 
         let id = db.last_insert_rowid() as i32;
-        Ok(Self::new(id, name, code, description))
+        Ok(Self::new(id, name, code))
     }
 
     pub fn get() -> Result<Vec<Self>> {
         let db = conn()?;
-        let mut stmt = db.prepare("SELECT id, name, code, description FROM subjects")?;
+        let mut stmt = db.prepare("SELECT id, name, code FROM subjects")?;
         let iter = stmt.query_map([], |row| {
             Ok(Subject {
                 id: row.get(0)?,
                 name: row.get(1)?,
                 code: row.get(2)?,
-                description: row.get(3)?,
             })
         })?;
 
@@ -77,11 +73,11 @@ impl Subject {
         }
     }
 
-    pub fn edit(id: i32, name: &str, code: i32, description: Option<&str>) -> Result<Self> {
+    pub fn edit(id: i32, name: &str, code: i32) -> Result<Self> {
         let db = conn()?;
         let affected = db.execute(
-            "UPDATE subjects SET name = ?1, code = ?2, description = ?3 WHERE id = ?4",
-            params![name, code, description, id],
+            "UPDATE subjects SET name = ?1, code = ?2 WHERE id = ?4",
+            params![name, code, id],
         )?;
 
         if affected == 0 {
@@ -93,7 +89,7 @@ impl Subject {
                 Some("No subject found to update.".to_string()),
             ))
         } else {
-            Ok(Self::new(id, name, code, description))
+            Ok(Self::new(id, name, code))
         }
     }
 }
@@ -133,13 +129,13 @@ impl Class {
         db.execute(
             "CREATE TABLE IF NOT EXISTS classes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
+            name TEXT NOT NULL UNIQUE,
             level INTEGER NOT NULL,
             admission_fee INTEGER NOT NULL,
             monthly_fee INTEGER NOT NULL,
             readmission_fee INTEGER NOT NULL
         )",
-            params![],
+            [],
         )?;
         Ok(())
     }
@@ -267,7 +263,8 @@ impl Section {
             "CREATE TABLE IF NOT EXISTS sections (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             class_id INTEGER NOT NULL,
-            name TEXT NOT NULL
+            name TEXT NOT NULL,
+            UNIQUE (class_id, name)
         )",
             params![],
         )?;

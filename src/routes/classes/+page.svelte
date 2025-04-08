@@ -1,5 +1,18 @@
 <script lang="ts">
+	import CreateClass from '$lib/components/classes/CreateClass.svelte';
+	import CreateSection from '$lib/components/classes/CreateSection.svelte';
+	import CreateSubject from '$lib/components/classes/CreateSubject.svelte';
+	import LinkClassSubject from '$lib/components/classes/LinkClassSubject.svelte';
+	import { classes, subjects } from '$lib/store/class.svelte';
 	import Icon from '@iconify/svelte';
+	import { onMount } from 'svelte';
+
+	let selectedClass: number | null = $state(null);
+
+	onMount(() => {
+		classes.fetch();
+		subjects.fetch();
+	});
 </script>
 
 <div class="navbar bg-base-300 rounded px-4">
@@ -8,22 +21,22 @@
 	</div>
 	<div class="flex gap-2">
 		<button
-			class="btn btn-accent"
+			class="btn btn-secondary"
 			onclick={() => {
 				(document.getElementById('create-subject-modal') as HTMLDialogElement).showModal();
 			}}
 		>
-			<Icon icon="tabler:filter-filled" />
+			<Icon icon="material-symbols:book" />
 			Create Subject
 		</button>
 
 		<button
-			class="btn btn-secondary"
+			class="btn btn-accent"
 			onclick={() => {
 				(document.getElementById('create-section-modal') as HTMLDialogElement).showModal();
 			}}
 		>
-			<Icon icon="tabler:filter-filled" />
+			<Icon icon="teenyicons:section-add-solid" />
 			Create Section
 		</button>
 		<button
@@ -38,63 +51,20 @@
 	</div>
 </div>
 
-<dialog id="create-class-modal" class="modal">
-	<div class="modal-box">
-		<form method="dialog">
-			<button class="btn btn-sm btn-circle btn-ghost absolute top-2 right-2">✕</button>
-		</form>
-		<h3 class="text-lg font-bold">Hello!</h3>
-		<p class="py-4">Press ESC key or click on ✕ button to close</p>
-	</div>
-</dialog>
+<ul>
+	{#each classes.classes as cls, i (i)}
+		<li>
+			<button
+				onclick={() => {
+					(document.getElementById('link-subjects-modal') as HTMLDialogElement).showModal();
+					selectedClass = cls.id;
+				}}>{cls.name}</button
+			>
+		</li>
+	{/each}
+</ul>
 
-<dialog id="create-section-modal" class="modal">
-	<div class="modal-box">
-		<form method="dialog">
-			<button class="btn btn-sm btn-circle btn-ghost absolute top-2 right-2">✕</button>
-		</form>
-		<h3 class="text-lg font-bold">Hello!</h3>
-		<p class="py-4">Press ESC key or click on ✕ button to close</p>
-	</div>
-</dialog>
-
-<dialog id="create-subject-modal" class="modal">
-	<div class="modal-box w-full max-w-xl">
-		<form method="dialog">
-			<button class="btn btn-sm btn-circle btn-ghost absolute top-2 right-2">✕</button>
-		</form>
-		<h3 class="text-lg font-bold">Create Subject</h3>
-
-		<form
-			onsubmit={(e) => {
-				e.preventDefault();
-			}}
-			class="space-y-4"
-		>
-			<div class="form-control">
-				<label class="label">
-					<span class="label-text">Name</span>
-				</label>
-				<input type="text" class="input input-bordered w-full" required />
-			</div>
-
-			<div class="form-control">
-				<label class="label">
-					<span class="label-text">Code</span>
-				</label>
-				<input type="number" class="input input-bordered w-full" required />
-			</div>
-
-			<div class="form-control">
-				<label class="label">
-					<span class="label-text">Description</span>
-				</label>
-				<textarea class="textarea textarea-bordered w-full" rows="2"></textarea>
-			</div>
-
-			<div class="flex justify-end">
-				<button type="submit" class="btn btn-primary">Create</button>
-			</div>
-		</form>
-	</div>
-</dialog>
+<CreateClass />
+<CreateSection />
+<CreateSubject />
+<LinkClassSubject {selectedClass} />

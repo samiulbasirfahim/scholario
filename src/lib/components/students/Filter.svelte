@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { classes, sections } from '$lib/store/class.svelte';
+
 	let selectedClass = $state('');
 	let selectedSection = $state('');
 	let feeSort = $state('');
@@ -25,31 +27,32 @@
 			}}
 		>
 			<div>
-				<label class="label">
+				<label class="label" for="class">
 					<span class="label-text font-medium">By Class</span>
 				</label>
 				<select bind:value={selectedClass} class="select select-bordered w-full">
 					<option value="">All Classes</option>
-					<option value="1">Class 1</option>
-					<option value="2">Class 2</option>
-					<option value="3">Class 3</option>
+					{#each classes.classes as cls, i (i)}
+						<option value={cls.id}>{cls.name}</option>
+					{/each}
 				</select>
 			</div>
 
 			<div>
-				<label class="label">
+				<label class="label" for="section">
 					<span class="label-text font-medium">By Section</span>
 				</label>
 				<select bind:value={selectedSection} class="select select-bordered w-full">
 					<option value="">All Sections</option>
-					<option value="A">Section A</option>
-					<option value="B">Section B</option>
-					<option value="C">Section C</option>
+
+					{#each sections.sections.filter((section) => section.class_id === Number(selectedClass)) as section, i (i)}
+						<option value={section.id}>{section.name}</option>
+					{/each}
 				</select>
 			</div>
 
 			<div>
-				<label class="label">
+				<label class="label" for="sort">
 					<span class="label-text font-medium">Fee Status</span>
 				</label>
 				<select bind:value={feeSort} class="select select-bordered w-full">
@@ -60,7 +63,7 @@
 			</div>
 
 			<div>
-				<label class="label">
+				<label class="label" for="rollsort">
 					<span class="label-text font-medium">Sort by Roll</span>
 				</label>
 				<select bind:value={rollSort} class="select select-bordered w-full">

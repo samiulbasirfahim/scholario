@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
 @plugin "daisyui" {
-	themes: corporate --default;
+	themes: nord --default;
 }
 
 @font-face {
