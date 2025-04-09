@@ -45,15 +45,7 @@
 	}
 
 	let fetched_data = {
-		religions: ['islam', 'hindu', 'christian'],
-		classes: [
-			{ id: 1, name: 'primary' },
-			{ id: 2, name: 'secondary' }
-		],
-		sections: [
-			{ id: 1, name: 'a' },
-			{ id: 2, name: 'b' }
-		]
+		religions: ['islam', 'hindu', 'christian']
 	};
 
 	// Using your $state approach for form data
@@ -90,9 +82,6 @@
 	$effect(() => {
 		console.log($state.snapshot(form_data));
 		console.log(form_data.class_id);
-		console.log(
-			sections.sections.filter((section) => section.class_id === Number(form_data.class_id))
-		);
 	});
 
 	function openGuardiansModal() {
@@ -115,204 +104,210 @@
 			<button class="btn btn-sm btn-circle btn-ghost absolute top-2 right-2">✕</button>
 		</form>
 		<form>
-			<h3 class="text-lg font-bold">Create Student</h3>
+			<h3 class="text-lg font-bold mb-6">Create Student</h3>
 
-			<div class="grid grid-cols-2 gap-4">
-				<div>
-					<label for="name" class="block text-sm font-medium text-gray-700">Name</label>
-					<input
-						type="text"
-						id="name"
-						name="name"
-						class="input input-bordered w-full"
-						placeholder="Enter Student Name"
-						required
-						bind:value={form_data.name}
-					/>
-				</div>
-
-				<div>
-					<label for="class" class="block text-sm font-medium text-gray-700">Class</label>
-					<select
-						id="class"
-						name="class"
-						class="input input-bordered w-full"
-						required
-						bind:value={form_data.class_id}
-					>
-						<option value="" selected>Class</option>
-						{#each classes.classes as cls, i (i)}
-							<option value={cls.id}>{cls.name}</option>
-						{/each}
-					</select>
-				</div>
-
-				<div>
-					<label for="section" class="block text-sm font-medium text-gray-700">Section</label>
-					<select
-						id="section"
-						name="section"
-						class="input input-bordered w-full"
-						required
-						bind:value={form_data.section_id}
-					>
-						<option value="" selected>Section</option>
-						{#each sections.sections.filter((section) => section.class_id === Number(form_data.class_id)) as section, i (i)}
-							<option value={section.id}>{section.name}</option>
-						{/each}
-					</select>
-				</div>
-
-				<div>
-					<label for="dob" class="block text-sm font-medium text-gray-700">Date of Birth</label>
-					<input
-						type="date"
-						id="dob"
-						name="dob"
-						class="input input-bordered w-full"
-						required
-						bind:value={form_data.dob}
-					/>
-				</div>
-
-				<div>
-					<label for="gender" class="block text-sm font-medium text-gray-700">Gender</label>
-					<select
-						id="gender"
-						name="gender"
-						class="input input-bordered w-full"
-						required
-						bind:value={form_data.gender}
-					>
-						<option value="" selected>Gender</option>
-						<option value="Male">Male</option>
-						<option value="Female">Female</option>
-					</select>
-				</div>
-
-				<div>
-					<label for="religion" class="block text-sm font-medium text-gray-700">Religion</label>
-					<input
-						type="text"
-						class="input input-bordered w-full"
-						placeholder="Religion"
-						list="religions"
-						required
-						bind:value={form_data.religion}
-					/>
-					<datalist id="religions">
-						{#each fetched_data.religions as religion, i (i)}
-							<option value={religion}>{religion}</option>
-						{/each}
-					</datalist>
-				</div>
-
-				<div>
-					<label for="address" class="block text-sm font-medium text-gray-700">Address</label>
-					<input
-						type="text"
-						id="address"
-						name="address"
-						class="input input-bordered w-full"
-						placeholder="Enter Address"
-						required
-						bind:value={form_data.address}
-					/>
-				</div>
-
-				<div>
-					<label for="phone" class="block text-sm font-medium text-gray-700">Phone</label>
-					<label class="input validator w-full">
-						+880
+			{#if classes.data.length == 0}
+				<p class="alert-error alert">Please create a class first</p>
+			{:else}
+				<div class="grid grid-cols-2 gap-4">
+					<div>
+						<label for="name" class="block text-sm font-medium">Name</label>
 						<input
-							type="tel"
-							class="w-full tabular-nums"
+							type="text"
+							id="name"
+							name="name"
+							class="input input-bordered w-full"
+							placeholder="Enter Student Name"
 							required
-							pattern="[0-9]*"
-							minlength="10"
-							maxlength="10"
-							title="Must be 10 digits"
-							bind:value={form_data.phone}
+							bind:value={form_data.name}
 						/>
-					</label>
-				</div>
+					</div>
 
-				<div>
-					<label for="photo" class="block text-sm font-medium text-gray-700">Photo</label>
-					<input
-						type="file"
-						class="file-input input-bordered w-full"
-						accept="image/*"
-						onchange={handleFileUpload}
-					/>
-				</div>
-
-				<div>
-					<label for="is_resident" class="block text-sm font-medium text-gray-700">Resident</label>
-					<input
-						type="checkbox"
-						id="is_resident"
-						name="is_resident"
-						class="checkbox"
-						bind:checked={form_data.is_resident}
-					/>
-				</div>
-
-				{#if guardians.length > 0}
-					<div class=" bg-base-200 col-span-2 rounded p-4">
-						<p class="text-xs tracking-wide opacity-60">Guardians</p>
-						<ul class="list grid max-h-48 grid-cols-2 gap-4 overflow-y-auto">
-							{#each guardians as guardian, i (i)}
-								<li
-									class="list-row bg-base-300 rounded-box flex items-center justify-between gap-4 p-2"
-								>
-									<div class="shrink-0">
-										<img
-											class="size-12 rounded-full object-cover"
-											src={guardian.photo}
-											alt="{guardian.name}'s photo"
-										/>
-									</div>
-
-									<div class="min-w-0 flex-1">
-										<div class="truncate font-medium">{guardian.name}</div>
-										<div class="truncate text-sm text-gray-500">
-											{guardian.relation} • {guardian.phone}
-										</div>
-										<div class="truncate text-sm text-gray-400">{guardian.address}</div>
-									</div>
-
-									<button
-										class="btn btn-square btn-ghost"
-										onclick={(e) => {
-											e.preventDefault();
-											removeGuardian(guardian.id);
-										}}
-									>
-										<Icon icon="fa:remove" />
-									</button>
-								</li>
+					<div>
+						<label for="class" class="block text-sm font-medium">Class</label>
+						<select
+							id="class"
+							name="class"
+							class="input input-bordered w-full"
+							required
+							bind:value={form_data.class_id}
+						>
+							<option value="" selected>Class</option>
+							{#each classes.data as cls, i (i)}
+								<option value={cls.id}>{cls.name}</option>
 							{/each}
-						</ul>
+						</select>
 					</div>
-				{:else}
-					<div class="alert alert-info col-span-2">
-						<span>You haven't selected any guardians</span>
+
+					{#if sections.get_by_class(Number(form_data.class_id)).length > 0}
+						<div>
+							<label for="section" class="block text-sm font-medium">Section</label>
+							<select
+								id="section"
+								name="section"
+								class="input input-bordered w-full"
+								required
+								bind:value={form_data.section_id}
+							>
+								<option value="" selected>Section</option>
+								{#each sections.get_by_class(Number(form_data.class_id)) as section, i (i)}
+									<option value={section.id}>{section.name}</option>
+								{/each}
+							</select>
+						</div>
+					{/if}
+
+					<div>
+						<label for="dob" class="block text-sm font-medium">Date of Birth</label>
+						<input
+							type="date"
+							id="dob"
+							name="dob"
+							class="input input-bordered w-full"
+							required
+							bind:value={form_data.dob}
+						/>
 					</div>
-				{/if}
-			</div>
-			<div class="modal-action">
-				<button
-					class="btn btn-secondary"
-					onclick={(e) => {
-						e.preventDefault();
-						openGuardiansModal();
-					}}
-				>
-					Manage Guardians
-				</button>
-				<button type="submit" class="btn btn-primary">Create Student</button>
-			</div>
+
+					<div>
+						<label for="gender" class="block text-sm font-medium">Gender</label>
+						<select
+							id="gender"
+							name="gender"
+							class="input input-bordered w-full"
+							required
+							bind:value={form_data.gender}
+						>
+							<option value="" selected>Gender</option>
+							<option value="Male">Male</option>
+							<option value="Female">Female</option>
+						</select>
+					</div>
+
+					<div>
+						<label for="religion" class="block text-sm font-medium">Religion</label>
+						<input
+							type="text"
+							class="input input-bordered w-full"
+							placeholder="Religion"
+							list="religions"
+							required
+							bind:value={form_data.religion}
+						/>
+						<datalist id="religions">
+							{#each fetched_data.religions as religion, i (i)}
+								<option value={religion}>{religion}</option>
+							{/each}
+						</datalist>
+					</div>
+
+					<div>
+						<label for="address" class="block text-sm font-medium">Address</label>
+						<input
+							type="text"
+							id="address"
+							name="address"
+							class="input input-bordered w-full"
+							placeholder="Enter Address"
+							required
+							bind:value={form_data.address}
+						/>
+					</div>
+
+					<div>
+						<label for="phone" class="block text-sm font-medium">Phone</label>
+						<label class="input validator w-full">
+							+880
+							<input
+								type="tel"
+								class="w-full tabular-nums"
+								required
+								pattern="[0-9]*"
+								minlength="10"
+								maxlength="10"
+								title="Must be 10 digits"
+								bind:value={form_data.phone}
+							/>
+						</label>
+					</div>
+
+					<div>
+						<label for="photo" class="block text-sm font-medium">Photo</label>
+						<input
+							type="file"
+							class="file-input input-bordered w-full"
+							accept="image/*"
+							onchange={handleFileUpload}
+						/>
+					</div>
+
+					<div>
+						<label for="is_resident" class="block text-sm font-medium">Resident</label>
+						<input
+							type="checkbox"
+							id="is_resident"
+							name="is_resident"
+							class="checkbox"
+							bind:checked={form_data.is_resident}
+						/>
+					</div>
+
+					{#if guardians.length > 0}
+						<div class=" bg-base-200 col-span-2 rounded p-4">
+							<p class="text-xs tracking-wide opacity-60">Guardians</p>
+							<ul class="list grid max-h-48 grid-cols-2 gap-4 overflow-y-auto">
+								{#each guardians as guardian, i (i)}
+									<li
+										class="list-row bg-base-300 rounded-box flex items-center justify-between gap-4 p-2"
+									>
+										<div class="shrink-0">
+											<img
+												class="size-12 rounded-full object-cover"
+												src={guardian.photo}
+												alt="{guardian.name}'s photo"
+											/>
+										</div>
+
+										<div class="min-w-0 flex-1">
+											<div class="truncate font-medium">{guardian.name}</div>
+											<div class="truncate text-sm text-gray-500">
+												{guardian.relation} • {guardian.phone}
+											</div>
+											<div class="truncate text-sm text-gray-400">{guardian.address}</div>
+										</div>
+
+										<button
+											class="btn btn-square btn-ghost"
+											onclick={(e) => {
+												e.preventDefault();
+												removeGuardian(guardian.id);
+											}}
+										>
+											<Icon icon="fa:remove" />
+										</button>
+									</li>
+								{/each}
+							</ul>
+						</div>
+					{:else}
+						<div class="alert alert-info col-span-2">
+							<span>You haven't selected any guardians</span>
+						</div>
+					{/if}
+				</div>
+				<div class="modal-action">
+					<button
+						class="btn btn-secondary"
+						onclick={(e) => {
+							e.preventDefault();
+							openGuardiansModal();
+						}}
+					>
+						Manage Guardians
+					</button>
+					<button type="submit" class="btn btn-primary">Create Student</button>
+				</div>
+			{/if}
 		</form>
 	</div>
 </dialog>

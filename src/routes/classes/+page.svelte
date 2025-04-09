@@ -1,9 +1,9 @@
 <script lang="ts">
+	import ClassEdit from '$lib/components/classes/ClassEdit.svelte';
 	import CreateClass from '$lib/components/classes/CreateClass.svelte';
 	import CreateSection from '$lib/components/classes/CreateSection.svelte';
 	import CreateSubject from '$lib/components/classes/CreateSubject.svelte';
-	import LinkClassSubject from '$lib/components/classes/LinkClassSubject.svelte';
-	import { classes, subjects } from '$lib/store/class.svelte';
+	import { classes, classSubjects, sections, subjects } from '$lib/store/class.svelte';
 	import Icon from '@iconify/svelte';
 	import { onMount } from 'svelte';
 
@@ -12,6 +12,7 @@
 	onMount(() => {
 		classes.fetch();
 		subjects.fetch();
+		sections.fetch();
 	});
 </script>
 
@@ -51,20 +52,53 @@
 	</div>
 </div>
 
-<ul>
-	{#each classes.data as cls, i (i)}
-		<li>
-			<button
-				onclick={() => {
-					(document.getElementById('link-subjects-modal') as HTMLDialogElement).showModal();
-					selectedClass = cls.id;
-				}}>{cls.name}</button
-			>
-		</li>
-	{/each}
-</ul>
+<ul></ul>
+
+{#if classes.data.length > 0}
+	<div class="border-base-content/5 bg-base-100 overflow-x-auto rounded border">
+		<table class="table">
+			<thead class="bg-base-300">
+				<tr>
+					<th></th>
+					<th>Name</th>
+					<th></th>
+					<th>Students</th>
+					<th>Sections</th>
+					<th>Subjects</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+				{#each classes.data as cls, i (i)}
+					<tr class="hover:bg-base-200">
+						<th class="w-4">{i + 1}</th>
+						<td colspan="2">
+							{cls.name}
+						</td>
+						<td> 40 </td>
+						<td> {sections.get_by_class(cls.id).length} </td>
+						<td> {classSubjects.get(cls.id).length} </td>
+						<td>
+							<button
+								class="btn btn-ghost btn-square btn-primary"
+								onclickcapture={() => {
+									(document.getElementById('class-edit-modal') as HTMLDialogElement).showModal();
+									selectedClass = cls.id;
+								}}
+							>
+								<Icon icon="lucide:edit" />
+							</button></td
+						>
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	</div>
+{:else}
+	<p>No classes yet. Click 'Create Class' to get started!</p>
+{/if}
 
 <CreateClass />
 <CreateSection />
 <CreateSubject />
-<LinkClassSubject {selectedClass} />
+<ClassEdit {selectedClass} />

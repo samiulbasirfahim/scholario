@@ -2,6 +2,13 @@
 	import CreateStudent from '$lib/components/students/CreateStudent.svelte';
 	import Filter from '$lib/components/students/Filter.svelte';
 	import Icon from '@iconify/svelte';
+
+	let filter = $state({
+		class: '',
+		section: '',
+		fee: '',
+		roll: ''
+	});
 </script>
 
 <div class="navbar bg-base-300 rounded px-4">
@@ -36,7 +43,5 @@
 	</div>
 </div>
 
-
-
-<Filter />
+<Filter bind:filter/>
 <CreateStudent />

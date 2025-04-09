@@ -264,8 +264,9 @@ impl Section {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             class_id INTEGER NOT NULL,
             name TEXT NOT NULL,
-            UNIQUE (class_id, name)
-        )",
+            UNIQUE (class_id, name),
+            FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE
+           )",
             params![],
         )?;
         Ok(())
@@ -374,6 +375,8 @@ impl ClassSubject {
             class_id INTEGER NOT NULL,
             subject_id INTEGER NOT NULL,
             is_mandatory BOOLEAN NOT NULL,
+            FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
+            FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE,
             UNIQUE (class_id, subject_id)
         )",
             params![],
