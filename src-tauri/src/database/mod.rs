@@ -1,17 +1,23 @@
 pub mod class;
+pub mod guardian;
 
-use std::sync::{Mutex, MutexGuard, OnceLock};
 use chrono::{NaiveDate, NaiveTime};
 use rusqlite::{Connection, Result};
 use serde::{Deserialize, Serialize};
+use std::sync::{Mutex, MutexGuard, OnceLock};
 
 use self::class::{Class, ClassSubject, Section, Subject};
+use self::guardian::Guardian;
 
 static DB: OnceLock<Mutex<Connection>> = OnceLock::new();
 
 pub fn conn() -> Result<MutexGuard<'static, Connection>> {
     let conn = DB
-        .get_or_init(|| Mutex::new(Connection::open("/home/rxen/scholario.db").expect("Failed to open database")))
+        .get_or_init(|| {
+            Mutex::new(
+                Connection::open("/home/rxen/scholario.db").expect("Failed to open database"),
+            )
+        })
         .lock()
         .expect("Failed to lock mutex");
     Ok(conn)
@@ -22,6 +28,7 @@ pub fn init() -> Result<()> {
     ClassSubject::init()?;
     Class::init()?;
     Section::init()?;
+    Guardian::init()?;
     Ok(())
 }
 
@@ -39,17 +46,6 @@ pub struct Student {
     pub phone: String,
     pub admission_date: NaiveDate,
     pub is_resident: bool,
-    pub photo: Option<String>, // Base64 image, optional
-}
-
-// Guardian struct
-#[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct Guardian {
-    pub id: i32,
-    pub first_name: String,
-    pub last_name: String,
-    pub phone: String,
-    pub address: Option<String>,
     pub photo: Option<String>, // Base64 image, optional
 }
 
@@ -92,7 +88,6 @@ pub struct StudentRelationship {
     pub related_type: RelatedType,
     pub relationship: Option<String>,
 }
-
 
 // Struct for student-specific fee overrides
 #[derive(Debug, Clone, Deserialize, Serialize)]

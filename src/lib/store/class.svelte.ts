@@ -77,8 +77,16 @@ export const subjects = $state({
     add(item: Subject) {
         this.data.push(item);
     },
+
+    get(id: number) {
+        return this.data.find((d) => d.id === id);
+    },
     remove(id: number) {
         this.data = this.data.filter((s) => s.id !== id);
+    },
+
+    update(item: Subject) {
+        this.data = this.data.map((s) => (s.id === item.id ? item : s));
     },
     async fetch() {
         try {
@@ -110,6 +118,12 @@ export const classSubjects = $state({
         this.data[classId] = this.data[classId].filter((s) => s.id !== id);
     },
 
+    remove_from_all(id: number) {
+        for (const classId in this.data) {
+            this.data[classId] = this.data[classId].filter((s) => s.id !== id);
+        }
+    },
+
     get(classId: number): ClassSubject[] {
         return this.data[classId] ?? [];
     },
@@ -125,5 +139,20 @@ export const classSubjects = $state({
             console.error(`Error fetching class subjects for class ${class_id}:`, err);
             toast.set({ message: `Failed to fetch subjects for class ${class_id}`, type: 'error' });
         }
+    },
+
+    async fetch_all() {
+        classes.data.forEach(async (c) => {
+            try {
+                const fetched = await invoke<ClassSubject[]>('get_class_subjects_by_class', {
+                    class_id: c.id
+                });
+                console.log(fetched);
+                this.set(c.id, fetched);
+            } catch (err) {
+                console.error(`Error fetching class subjects for class ${c.name}:`, err);
+                toast.set({ message: `Failed to fetch subjects for class ${c.name}`, type: 'error' });
+            }
+        });
     }
 });

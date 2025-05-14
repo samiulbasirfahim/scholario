@@ -1,6 +1,7 @@
 <script lang="ts">
 	import CreateStudent from '$lib/components/students/CreateStudent.svelte';
 	import Filter from '$lib/components/students/Filter.svelte';
+	import { classes, sections } from '$lib/store/class.svelte';
 	import Icon from '@iconify/svelte';
 
 	let filter = $state({
@@ -11,9 +12,19 @@
 	});
 </script>
 
-<div class="navbar bg-base-300 rounded px-4">
+<div class="navbar bg-base-100 rounded px-4">
 	<div class="flex-1">
-		<p>Students - Primary - A</p>
+		<div class="breadcrumbs text-sm">
+			<ul>
+				<li>Students</li>
+				{#if filter.class}
+					<li>{classes.get(Number(filter.class))?.name}</li>
+				{/if}
+				{#if filter.section}
+					<li>{sections.get(Number(filter.section))?.name}</li>
+				{/if}
+			</ul>
+		</div>
 	</div>
 	<div class="flex gap-2">
 		<input
@@ -43,5 +54,5 @@
 	</div>
 </div>
 
-<Filter bind:filter/>
+<Filter bind:filter />
 <CreateStudent />

@@ -45,41 +45,45 @@
 		</form>
 		<h3 class="text-lg font-bold">Create Section</h3>
 
-		<form
-			onsubmit={(e) => {
-				e.preventDefault();
-				submitForm();
-			}}
-			class="space-y-4"
-		>
-			<div class="form-control">
-				<label class="label" for="class">
-					<span class="label-text">Class</span>
-				</label>
-				<select class="select select-bordered w-full" required bind:value={formData.class_id}>
-					<option value="" disabled selected>Select class</option>
-					{#each classes.data as cls, i (i)}
-						<option value={cls.id}>{cls.name}</option>
-					{/each}
-				</select>
-			</div>
+		{#if classes.data.length > 0}
+			<form
+				onsubmit={(e) => {
+					e.preventDefault();
+					submitForm();
+				}}
+				class="space-y-4"
+			>
+				<div class="form-control">
+					<label class="label" for="class">
+						<span class="label-text text-xs">Class</span>
+					</label>
+					<select class="select select-bordered w-full" required bind:value={formData.class_id}>
+						<option value="" disabled selected>Select class</option>
+						{#each classes.data as cls, i (i)}
+							<option value={cls.id}>{cls.name}</option>
+						{/each}
+					</select>
+				</div>
 
-			<div class="form-control">
-				<label class="label" for="name">
-					<span class="label-text">Section Name</span>
-				</label>
-				<input
-					type="text"
-					class="input input-bordered w-full"
-					required
-					bind:value={formData.name}
-				/>
-			</div>
+				<div class="form-control">
+					<label class="label" for="name">
+						<span class="label-text text-xs">Section Name</span>
+					</label>
+					<input
+						type="text"
+						class="input input-bordered w-full"
+						required
+						bind:value={formData.name}
+					/>
+				</div>
 
-			<div class="flex justify-end">
-				<button type="submit" class="btn btn-primary">Create</button>
-			</div>
-		</form>
+				<div class="flex justify-end">
+					<button type="submit" class="btn btn-primary">Create</button>
+				</div>
+			</form>
+		{:else}
+			<p>No classes yet. Click 'Create Class' to get started!</p>
+		{/if}
 	</div>
 	<Toast />
 </dialog>

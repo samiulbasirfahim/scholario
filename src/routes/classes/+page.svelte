@@ -3,6 +3,7 @@
 	import CreateClass from '$lib/components/classes/CreateClass.svelte';
 	import CreateSection from '$lib/components/classes/CreateSection.svelte';
 	import CreateSubject from '$lib/components/classes/CreateSubject.svelte';
+	import ListSubject from '$lib/components/classes/ListSubject.svelte';
 	import { classes, classSubjects, sections, subjects } from '$lib/store/class.svelte';
 	import Icon from '@iconify/svelte';
 	import { onMount } from 'svelte';
@@ -13,22 +14,23 @@
 		classes.fetch();
 		subjects.fetch();
 		sections.fetch();
+		classSubjects.fetch_all();
 	});
 </script>
 
-<div class="navbar bg-base-300 rounded px-4">
+<div class="navbar bg-base-100 rounded px-4">
 	<div class="flex-1">
-		<p>Classes & Subjects</p>
+		<p class="text-sm">Classes & Subjects</p>
 	</div>
 	<div class="flex gap-2">
 		<button
-			class="btn btn-secondary"
 			onclick={() => {
-				(document.getElementById('create-subject-modal') as HTMLDialogElement).showModal();
+				(document.getElementById('list-subject-modal') as HTMLDialogElement).showModal();
 			}}
+            class="btn btn-secondary"
 		>
-			<Icon icon="material-symbols:book" />
-			Create Subject
+			<Icon icon="foundation:list" />
+			Subjects
 		</button>
 
 		<button
@@ -37,7 +39,7 @@
 				(document.getElementById('create-section-modal') as HTMLDialogElement).showModal();
 			}}
 		>
-			<Icon icon="teenyicons:section-add-solid" />
+			<Icon icon="gridicons:create" />
 			Create Section
 		</button>
 		<button
@@ -47,17 +49,15 @@
 			}}
 		>
 			<Icon icon="gridicons:create" />
-			Create Class</button
-		>
+			Create Class
+		</button>
 	</div>
 </div>
-
-<ul></ul>
 
 {#if classes.data.length > 0}
 	<div class="border-base-content/5 bg-base-100 overflow-x-auto rounded border">
 		<table class="table">
-			<thead class="bg-base-300">
+			<thead class="bg-base-200">
 				<tr>
 					<th></th>
 					<th>Name</th>
@@ -86,9 +86,9 @@
 									selectedClass = cls.id;
 								}}
 							>
-								<Icon icon="lucide:edit" />
-							</button></td
-						>
+								<Icon icon="lucide:edit" font-size="24" />
+							</button>
+						</td>
 					</tr>
 				{/each}
 			</tbody>
@@ -101,4 +101,5 @@
 <CreateClass />
 <CreateSection />
 <CreateSubject />
+<ListSubject />
 <ClassEdit {selectedClass} />

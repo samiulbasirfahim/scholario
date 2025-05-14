@@ -18,9 +18,9 @@
 		invoke('create_class', {
 			name: formData.name.trim(),
 			level: Number(formData.level),
-			admission_fee: Number(formData.admission_fee),
-			monthly_fee: Number(formData.monthly_fee),
-			readmission_fee: Number(formData.readmission_fee)
+			admission_fee: Number(formData.admission_fee) * 100,
+			monthly_fee: Number(formData.monthly_fee) * 100,
+			readmission_fee: Number(formData.readmission_fee) * 100
 		})
 			.then((cls) => {
 				classes.add(cls as Class);

@@ -100,7 +100,6 @@
 						is_mandatory: isMandatory
 					});
 
-					// ✅ Update in store
 					const list = classSubjects.data[selectedClass];
 					const index = list.findIndex((s) => s.id === id);
 					if (index !== -1) {
@@ -116,7 +115,6 @@
 
 			toast.set({ message: 'Subjects linked to class successfully', type: 'success' });
 
-			// Reset selection and close modal
 			selectedSubjects = [];
 			// (document.getElementById('link-subjects-modal') as HTMLDialogElement).close();
 		} catch (err) {

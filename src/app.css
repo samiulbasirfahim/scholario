@@ -4,13 +4,10 @@
 	themes: corporate --default;
 }
 
-@font-face {
-	font-family: 'victor-mono';
-	src: url('/fonts/VictorMono-Regular.ttf') format('truetype');
-	font-weight: normal;
-	font-style: normal;
+body {
+    font-family: "Victor Mono";
 }
 
-* {
-	font-family: 'victor-mono';
+.text-xs {
+	@apply text-xs;
 }

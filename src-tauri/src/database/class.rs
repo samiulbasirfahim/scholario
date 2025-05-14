@@ -76,7 +76,7 @@ impl Subject {
     pub fn edit(id: i32, name: &str, code: i32) -> Result<Self> {
         let db = conn()?;
         let affected = db.execute(
-            "UPDATE subjects SET name = ?1, code = ?2 WHERE id = ?4",
+            "UPDATE subjects SET name = ?1, code = ?2 WHERE id = ?3",
             params![name, code, id],
         )?;
 

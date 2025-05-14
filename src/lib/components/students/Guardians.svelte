@@ -1,5 +1,27 @@
 <script lang="ts">
-	let { guardians = $bindable() } = $props();
+	import { toast } from '$lib/store/toast.svelte';
+	import { guardians } from '$lib/store/guardian.svelte';
+	import Icon from '@iconify/svelte';
+	import { invoke } from '@tauri-apps/api/core';
+	import type { Guardian } from '$lib/types/guardian';
+	import Toast from '../global/Toast.svelte';
+	import { onMount } from 'svelte';
+
+	let { guardians: guardians_selected = $bindable() } = $props();
+
+	let guardian_selected: Guardian | null = $state(null);
+	let form_data = $state({
+		name: '',
+		address: '',
+		phone: '',
+		photo: ''
+	});
+
+	let relation = $state('');
+
+	let rels = $state(['father', 'mother', 'sister', 'brother']);
+
+	let searchTerm = $state('');
 
 	function closeGuardiansModal() {
 		const studentModal = document.getElementById('create-student-modal') as HTMLDialogElement;
@@ -7,6 +29,45 @@
 
 		guardianModal.close();
 		studentModal.showModal();
+	}
+
+	onMount(() => guardians.fetch());
+
+	async function submitForm() {
+		try {
+			let guardian = await invoke('create_guardian', {
+				...form_data,
+				phone: `+880${form_data.phone}`
+			});
+			guardians.add(guardian as Guardian);
+			form_data = { name: '', phone: '', address: '', photo: '' };
+			(document.getElementById('photo') as HTMLInputElement).value = '';
+		} catch (err) {
+			if (typeof err === 'string' && err.includes('UNIQUE constraint failed')) {
+				if (err.includes('phone')) {
+					toast.set({ message: 'Phone number must be unique', type: 'error' });
+				}
+			} else {
+				toast.set({ message: 'Failed to create guardian', type: 'error' });
+			}
+			console.log('Failed to create guardian', err);
+		}
+	}
+
+	function handleFileUpload(event: Event) {
+		const input = event.target as HTMLInputElement;
+		const file = input.files ? input.files[0] : null;
+
+		if (file && file.type.startsWith('image/')) {
+			const reader = new FileReader();
+			reader.onload = function (e) {
+				const base64String = e.target?.result as string;
+				form_data.photo = base64String;
+			};
+			reader.readAsDataURL(file);
+		} else {
+			alert('Please select a valid image file.');
+		}
 	}
 </script>
 
@@ -23,29 +84,179 @@
 		</form>
 		<h3 class="mb-4 text-lg font-bold">Manage Guardians</h3>
 
-		<div class="grid grid-cols-3 gap-6">
-			<!-- Guardian List (2/3rd) -->
-			<div class="col-span-2 max-h-[400px] space-y-2 overflow-y-auto">
-				<!-- Replace with real guardian list -->
-				<div class="bg-base-200 rounded p-2">Guardian 1</div>
-				<div class="bg-base-200 rounded p-2">Guardian 2</div>
-				<!-- ... -->
+		<div class="grid grid-cols-2 gap-6">
+			<div class="space-y-2">
+				<input
+					type="text"
+					id="name"
+					name="name"
+					class="input input-bordered w-full"
+					placeholder="Search by name & phone"
+					required
+					bind:value={searchTerm}
+				/>
+				{#if guardians.data.length > 0}
+					<ul class="list grid max-h-86 grid-cols-1 gap-4 overflow-y-auto">
+						{#each guardians.data.filter((g) => !guardians_selected.some((existing: Guardian) => existing.id === g.id)) as guardian, i (i)}
+							<li
+								class="list-row bg-base-300 rounded-box flex items-center justify-between gap-4 p-2"
+							>
+								<div class="shrink-0">
+									<img
+										class="size-12 rounded-full object-cover"
+										src={guardian.photo}
+										alt="{guardian.name}'s photo"
+									/>
+								</div>
+
+								<div class="min-w-0 flex-1">
+									<div class="truncate font-medium">{guardian.name}</div>
+									<div class="truncate text-sm text-gray-500">
+										{guardian.phone}
+									</div>
+									<div class="truncate text-sm text-gray-400">{guardian.address}</div>
+								</div>
+
+								<button
+									class="btn btn-square btn-ghost"
+									onclick={(e) => {
+										e.preventDefault();
+										(
+											document.getElementById('guardian_relationship') as HTMLDialogElement
+										).showModal();
+										(
+											document.getElementById('manage-guardians-modal') as HTMLDialogElement
+										).close();
+										guardian_selected = guardian;
+									}}
+								>
+									<Icon icon="fluent:add-12-filled" font-size="26" />
+								</button>
+							</li>
+						{/each}
+					</ul>
+				{:else}
+					<div class="alert alert-info col-span-2">
+						<span>You haven't created any guardians yet, create one first</span>
+					</div>
+				{/if}
 			</div>
 
-			<!-- Create Guardian Form (1/3rd) -->
 			<div>
 				<form
+					class="space-y-4 px-4"
 					onsubmit={(e) => {
 						e.preventDefault();
-						closeGuardiansModal();
+						submitForm();
 					}}
 				>
-					<label class="mb-2 block text-sm font-medium">Name</label>
-					<input class="input input-bordered mb-2 w-full" placeholder="Guardian Name" />
-					<!-- Add more fields here -->
-					<button class="btn btn-primary w-full">Create</button>
+					<p class="mb-4">Create guardian</p>
+
+					<div>
+						<label for="name" class="block text-sm font-medium">Name</label>
+						<input
+							type="text"
+							id="name"
+							name="name"
+							class="input input-bordered w-full"
+							placeholder="Enter Guardian Name"
+							required
+							bind:value={form_data.name}
+						/>
+					</div>
+
+					<div>
+						<label for="name" class="block text-sm font-medium">Address</label>
+						<input
+							type="text"
+							id="name"
+							name="name"
+							class="input input-bordered w-full"
+							placeholder="Enter Guardian Name"
+							required
+							bind:value={form_data.address}
+						/>
+					</div>
+
+					<div>
+						<label for="phone" class="block text-sm font-medium">Phone</label>
+						<label class="input validator w-full">
+							+880
+							<input
+								type="tel"
+								class="w-full tabular-nums"
+								required
+								pattern="[0-9]*"
+								minlength="10"
+								maxlength="10"
+								title="Must be 10 digits"
+								bind:value={form_data.phone}
+							/>
+						</label>
+					</div>
+
+					<div>
+						<label for="photo" class="block text-sm font-medium">Photo</label>
+						<input
+							type="file"
+							class="file-input input-bordered w-full"
+							accept="image/*"
+							id="photo"
+							onchange={handleFileUpload}
+						/>
+					</div>
+
+					<button type="submit" class="btn btn-primary w-full">Create</button>
 				</form>
 			</div>
+		</div>
+	</div>
+	<Toast />
+</dialog>
+
+<dialog id="guardian_relationship" class="modal">
+	<div class="modal-box">
+		<h3 class="text-lg font-bold">Relationship</h3>
+		<div class="modal-action flex flex-col items-end">
+			<form class="w-full">
+				<input
+					type="text"
+					class="input w-full"
+					placeholder="Relation between student and guardian"
+					list="relation"
+					bind:value={relation}
+				/>
+				<datalist id="relation">
+					{#each rels as rel, i (i)}
+						<option value={rel}></option>
+					{/each}
+				</datalist>
+			</form>
+			<form method="dialog" class="join">
+				<button
+					class="btn btn-primary join-item"
+					onclick={(e) => {
+						e.preventDefault();
+						if (guardian_selected) {
+							guardians_selected.push({
+								...guardian_selected,
+								relation
+							});
+						}
+						relation = '';
+						(document.getElementById('manage-guardians-modal') as HTMLDialogElement).showModal();
+						(document.getElementById('guardian_relationship') as HTMLDialogElement).close();
+					}}>Save</button
+				>
+				<button
+					class="btn btn-error join-item"
+					onclick={(e) => {
+						e.preventDefault();
+						(document.getElementById('manage-guardians-modal') as HTMLDialogElement).showModal();
+						(document.getElementById('guardian_relationship') as HTMLDialogElement).close();
+					}}>Cancel</button
+				>
+			</form>
 		</div>
 	</div>
 </dialog>

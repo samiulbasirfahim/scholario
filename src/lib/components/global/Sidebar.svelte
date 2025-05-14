@@ -17,31 +17,31 @@
 
 <div class="drawer drawer-open">
 	<input id="sidebar" type="checkbox" class="drawer-toggle" />
-	<div class="drawer-content space-y-4 p-4">
+	<div class="drawer-content bg-base-300 space-y-4 p-4">
 		{@render children()}
 	</div>
 	<div class="drawer-side">
 		<label for="my-drawer-2" aria-label="close sidebar" class="drawer-overlay"></label>
-		<ul class="menu bg-base-300 text-base-content min-h-full w-80 p-4">
+		<ul class="menu min-h-full w-80 p-4">
 			<div class="flex flex-col items-center justify-center pt-4">
-				<h1 class="text-primary text-center font-semibold">Holy Child International School</h1>
+				<h1 class="text-center font-semibold">Holy Child International School</h1>
 				<h1 class="text-center opacity-60">Dapunia, Mymensingh</h1>
 			</div>
 			<div class="divider"></div>
-			<div class="">
+			<ul class="space-y-1">
 				{#each links as link, i (i)}
 					<li>
 						<a
-							class="btn flex items-center justify-start gap-2 p-2 {page.route.id === link[1]
-								? 'btn-primary'
-								: 'btn-ghost opacity-90 '}"
+							class="flex items-center justify-start gap-2 p-2 {page.route.id === link[1]
+								? 'btn btn-primary'
+								: 'hover:btn-soft'}"
 							href={link[1]}
 						>
 							{link[0]}
 						</a>
 					</li>
 				{/each}
-			</div>
+			</ul>
 		</ul>
 	</div>
 </div>

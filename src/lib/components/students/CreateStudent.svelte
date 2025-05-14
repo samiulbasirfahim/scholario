@@ -3,6 +3,9 @@
 	import Guardians from './Guardians.svelte';
 	import { classes, sections } from '$lib/store/class.svelte';
 	import { onMount } from 'svelte';
+	import { invoke } from '@tauri-apps/api/core';
+	import type { Student, StudentRelationship } from '$lib/types/student';
+	import { studentRelationships, students } from '$lib/store/student.svelte';
 
 	type Guardian = {
 		id: number;
@@ -13,40 +16,11 @@
 		photo: string;
 	};
 
-	let guardians: Guardian[] = $state([
-		{
-			id: 1,
-			name: 'Abdul Karim',
-			relation: 'Father',
-			phone: '01711223344',
-			address: 'Mymensingh Sadar',
-			photo: 'https://i.pravatar.cc/150?img=1'
-		},
-		{
-			id: 2,
-			name: 'Rahima Begum',
-			relation: 'Mother',
-			phone: '01755667788',
-			address: 'Muktagacha',
-			photo: 'https://i.pravatar.cc/150?img=2'
-		},
-		{
-			id: 3,
-			name: 'Selim Hossain',
-			relation: 'Uncle',
-			phone: '01899887766',
-			address: 'Fulbaria',
-			photo: 'https://i.pravatar.cc/150?img=3'
-		}
-	]);
+	let guardians: Guardian[] = $state([]);
 
 	function removeGuardian(id: number) {
 		guardians = guardians.filter((guardian) => guardian.id !== id);
 	}
-
-	let fetched_data = {
-		religions: ['islam', 'hindu', 'christian']
-	};
 
 	// Using your $state approach for form data
 	let form_data = $state({
@@ -55,7 +29,6 @@
 		section_id: '',
 		dob: '',
 		gender: '',
-		religion: '',
 		address: '',
 		phone: '',
 		photo: '',
@@ -96,6 +69,42 @@
 		classes.fetch();
 		sections.fetch();
 	});
+
+	async function submitStudentForm() {
+		try {
+			const finalPhone = '+880' + form_data.phone;
+
+			const student: Student = await invoke('create_student', {
+				name: form_data.name,
+				classId: Number(form_data.class_id),
+				sectionId: Number(form_data.section_id),
+				dob: form_data.dob,
+				gender: form_data.gender,
+				religion: 'islam',
+				address: form_data.address,
+				phone: finalPhone,
+				admissionDate: new Date().toISOString().split('T')[0], // or form_data.admission_date
+				isResident: form_data.is_resident,
+				photo: form_data.photo || null
+			});
+
+			students.add(student);
+
+			for (const guardian of guardians) {
+				let studentRelation: StudentRelationship = await invoke('create_student_relationship', {
+					studentId: student.id!,
+					relatedId: guardian.id,
+					relationship: guardian.relation || null
+				});
+				studentRelationships.add(studentRelation);
+			}
+
+			alert('Student created successfully!');
+		} catch (error) {
+			console.error(error);
+			alert('Failed to create student');
+		}
+	}
 </script>
 
 <dialog id="create-student-modal" class="modal">
@@ -104,7 +113,7 @@
 			<button class="btn btn-sm btn-circle btn-ghost absolute top-2 right-2">✕</button>
 		</form>
 		<form>
-			<h3 class="text-lg font-bold mb-6">Create Student</h3>
+			<h3 class="mb-6 text-lg font-bold">Create Student</h3>
 
 			{#if classes.data.length == 0}
 				<p class="alert-error alert">Please create a class first</p>
@@ -182,23 +191,6 @@
 							<option value="Male">Male</option>
 							<option value="Female">Female</option>
 						</select>
-					</div>
-
-					<div>
-						<label for="religion" class="block text-sm font-medium">Religion</label>
-						<input
-							type="text"
-							class="input input-bordered w-full"
-							placeholder="Religion"
-							list="religions"
-							required
-							bind:value={form_data.religion}
-						/>
-						<datalist id="religions">
-							{#each fetched_data.religions as religion, i (i)}
-								<option value={religion}>{religion}</option>
-							{/each}
-						</datalist>
 					</div>
 
 					<div>
