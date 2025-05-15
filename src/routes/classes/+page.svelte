@@ -4,9 +4,12 @@
 	import CreateSection from '$lib/components/classes/CreateSection.svelte';
 	import CreateSubject from '$lib/components/classes/CreateSubject.svelte';
 	import ListSubject from '$lib/components/classes/ListSubject.svelte';
+	import Navbar from '$lib/components/global/Navbar.svelte';
 	import { classes, classSubjects, sections, subjects } from '$lib/store/class.svelte';
 	import Icon from '@iconify/svelte';
 	import { onMount } from 'svelte';
+
+	let session = $state<string>('2026');
 
 	let selectedClass: number | null = $state(null);
 
@@ -18,28 +21,38 @@
 	});
 </script>
 
-<div class="navbar bg-base-100 rounded px-4">
+<Navbar>
 	<div class="flex-1">
-		<p class="text-sm">Classes & Subjects</p>
-	</div>
-	<div class="flex gap-2">
-		<button
-			onclick={() => {
-				(document.getElementById('list-subject-modal') as HTMLDialogElement).showModal();
-			}}
-            class="btn btn-secondary"
-		>
-			<Icon icon="foundation:list" />
-			Subjects
-		</button>
+		<div class="breadcrumbs text-sm">
+			<ul>
+				<li>Classes</li>
 
+				{#if session}
+					<li>{session.trim().split(' ')[0]}</li>
+				{/if}
+			</ul>
+		</div>
+	</div>
+	<div class="flex gap-4">
+		<label class="bg-accent text-accent-content flex items-center rounded border-1 px-2">
+			<Icon icon="carbon:prompt-session" font-size="24" />
+			<select
+				bind:value={session}
+				class="select rounded-none border-0 bg-transparent focus:outline-none"
+			>
+				<option disabled>Session</option>
+				<option>2024</option>
+				<option>2025</option>
+				<option selected>2026</option>
+			</select>
+		</label>
 		<button
 			class="btn btn-accent"
 			onclick={() => {
 				(document.getElementById('create-section-modal') as HTMLDialogElement).showModal();
 			}}
 		>
-			<Icon icon="gridicons:create" />
+			<Icon icon="gridicons:create" font-size="20" />
 			Create Section
 		</button>
 		<button
@@ -48,16 +61,26 @@
 				(document.getElementById('create-class-modal') as HTMLDialogElement).showModal();
 			}}
 		>
-			<Icon icon="gridicons:create" />
+			<Icon icon="gridicons:create" font-size="20" />
 			Create Class
 		</button>
+
+		<button
+			onclick={() => {
+				(document.getElementById('list-subject-modal') as HTMLDialogElement).showModal();
+			}}
+			class="btn btn-secondary"
+		>
+			<Icon icon="duo-icons:book-2" font-size="20" />
+			Subjects
+		</button>
 	</div>
-</div>
+</Navbar>
 
 {#if classes.data.length > 0}
 	<div class="border-base-content/5 bg-base-100 overflow-x-auto rounded border">
-		<table class="table">
-			<thead class="bg-base-200">
+		<table class="table-md table">
+			<thead class="bg-secondary text-secondary-content">
 				<tr>
 					<th></th>
 					<th>Name</th>
@@ -70,8 +93,8 @@
 			</thead>
 			<tbody>
 				{#each classes.data as cls, i (i)}
-					<tr class="hover:bg-base-200">
-						<th class="w-4">{i + 1}</th>
+					<tr>
+						<th class="w-2">{i + 1}</th>
 						<td colspan="2">
 							{cls.name}
 						</td>
@@ -80,13 +103,13 @@
 						<td> {classSubjects.get(cls.id).length} </td>
 						<td>
 							<button
-								class="btn btn-ghost btn-square btn-primary"
+								class="btn btn-primary btn-sm"
 								onclickcapture={() => {
 									(document.getElementById('class-edit-modal') as HTMLDialogElement).showModal();
 									selectedClass = cls.id;
 								}}
 							>
-								<Icon icon="lucide:edit" font-size="24" />
+								Edit
 							</button>
 						</td>
 					</tr>

@@ -100,7 +100,6 @@ pub fn create_class_subject(
     ClassSubject::create(class_id, subject_id, is_mandatory).map_err(|e| e.to_string())
 }
 
-
 #[command(rename_all = "snake_case")]
 pub fn get_class_subjects_by_class(class_id: i32) -> Result<Vec<ClassSubject>, String> {
     ClassSubject::get_by_class(class_id).map_err(|e| e.to_string())

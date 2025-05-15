@@ -14,9 +14,9 @@
 		<form method="dialog">
 			<button class="btn btn-sm btn-circle btn-ghost absolute top-2 right-2">✕</button>
 		</form>
-		<h3 class="mb-6 text-lg font-bold">FILTER</h3>
+		<h3 class="mb-4 text-lg font-bold">FILTER</h3>
 		<form
-			class="space-y-4"
+			class="space-y-2"
 			onsubmit={(e) => {
 				e.preventDefault();
 				applyFilter();

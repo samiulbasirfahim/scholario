@@ -39,11 +39,22 @@
 </script>
 
 <dialog id="create-section-modal" class="modal">
-	<div class="modal-box w-full max-w-xl">
-		<form method="dialog">
-			<button class="btn btn-sm btn-circle btn-ghost absolute top-2 right-2">✕</button>
+	<div
+		class="modal-box border-base-300 bg-base-100 relative w-full max-w-xl rounded border shadow-lg"
+	>
+		<form method="dialog" class="flex justify-end">
+			<button
+				aria-label="Close"
+				class="btn btn-sm btn-circle btn-ghost"
+				type="button"
+				onclick={() =>
+					(document.getElementById('create-section-modal') as HTMLDialogElement).close()}
+			>
+				✕
+			</button>
 		</form>
-		<h3 class="text-lg font-bold">Create Section</h3>
+
+		<h3 class="text-primary text-2xl font-bold mb-4">Create Section</h3>
 
 		{#if classes.data.length > 0}
 			<form
@@ -51,39 +62,49 @@
 					e.preventDefault();
 					submitForm();
 				}}
-				class="space-y-4"
+				class="space-y-2"
 			>
-				<div class="form-control">
+				<div class="form-control w-full">
 					<label class="label" for="class">
-						<span class="label-text text-xs">Class</span>
+						<span class="label-text text-xs font-semibold">Class</span>
 					</label>
-					<select class="select select-bordered w-full" required bind:value={formData.class_id}>
+					<select
+						id="class"
+						class="select select-bordered w-full"
+						required
+						bind:value={formData.class_id}
+					>
 						<option value="" disabled selected>Select class</option>
-						{#each classes.data as cls, i (i)}
+						{#each classes.data as cls (cls.id)}
 							<option value={cls.id}>{cls.name}</option>
 						{/each}
 					</select>
 				</div>
 
-				<div class="form-control">
+				<div class="form-control w-full">
 					<label class="label" for="name">
-						<span class="label-text text-xs">Section Name</span>
+						<span class="label-text text-xs font-semibold">Section Name</span>
 					</label>
 					<input
+						id="name"
 						type="text"
 						class="input input-bordered w-full"
 						required
 						bind:value={formData.name}
+						placeholder="Enter section name"
 					/>
 				</div>
 
-				<div class="flex justify-end">
-					<button type="submit" class="btn btn-primary">Create</button>
+				<div class="flex justify-end pt-4">
+					<button type="submit" class="btn btn-primary px-8"> Create </button>
 				</div>
 			</form>
 		{:else}
-			<p>No classes yet. Click 'Create Class' to get started!</p>
+			<p class="text-secondary text-sm">
+				No classes yet. Click 'Create Class' to get started!
+			</p>
 		{/if}
 	</div>
+
 	<Toast />
 </dialog>

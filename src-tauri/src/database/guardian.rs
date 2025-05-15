@@ -17,7 +17,7 @@ pub struct Student {
     pub phone: String,
     pub admission_date: NaiveDate,
     pub is_resident: bool,
-    pub photo: Option<String>, // Base64 image, optional
+    pub photo: Option<String>,
 }
 
 // Guardian struct

@@ -1,11 +1,12 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import Guardians from './Guardians.svelte';
-	import { classes, sections } from '$lib/store/class.svelte';
 	import { onMount } from 'svelte';
+	import { classes, sections } from '$lib/store/class.svelte';
+	import { students, studentRelationships } from '$lib/store/student.svelte';
 	import { invoke } from '@tauri-apps/api/core';
+
 	import type { Student, StudentRelationship } from '$lib/types/student';
-	import { studentRelationships, students } from '$lib/store/student.svelte';
 
 	type Guardian = {
 		id: number;
@@ -19,92 +20,84 @@
 	let guardians: Guardian[] = $state([]);
 
 	function removeGuardian(id: number) {
-		guardians = guardians.filter((guardian) => guardian.id !== id);
+		guardians = guardians.filter((g) => g.id !== id);
 	}
 
-	// Using your $state approach for form data
 	let form_data = $state({
 		name: '',
 		class_id: '',
 		section_id: '',
 		dob: '',
 		gender: '',
+		religion: '',
 		address: '',
 		phone: '',
+		admission_date: new Date().toISOString().split('T')[0],
+		is_resident: false,
 		photo: '',
-		is_resident: false
+		health_notes: '',
+		general_notes: ''
 	});
 
-	// Handle file input and store the base64 image string
 	function handleFileUpload(event: Event) {
 		const input = event.target as HTMLInputElement;
-		const file = input.files ? input.files[0] : null;
-
+		const file = input?.files?.[0];
 		if (file && file.type.startsWith('image/')) {
 			const reader = new FileReader();
-			reader.onload = function (e) {
-				const base64String = e.target?.result as string;
-				form_data.photo = base64String;
+			reader.onload = (e) => {
+				form_data.photo = e.target?.result as string;
 			};
 			reader.readAsDataURL(file);
-		} else {
-			alert('Please select a valid image file.');
 		}
 	}
 
-	$effect(() => {
-		console.log($state.snapshot(form_data));
-		console.log(form_data.class_id);
-	});
-
 	function openGuardiansModal() {
-		const studentModal = document.getElementById('create-student-modal') as HTMLDialogElement;
-		const guardianModal = document.getElementById('manage-guardians-modal') as HTMLDialogElement;
-
-		studentModal.close();
-		guardianModal.showModal();
+		document.getElementById('create-student-modal')?.close();
+		document.getElementById('manage-guardians-modal')?.showModal();
 	}
 
-	onMount(() => {
-		classes.fetch();
-		sections.fetch();
-	});
+	async function submitStudentForm(e: Event) {
+		e.preventDefault();
 
-	async function submitStudentForm() {
 		try {
-			const finalPhone = '+880' + form_data.phone;
-
 			const student: Student = await invoke('create_student', {
 				name: form_data.name,
 				classId: Number(form_data.class_id),
 				sectionId: Number(form_data.section_id),
 				dob: form_data.dob,
 				gender: form_data.gender,
-				religion: 'islam',
+				religion: form_data.religion,
 				address: form_data.address,
-				phone: finalPhone,
-				admissionDate: new Date().toISOString().split('T')[0], // or form_data.admission_date
+				phone: form_data.phone ? '+880' + form_data.phone : null,
+				admissionDate: form_data.admission_date,
 				isResident: form_data.is_resident,
-				photo: form_data.photo || null
+				photo: form_data.photo || null,
+				healthNotes: form_data.health_notes || null,
+				generalNotes: form_data.general_notes || null
 			});
 
 			students.add(student);
 
 			for (const guardian of guardians) {
-				let studentRelation: StudentRelationship = await invoke('create_student_relationship', {
+				const relation: StudentRelationship = await invoke('create_student_relationship', {
 					studentId: student.id!,
 					relatedId: guardian.id,
 					relationship: guardian.relation || null
 				});
-				studentRelationships.add(studentRelation);
+				studentRelationships.add(relation);
 			}
 
 			alert('Student created successfully!');
-		} catch (error) {
-			console.error(error);
+		} catch (err) {
+			console.error(err);
 			alert('Failed to create student');
 		}
 	}
+
+	onMount(() => {
+		classes.fetch();
+		sections.fetch();
+	});
 </script>
 
 <dialog id="create-student-modal" class="modal">
@@ -112,53 +105,41 @@
 		<form method="dialog">
 			<button class="btn btn-sm btn-circle btn-ghost absolute top-2 right-2">✕</button>
 		</form>
-		<form>
-			<h3 class="mb-6 text-lg font-bold">Create Student</h3>
 
-			{#if classes.data.length == 0}
-				<p class="alert-error alert">Please create a class first</p>
+		<form on:submit|preventDefault={submitStudentForm} class="space-y-2">
+			<h3 class="text-lg font-bold">Create Student</h3>
+
+			{#if classes.data.length === 0}
+				<div class="alert alert-warning">Please create a class first</div>
 			{:else}
-				<div class="grid grid-cols-2 gap-4">
+				<div class="grid grid-cols-1 gap-2 md:grid-cols-2">
+					<!-- Name -->
 					<div>
-						<label for="name" class="block text-sm font-medium">Name</label>
-						<input
-							type="text"
-							id="name"
-							name="name"
-							class="input input-bordered w-full"
-							placeholder="Enter Student Name"
-							required
-							bind:value={form_data.name}
-						/>
+						<label class="label">Name</label>
+						<input class="input input-bordered w-full" bind:value={form_data.name} required />
 					</div>
 
+					<!-- Class -->
 					<div>
-						<label for="class" class="block text-sm font-medium">Class</label>
-						<select
-							id="class"
-							name="class"
-							class="input input-bordered w-full"
-							required
-							bind:value={form_data.class_id}
-						>
-							<option value="" selected>Class</option>
+						<label class="label">Class</label>
+						<select class="input input-bordered w-full" bind:value={form_data.class_id} required>
+							<option value="">Select Class</option>
 							{#each classes.data as cls, i (i)}
 								<option value={cls.id}>{cls.name}</option>
 							{/each}
 						</select>
 					</div>
 
+					<!-- Section -->
 					{#if sections.get_by_class(Number(form_data.class_id)).length > 0}
 						<div>
-							<label for="section" class="block text-sm font-medium">Section</label>
+							<label class="label">Section</label>
 							<select
-								id="section"
-								name="section"
 								class="input input-bordered w-full"
-								required
 								bind:value={form_data.section_id}
+								required
 							>
-								<option value="" selected>Section</option>
+								<option value="">Select Section</option>
 								{#each sections.get_by_class(Number(form_data.class_id)) as section, i (i)}
 									<option value={section.id}>{section.name}</option>
 								{/each}
@@ -167,114 +148,82 @@
 					{/if}
 
 					<div>
-						<label for="dob" class="block text-sm font-medium">Date of Birth</label>
+						<label class="label">Date of Birth</label>
 						<input
 							type="date"
-							id="dob"
-							name="dob"
 							class="input input-bordered w-full"
-							required
 							bind:value={form_data.dob}
+							required
 						/>
 					</div>
 
+					<!-- Address -->
 					<div>
-						<label for="gender" class="block text-sm font-medium">Gender</label>
-						<select
-							id="gender"
-							name="gender"
-							class="input input-bordered w-full"
-							required
-							bind:value={form_data.gender}
-						>
-							<option value="" selected>Gender</option>
-							<option value="Male">Male</option>
-							<option value="Female">Female</option>
-						</select>
+						<label class="label">Address</label>
+						<input class="input input-bordered w-full" bind:value={form_data.address} required />
 					</div>
 
-					<div>
-						<label for="address" class="block text-sm font-medium">Address</label>
-						<input
-							type="text"
-							id="address"
-							name="address"
-							class="input input-bordered w-full"
-							placeholder="Enter Address"
-							required
-							bind:value={form_data.address}
-						/>
-					</div>
-
-					<div>
-						<label for="phone" class="block text-sm font-medium">Phone</label>
-						<label class="input validator w-full">
+					<!-- Phone -->
+					<div class="w-full">
+						<label class="label">Phone</label>
+						<label class="input input-bordered flex w-full items-center gap-2">
 							+880
 							<input
+								class="w-full grow"
 								type="tel"
-								class="w-full tabular-nums"
-								required
-								pattern="[0-9]*"
+								placeholder="10 digits"
+								pattern="[0-9]{10}"
 								minlength="10"
 								maxlength="10"
-								title="Must be 10 digits"
 								bind:value={form_data.phone}
 							/>
 						</label>
 					</div>
 
+					<!-- Photo Upload -->
 					<div>
-						<label for="photo" class="block text-sm font-medium">Photo</label>
+						<label class="label">Photo</label>
 						<input
 							type="file"
-							class="file-input input-bordered w-full"
+							class="file-input w-full"
 							accept="image/*"
-							onchange={handleFileUpload}
+							on:change={handleFileUpload}
 						/>
 					</div>
 
-					<div>
-						<label for="is_resident" class="block text-sm font-medium">Resident</label>
-						<input
-							type="checkbox"
-							id="is_resident"
-							name="is_resident"
-							class="checkbox"
-							bind:checked={form_data.is_resident}
-						/>
+					<!-- Health Notes -->
+					<div class="md:col-span-2">
+						<label class="label">Health Notes</label>
+						<textarea class="textarea textarea-bordered w-full" bind:value={form_data.health_notes}
+						></textarea>
 					</div>
 
+					<!-- General Notes -->
+					<div class="md:col-span-2">
+						<label class="label">General Notes</label>
+						<textarea class="textarea textarea-bordered w-full" bind:value={form_data.general_notes}
+						></textarea>
+					</div>
+
+					<!-- Is Resident -->
+					<div class="flex items-center gap-2">
+						<input type="checkbox" class="checkbox" bind:checked={form_data.is_resident} />
+						<span>Is Resident</span>
+					</div>
+
+					<!-- Guardians -->
 					{#if guardians.length > 0}
-						<div class=" bg-base-200 col-span-2 rounded p-4">
-							<p class="text-xs tracking-wide opacity-60">Guardians</p>
-							<ul class="list grid max-h-48 grid-cols-2 gap-4 overflow-y-auto">
-								{#each guardians as guardian, i (i)}
-									<li
-										class="list-row bg-base-300 rounded-box flex items-center justify-between gap-4 p-2"
-									>
-										<div class="shrink-0">
-											<img
-												class="size-12 rounded-full object-cover"
-												src={guardian.photo}
-												alt="{guardian.name}'s photo"
-											/>
+						<div class="bg-base-200 rounded p-4 md:col-span-2">
+							<p class="mb-2 text-sm text-gray-500">Guardians</p>
+							<ul class="grid max-h-48 grid-cols-2 gap-4 overflow-y-auto">
+								{#each guardians as g (g.id)}
+									<li class="bg-base-300 flex items-center gap-4 rounded p-2">
+										<img src={g.photo} class="size-12 rounded-full object-cover" />
+										<div class="flex-1">
+											<div class="font-medium">{g.name}</div>
+											<div class="text-sm opacity-70">{g.relation} • {g.phone}</div>
 										</div>
-
-										<div class="min-w-0 flex-1">
-											<div class="truncate font-medium">{guardian.name}</div>
-											<div class="truncate text-sm text-gray-500">
-												{guardian.relation} • {guardian.phone}
-											</div>
-											<div class="truncate text-sm text-gray-400">{guardian.address}</div>
-										</div>
-
-										<button
-											class="btn btn-square btn-ghost"
-											onclick={(e) => {
-												e.preventDefault();
-												removeGuardian(guardian.id);
-											}}
-										>
+										<button class="btn btn-square btn-ghost" on:click={() => removeGuardian(g.id)}>
 											<Icon icon="fa:remove" />
 										</button>
 									</li>
@@ -282,19 +231,14 @@
 							</ul>
 						</div>
 					{:else}
-						<div class="alert alert-info col-span-2">
-							<span>You haven't selected any guardians</span>
+						<div class="alert alert-info md:col-span-2">
+							<span>No guardians selected yet</span>
 						</div>
 					{/if}
 				</div>
-				<div class="modal-action">
-					<button
-						class="btn btn-secondary"
-						onclick={(e) => {
-							e.preventDefault();
-							openGuardiansModal();
-						}}
-					>
+
+				<div class="modal-action mt-6 flex justify-between">
+					<button class="btn btn-secondary" on:click|preventDefault={openGuardiansModal}>
 						Manage Guardians
 					</button>
 					<button type="submit" class="btn btn-primary">Create Student</button>

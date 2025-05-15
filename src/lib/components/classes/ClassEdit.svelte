@@ -88,7 +88,7 @@
 					is_mandatory: isMandatory
 				});
 
-				classSubjects.add(selectedClass, created); // ✅ Update store
+				classSubjects.add(selectedClass, created);
 			}
 
 			for (const { id, subject_id, isMandatory } of changed) {
@@ -110,13 +110,10 @@
 
 			for (const r of removed) {
 				await invoke('delete_class_subject', { id: r.id });
-				classSubjects.remove(selectedClass, r.id); // ✅ Update store
+				classSubjects.remove(selectedClass, r.id);
 			}
 
 			toast.set({ message: 'Subjects linked to class successfully', type: 'success' });
-
-			selectedSubjects = [];
-			// (document.getElementById('link-subjects-modal') as HTMLDialogElement).close();
 		} catch (err) {
 			console.error(err);
 			toast.set({ message: 'Failed to link subjects to class', type: 'error' });
@@ -200,9 +197,9 @@
 			<div>
 				<!-- Edit Class Details -->
 				<div class="space-y-4">
-					<h3 class="mb-2 text-lg font-bold">Edit Class Details</h3>
+					<h3 class="mb-4 text-lg font-bold">Edit Class Details</h3>
 
-					<div class="grid grid-cols-2 gap-4">
+					<div class="space-y-2">
 						<div>
 							<label for="name" class="block text-sm font-medium">Name</label>
 							<input
@@ -213,7 +210,9 @@
 								bind:value={className}
 							/>
 						</div>
+					</div>
 
+					<div class="grid grid-cols-2 gap-4">
 						<div>
 							<label for="level" class="block text-sm font-medium">Level</label>
 							<input
@@ -245,6 +244,7 @@
 								bind:value={monthlyFee}
 							/>
 						</div>
+
 						<div>
 							<label for="readmissionFee" class="block text-sm font-medium">Readmission Fee</label>
 							<input
@@ -256,52 +256,50 @@
 							/>
 						</div>
 					</div>
-
-					<div class="join flex justify-end">
-						<button class="btn btn-error join-item" onclick={deleteClass}>Delete</button>
-						<button class="btn btn-primary join-item" onclick={updateClassDetails}>Update</button>
-					</div>
 				</div>
 
 				<!-- Delete Sections -->
-				<div class="mt-8 space-y-4">
-					<h3 class="mb-2 text-lg font-bold">Delete Sections</h3>
+				<div class="mt-4">
+					<h3 class="mb-4 text-lg font-bold">Delete Sections</h3>
 
 					{#if sections.get_by_class(selectedClass).length > 0}
-						<ul class="space-y-2">
-							{#each sections.get_by_class(selectedClass) as section, i (i)}
-								<li class="flex items-center justify-between rounded border p-2">
-									<span>{section.name}</span>
-									<button class="btn btn-error btn-sm" onclick={() => deleteSection(section.id)}
-										>Delete</button
-									>
-								</li>
-							{/each}
-						</ul>
+						<div class="max-h-48 overflow-y-auto rounded border p-2">
+							<ul class="space-y-2">
+								{#each sections.get_by_class(selectedClass) as section, i (i)}
+									<li class="flex items-center justify-between rounded border p-2">
+										<span>{section.name}</span>
+										<button class="btn btn-error btn-sm" onclick={() => deleteSection(section.id)}
+											>Delete</button
+										>
+									</li>
+								{/each}
+							</ul>
+						</div>
 					{:else}
 						<p class="text-sm text-gray-500">No sections available.</p>
 					{/if}
 				</div>
 			</div>
+
 			<div>
 				<h3 class="mb-4 text-lg font-bold">Assign Subjects to Class</h3>
 
-				<div class="max-h-60 space-y-2 overflow-y-auto pr-2">
+				<div class="max-h-94 space-y-2 overflow-y-auto pr-2">
 					{#if subjects.data.length > 0}
 						{#each subjects.data as subject, i (i)}
 							<div class="flex items-center justify-between gap-4">
-								<label class="fieldset-label">
+								<label class="fieldset-label flex items-center gap-2">
 									<input
 										type="checkbox"
 										class="checkbox"
 										checked={isSelected(subject.id)}
 										onchange={() => toggleSubject(subject.id)}
 									/>
-									{subject.name} • {subject.code}
+									<span>{subject.name} • {subject.code}</span>
 								</label>
 
 								{#if isSelected(subject.id)}
-									<label class="fieldset-label text-xs">
+									<label class="fieldset-label flex items-center gap-1 text-xs">
 										<input
 											type="checkbox"
 											class="checkbox checkbox-xs"
@@ -314,7 +312,7 @@
 							</div>
 						{/each}
 					{:else}
-						<p>You havent created any subjects yet</p>
+						<p>You haven’t created any subjects yet.</p>
 					{/if}
 				</div>
 

@@ -50,83 +50,106 @@
 </script>
 
 <dialog id="create-class-modal" class="modal">
-	<div class="modal-box w-full max-w-xl">
-		<form method="dialog">
-			<button class="btn btn-sm btn-circle btn-ghost absolute top-2 right-2">✕</button>
+	<div class="modal-box w-full max-w-xl rounded border border-base-300 bg-base-100 shadow-lg">
+		<form method="dialog" class="flex justify-end">
+			<button aria-label="Close" class="btn btn-sm btn-circle btn-ghost" type="button" onclick={() => (document.getElementById('create-class-modal') as HTMLDialogElement).close()}>
+				✕
+			</button>
 		</form>
-		<h3 class="text-lg font-bold">Create Class</h3>
+
+		<h3 class="mb-4 text-2xl font-bold text-primary">Create Class</h3>
 
 		<form
 			onsubmit={(e) => {
 				e.preventDefault();
 				submitForm();
 			}}
-			class="space-y-4"
+			class="space-y-2"
 		>
-			<div class="form-control">
+			<div class="form-control w-full">
 				<label class="label" for="name">
-					<span class="label-text">Name</span>
+					<span class="label-text font-semibold">Name</span>
 				</label>
 				<input
+					id="name"
 					type="text"
 					class="input input-bordered w-full"
 					required
 					bind:value={formData.name}
+					placeholder="Enter class name"
 				/>
 			</div>
 
-			<div class="form-control">
+			<div class="form-control w-full">
 				<label class="label" for="level">
-					<span class="label-text">Level</span>
+					<span class="label-text font-semibold">Level</span>
 				</label>
 				<input
+					id="level"
 					type="number"
 					class="input input-bordered w-full"
 					required
 					bind:value={formData.level}
+					min="1"
+					placeholder="Enter level (number)"
 				/>
 			</div>
 
-			<div class="form-control">
+			<div class="form-control w-full">
 				<label class="label" for="admission_fee">
-					<span class="label-text">Admission Fee</span>
+					<span class="label-text font-semibold">Admission Fee</span>
 				</label>
 				<input
+					id="admission_fee"
 					type="number"
 					class="input input-bordered w-full"
 					required
 					bind:value={formData.admission_fee}
+					min="0"
+					step="0.01"
+					placeholder="Enter admission fee"
 				/>
 			</div>
 
-			<div class="form-control">
+			<div class="form-control w-full">
 				<label class="label" for="monthly_fee">
-					<span class="label-text">Monthly Fee</span>
+					<span class="label-text font-semibold">Monthly Fee</span>
 				</label>
 				<input
+					id="monthly_fee"
 					type="number"
 					class="input input-bordered w-full"
 					required
 					bind:value={formData.monthly_fee}
+					min="0"
+					step="0.01"
+					placeholder="Enter monthly fee"
 				/>
 			</div>
 
-			<div class="form-control">
+			<div class="form-control w-full">
 				<label class="label" for="readmission_fee">
-					<span class="label-text">Re-admission Fee</span>
+					<span class="label-text font-semibold">Re-admission Fee</span>
 				</label>
 				<input
+					id="readmission_fee"
 					type="number"
 					class="input input-bordered w-full"
 					required
 					bind:value={formData.readmission_fee}
+					min="0"
+					step="0.01"
+					placeholder="Enter re-admission fee"
 				/>
 			</div>
 
-			<div class="flex justify-end">
-				<button type="submit" class="btn btn-primary">Create</button>
+			<div class="flex justify-end pt-4">
+				<button type="submit" class="btn btn-primary px-8">
+					Create
+				</button>
 			</div>
 		</form>
 	</div>
+
 	<Toast />
 </dialog>

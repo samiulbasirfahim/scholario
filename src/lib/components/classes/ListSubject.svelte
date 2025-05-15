@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { invoke } from '@tauri-apps/api/core';
 	import { subjects } from '$lib/store/class.svelte';
-	// import type { Subject } from '$lib/types/class';
 	import Icon from '@iconify/svelte';
 	import EditSubject from './EditSubject.svelte';
 	let selectedSubject = $state<number | undefined>();
@@ -12,9 +11,10 @@
 		<form method="dialog">
 			<button class="btn btn-sm btn-circle btn-ghost absolute top-2 right-2">✕</button>
 		</form>
-		<h3 class="mb-4 text-lg font-bold">Subjects</h3>
+		<h3 class="text-lg font-bold mb-2">Subjects</h3>
+
 		{#if subjects.data.length > 0}
-			<div class="overflow-x-auto">
+			<div class="overflow-x-auto max-h-80">
 				<table class="table">
 					<thead>
 						<tr>
@@ -25,7 +25,6 @@
 						</tr>
 					</thead>
 					<tbody>
-						<!-- row 1 -->
 						{#each subjects.data as subject, i (i)}
 							<tr>
 								<th class="w-4">{i + 1}</th>
@@ -53,15 +52,17 @@
 			<p>No Subject yet, create Subject first</p>
 		{/if}
 
-		<button
-            class="btn btn-primary mt-2"
-			onclick={() => {
-				(document.getElementById('create-subject-modal') as HTMLDialogElement).showModal();
-			}}
-		>
-			<Icon icon="gridicons:create" />
-			Create
-		</button>
+		<div class="w-full flex justify-end mt-2">
+			<button
+				class="btn btn-primary"
+				onclick={() => {
+					(document.getElementById('create-subject-modal') as HTMLDialogElement).showModal();
+				}}
+			>
+				<Icon icon="gridicons:create" />
+				Create
+			</button>
+		</div>
 	</div>
 </dialog>
 

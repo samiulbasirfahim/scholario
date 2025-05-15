@@ -1,13 +1,10 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
 @plugin "daisyui" {
-	themes: corporate --default;
+	themes:
+		corporate --default, business;
 }
 
 body {
-    font-family: "Victor Mono";
-}
-
-.text-xs {
-	@apply text-xs;
+	font-family: 'Victor Mono';
 }
