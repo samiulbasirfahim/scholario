@@ -5,29 +5,23 @@
 	import CreateSubject from '$lib/components/classes/CreateSubject.svelte';
 	import ListSubject from '$lib/components/classes/ListSubject.svelte';
 	import Navbar from '$lib/components/global/Navbar.svelte';
-	import { classes, classSubjects, sections, subjects } from '$lib/store/class.svelte';
+	import { classes, classSubjects, sections } from '$lib/store/class.svelte';
 	import { sessions } from '$lib/store/session.svelte';
-	import type { Session } from '$lib/types/session';
 	import Icon from '@iconify/svelte';
 	import { onMount } from 'svelte';
 
-	let selectedClass: number | null = $state(null);
+	let selectedSession = $state<number | null>(null);
+	let selectedClass = $state<number | null>(null);
 
-	let selectedSession: number | null = $state<number>(null);
-
-	onMount(() => {
-		sessions.fetch();
-	});
-	$effect(() => {
-		selectedSession = sessions.data[sessions.data.length - 1]?.id;
+	onMount(async () => {
+		await sessions.fetch();
+		selectedSession = sessions.data[sessions.data?.length - 1]?.id;
 	});
 
 	$effect(() => {
-		classes.fetch(selectedSession as number);
-	});
-
-	$effect(() => {
-		classSubjects.fetch(selectedClass as number);
+		if (selectedSession) {
+			classes.fetch(selectedSession);
+		}
 	});
 </script>
 
@@ -86,7 +80,11 @@
 	</div>
 </Navbar>
 
-{#if classes.data.length > 0}
+{#if sessions.data.length === 0}
+	<div class="alert alert-warning">Please create a session first</div>
+{/if}
+
+{#if sessions.data.length > 0 && classes.get_by_session(selectedSession as number)?.length > 0}
 	<div class="border-base-content/5 bg-base-100 overflow-x-auto rounded border">
 		<table class="table-md table">
 			<thead class="bg-secondary text-secondary-content">
@@ -101,7 +99,7 @@
 				</tr>
 			</thead>
 			<tbody>
-				{#each classes.data as cls, i (i)}
+				{#each classes.get_by_session(selectedSession as number) as cls, i (i)}
 					<tr>
 						<th class="w-2">{i + 1}</th>
 						<td colspan="2">
@@ -126,12 +124,15 @@
 			</tbody>
 		</table>
 	</div>
-{:else}
+{/if}
+
+{#if sessions.data.length > 0 && classes.get_by_session(selectedSession as number)?.length === 0}
 	<p>No classes yet. Click 'Create Class' to get started!</p>
 {/if}
 
-<CreateClass />
 <CreateSection />
-<CreateSubject {selectedSession} />
+<CreateSubject />
 <ListSubject />
 <ClassEdit {selectedClass} />
+
+<CreateClass {selectedSession} />

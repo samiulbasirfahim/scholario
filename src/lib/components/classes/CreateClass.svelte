@@ -15,8 +15,15 @@
 		monthly_fee: '',
 		readmission_fee: ''
 	});
-
 	const submitForm = () => {
+		console.log({
+			name: formData.name.trim(),
+			level: Number(formData.level),
+			admission_fee: Number(formData.admission_fee) * 100,
+			monthly_fee: Number(formData.monthly_fee) * 100,
+			readmission_fee: Number(formData.readmission_fee) * 100,
+			session_id: selectedSession
+		});
 		invoke('create_class', {
 			name: formData.name.trim(),
 			level: Number(formData.level),
@@ -53,108 +60,106 @@
 </script>
 
 <dialog id="create-class-modal" class="modal">
-	<div class="modal-box border-base-300 bg-base-100 w-full max-w-xl rounded border shadow-lg">
-		<form method="dialog" class="flex justify-between">
-			<h3 class="text-primary mb-4 text-2xl font-bold">Create Class</h3>
-			<button
-				aria-label="Close"
-				class="btn btn-sm btn-circle btn-ghost"
-				type="button"
-				onclick={() => (document.getElementById('create-class-modal') as HTMLDialogElement).close()}
+	<div class="modal-box">
+		<form method="dialog">
+			<button class="btn btn-sm btn-circle btn-ghost absolute top-2 right-2">✕</button>
+		</form>
+		<h3 class="mb-4 text-lg font-bold">Create Class</h3>
+
+		{#if selectedSession}
+			<form
+				onsubmit={(e) => {
+					e.preventDefault();
+					submitForm();
+				}}
+				class="space-y-2"
 			>
-				✕
-			</button>
-		</form>
+				<div class="form-control w-full">
+					<label class="label" for="name">
+						<span class="label-text font-semibold">Name</span>
+					</label>
+					<input
+						id="name"
+						type="text"
+						class="input input-bordered w-full"
+						required
+						bind:value={formData.name}
+						placeholder="Enter class name"
+					/>
+				</div>
 
-		<form
-			onsubmit={(e) => {
-				e.preventDefault();
-				submitForm();
-			}}
-			class="space-y-2"
-		>
-			<div class="form-control w-full">
-				<label class="label" for="name">
-					<span class="label-text font-semibold">Name</span>
-				</label>
-				<input
-					id="name"
-					type="text"
-					class="input input-bordered w-full"
-					required
-					bind:value={formData.name}
-					placeholder="Enter class name"
-				/>
-			</div>
+				<div class="form-control w-full">
+					<label class="label" for="level">
+						<span class="label-text font-semibold">Level</span>
+					</label>
+					<input
+						id="level"
+						type="number"
+						class="input input-bordered w-full"
+						required
+						bind:value={formData.level}
+						min="1"
+						placeholder="Enter level (number)"
+					/>
+				</div>
 
-			<div class="form-control w-full">
-				<label class="label" for="level">
-					<span class="label-text font-semibold">Level</span>
-				</label>
-				<input
-					id="level"
-					type="number"
-					class="input input-bordered w-full"
-					required
-					bind:value={formData.level}
-					min="1"
-					placeholder="Enter level (number)"
-				/>
-			</div>
+				<div class="form-control w-full">
+					<label class="label" for="admission_fee">
+						<span class="label-text font-semibold">Admission Fee</span>
+					</label>
+					<input
+						id="admission_fee"
+						type="number"
+						class="input input-bordered w-full"
+						required
+						bind:value={formData.admission_fee}
+						min="0"
+						step="0.01"
+						placeholder="Enter admission fee"
+					/>
+				</div>
 
-			<div class="form-control w-full">
-				<label class="label" for="admission_fee">
-					<span class="label-text font-semibold">Admission Fee</span>
-				</label>
-				<input
-					id="admission_fee"
-					type="number"
-					class="input input-bordered w-full"
-					required
-					bind:value={formData.admission_fee}
-					min="0"
-					step="0.01"
-					placeholder="Enter admission fee"
-				/>
-			</div>
+				<div class="form-control w-full">
+					<label class="label" for="monthly_fee">
+						<span class="label-text font-semibold">Monthly Fee</span>
+					</label>
+					<input
+						id="monthly_fee"
+						type="number"
+						class="input input-bordered w-full"
+						required
+						bind:value={formData.monthly_fee}
+						min="0"
+						step="0.01"
+						placeholder="Enter monthly fee"
+					/>
+				</div>
 
-			<div class="form-control w-full">
-				<label class="label" for="monthly_fee">
-					<span class="label-text font-semibold">Monthly Fee</span>
-				</label>
-				<input
-					id="monthly_fee"
-					type="number"
-					class="input input-bordered w-full"
-					required
-					bind:value={formData.monthly_fee}
-					min="0"
-					step="0.01"
-					placeholder="Enter monthly fee"
-				/>
-			</div>
+				<div class="form-control w-full">
+					<label class="label" for="readmission_fee">
+						<span class="label-text font-semibold">Re-admission Fee</span>
+					</label>
+					<input
+						id="readmission_fee"
+						type="number"
+						class="input input-bordered w-full"
+						required
+						bind:value={formData.readmission_fee}
+						min="0"
+						step="0.01"
+						placeholder="Enter re-admission fee"
+					/>
+				</div>
 
-			<div class="form-control w-full">
-				<label class="label" for="readmission_fee">
-					<span class="label-text font-semibold">Re-admission Fee</span>
-				</label>
-				<input
-					id="readmission_fee"
-					type="number"
-					class="input input-bordered w-full"
-					required
-					bind:value={formData.readmission_fee}
-					min="0"
-					step="0.01"
-					placeholder="Enter re-admission fee"
-				/>
-			</div>
-
-			<div class="flex justify-end pt-4">
-				<button type="submit" class="btn btn-primary px-8"> Create </button>
-			</div>
-		</form>
+				<div class="flex justify-end pt-4">
+					<button type="submit" class="btn btn-primary px-8"> Create </button>
+				</div>
+			</form>
+		{:else}
+			<div class="alert alert-warning">Please create a session first</div>
+		{/if}
 	</div>
-
-	<Toast />
+	<form method="dialog" class="modal-backdrop">
+		<button>close</button>
+	</form>
 </dialog>

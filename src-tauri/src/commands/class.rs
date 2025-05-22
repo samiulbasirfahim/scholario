@@ -21,9 +21,9 @@ pub fn create_class(
     .map_err(|e| e.to_string())
 }
 
-#[command]
-pub fn get_classes() -> Result<Vec<Class>, String> {
-    Class::get().map_err(|e| e.to_string())
+#[command(rename_all = "snake_case")]
+pub fn get_classes(session_id: i32) -> Result<Vec<Class>, String> {
+    Class::get(session_id).map_err(|e| e.to_string())
 }
 
 #[command]

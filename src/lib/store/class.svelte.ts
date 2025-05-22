@@ -10,6 +10,10 @@ export const classes = $state({
         this.data[session_id] = list;
     },
 
+    get_by_session(session_id: number) {
+        return this.data[session_id] ?? [];
+    },
+
     get(session_id: number, id: number) {
         return this.data[session_id]?.find((c) => c.id === id);
     },
@@ -38,6 +42,7 @@ export const classes = $state({
     async fetch(session_id: number) {
         try {
             const fetched = await invoke<Class[]>('get_classes', { session_id });
+            console.log(fetched);
             this.set(session_id, fetched);
         } catch (err) {
             console.error('Error fetching classes for session:', err);

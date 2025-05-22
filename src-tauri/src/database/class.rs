@@ -80,13 +80,15 @@ impl Class {
         })
     }
 
-    pub fn get() -> Result<Vec<Self>> {
+    pub fn get(session_id: i32) -> Result<Vec<Self>> {
         let db = conn()?;
         let mut stmt = db.prepare(
-            "SELECT id, name, level, admission_fee, monthly_fee, readmission_fee, session_id FROM classes",
+            "SELECT id, name, level, admission_fee, monthly_fee, readmission_fee, session_id
+         FROM classes
+         WHERE session_id = ?1",
         )?;
 
-        let class_iter = stmt.query_map([], |row: &Row| {
+        let class_iter = stmt.query_map([session_id], |row: &Row| {
             Ok(Class {
                 id: row.get(0)?,
                 name: row.get(1)?,
@@ -98,9 +100,7 @@ impl Class {
             })
         })?;
 
-        let classes: Result<Vec<Self>> = class_iter.collect();
-
-        classes
+        class_iter.collect()
     }
 
     pub fn delete(id: i32) -> Result<()> {
@@ -265,4 +265,3 @@ impl Section {
         })
     }
 }
-

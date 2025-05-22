@@ -40,8 +40,8 @@
 		<ul class="menu min-h-full w-80 justify-between p-4">
 			<div class="flex h-full flex-col justify-between">
 				<div class="flex flex-col items-center justify-center pt-4">
-					<h1 class="text-center font-semibold">Holy Child International School</h1>
-					<h1 class="text-center opacity-60">Dapunia, Mymensingh</h1>
+					<h1 class="text-center font-semibold">Madrasaye Abu Bakar Momensahi</h1>
+					<h1 class="text-center opacity-60">Ghagra, Mymensingh</h1>
 				</div>
 				<div class="divider"></div>
 				<ul class="space-y-1">
