@@ -107,7 +107,6 @@
 		</form>
 
 		<form on:submit|preventDefault={submitStudentForm} class="space-y-2">
-			<h3 class="text-lg font-bold">Create Student</h3>
 
 			{#if classes.data.length === 0}
 				<div class="alert alert-warning">Please create a class first</div>

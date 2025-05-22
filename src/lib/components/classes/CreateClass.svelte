@@ -6,6 +6,8 @@
 	import type { Class } from '$lib/types/class';
 	import { classes } from '$lib/store/class.svelte';
 
+	let { selectedSession } = $props();
+
 	let formData = $state({
 		name: '',
 		level: '',
@@ -20,10 +22,11 @@
 			level: Number(formData.level),
 			admission_fee: Number(formData.admission_fee) * 100,
 			monthly_fee: Number(formData.monthly_fee) * 100,
-			readmission_fee: Number(formData.readmission_fee) * 100
+			readmission_fee: Number(formData.readmission_fee) * 100,
+			session_id: selectedSession
 		})
 			.then((cls) => {
-				classes.add(cls as Class);
+				classes.add(selectedSession, cls as Class);
 				toast.set({ message: 'Class created successfully', type: 'success' });
 
 				formData.name = '';
@@ -50,14 +53,18 @@
 </script>
 
 <dialog id="create-class-modal" class="modal">
-	<div class="modal-box w-full max-w-xl rounded border border-base-300 bg-base-100 shadow-lg">
-		<form method="dialog" class="flex justify-end">
-			<button aria-label="Close" class="btn btn-sm btn-circle btn-ghost" type="button" onclick={() => (document.getElementById('create-class-modal') as HTMLDialogElement).close()}>
+	<div class="modal-box border-base-300 bg-base-100 w-full max-w-xl rounded border shadow-lg">
+		<form method="dialog" class="flex justify-between">
+			<h3 class="text-primary mb-4 text-2xl font-bold">Create Class</h3>
+			<button
+				aria-label="Close"
+				class="btn btn-sm btn-circle btn-ghost"
+				type="button"
+				onclick={() => (document.getElementById('create-class-modal') as HTMLDialogElement).close()}
+			>
 				✕
 			</button>
 		</form>
-
-		<h3 class="mb-4 text-2xl font-bold text-primary">Create Class</h3>
 
 		<form
 			onsubmit={(e) => {
@@ -144,9 +151,7 @@
 			</div>
 
 			<div class="flex justify-end pt-4">
-				<button type="submit" class="btn btn-primary px-8">
-					Create
-				</button>
+				<button type="submit" class="btn btn-primary px-8"> Create </button>
 			</div>
 		</form>
 	</div>

@@ -1,53 +1,36 @@
 pub mod class;
 pub mod guardian;
+pub mod session;
 pub mod student;
+pub mod subject;
 
 use chrono::{NaiveDate, NaiveTime};
 use rusqlite::{params, Connection, Result};
 use serde::{Deserialize, Serialize};
 use std::sync::{Mutex, MutexGuard, OnceLock};
 
-use self::class::{Class, ClassSubject, Section, Subject};
+use self::class::{Class, Section};
 use self::guardian::Guardian;
+use self::subject::{ClassSubject, Subject};
 
 static DB: OnceLock<Mutex<Connection>> = OnceLock::new();
 
 pub fn conn() -> Result<MutexGuard<'static, Connection>> {
     let conn = DB
-        .get_or_init(|| {
-            Mutex::new(
-                Connection::open_in_memory().expect("Failed to open database"),
-            )
-        })
+        .get_or_init(|| Mutex::new(Connection::open_in_memory().expect("Failed to open database")))
         .lock()
         .expect("Failed to lock mutex");
     Ok(conn)
 }
 
 pub fn init() -> Result<()> {
+    Session::init()?;
     Subject::init()?;
     ClassSubject::init()?;
     Class::init()?;
     Section::init()?;
     Guardian::init()?;
     Ok(())
-}
-
-// Student struct
-#[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct Student {
-    pub id: i32,
-    pub name: String,
-    pub class_id: i32,
-    pub section_id: i32,
-    pub dob: NaiveDate,
-    pub gender: String,
-    pub religion: String,
-    pub address: String,
-    pub phone: String,
-    pub admission_date: NaiveDate,
-    pub is_resident: bool,
-    pub photo: Option<String>, // Base64 image, optional
 }
 
 // Teacher struct

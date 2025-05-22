@@ -2,7 +2,10 @@
 	import Toast from '$lib/components/global/Toast.svelte';
 	import { toast } from '$lib/store/toast.svelte';
 
-	let sessions: { name: string; start: string; end: string }[] = $state([]);
+	import { sessions } from '$lib/store/session.svelte';
+	import { invoke } from '@tauri-apps/api/core';
+	import type { Session } from '$lib/types/session';
+	import { onMount } from 'svelte';
 
 	function formatDate(date: Date): string {
 		return date.toISOString().split('T')[0];
@@ -14,37 +17,40 @@
 
 	let form = $state({
 		name: '',
-		start: formatDate(today),
-		end: formatDate(oneYearLater)
+		start_date: formatDate(today),
+		end_date: formatDate(oneYearLater)
 	});
 
 	function addSession() {
-		if (form.name.trim() && form.start && form.end) {
-			sessions = [
-				...sessions,
-				{
-					name: form.name.trim(),
-					start: form.start,
-					end: form.end
-				}
-			];
-
-			form = {
-				name: '',
-				start: formatDate(new Date()),
-				end: formatDate(new Date(new Date().setFullYear(new Date().getFullYear() + 1)))
-			};
-
-			toast.set({ message: 'Session created successfully', type: 'success' });
+		if (form.name.trim() && form.start_date && form.end_date) {
+			invoke('create_session', {
+				...form
+			})
+				.then((d) => {
+					sessions.add(d as Session);
+					form = {
+						name: '',
+						start_date: formatDate(new Date()),
+						end_date: formatDate(new Date(new Date().setFullYear(new Date().getFullYear() + 1)))
+					};
+					toast.set({ message: 'Session created successfully', type: 'success' });
+				})
+				.catch((e) => {
+					toast.set({ message: 'Failed to create session', type: 'error' });
+					console.log(e);
+				});
 		} else {
 			toast.set({ message: 'Please fill in all required fields', type: 'error' });
 		}
 	}
 
-	function removeSession(index: number) {
-		sessions.splice(index, 1);
-		sessions = [...sessions];
+	function removeSession(id: number) {
+		sessions.remove(id);
 	}
+
+	onMount(() => {
+		sessions.fetch();
+	});
 </script>
 
 <div class="flex flex-col gap-8 md:flex-row">
@@ -60,24 +66,24 @@
 					placeholder="Session name"
 					class="input input-bordered w-full"
 				/>
-				<input bind:value={form.start} type="date" class="input input-bordered w-full" />
-				<input bind:value={form.end} type="date" class="input input-bordered w-full" />
+				<input bind:value={form.start_date} type="date" class="input input-bordered w-full" />
+				<input bind:value={form.end_date} type="date" class="input input-bordered w-full" />
 				<button onclick={addSession} class="btn btn-primary w-full md:w-auto"> Add </button>
 			</div>
 		</form>
 
 		<div class="border-base-300 bg-base-200 rounded border p-5 shadow-inner">
 			<p class="text-secondary mb-2 font-semibold">All Sessions</p>
-			{#if sessions.length > 0}
+			{#if sessions.data.length > 0}
 				<ul class="space-y-3">
-					{#each sessions as session, index (index)}
+					{#each sessions.data as session, index (index)}
 						<li
 							class="border-accent bg-base-100 flex items-center justify-between rounded border p-4 shadow-sm"
 						>
 							<div>
 								<p class="text-primary font-semibold">{session.name}</p>
 								<p class="text-secondary text-sm">
-									{session.start} → {session.end}
+									{session.start_date} → {session.end_date}
 								</p>
 							</div>
 							<button onclick={() => removeSession(index)} class="btn btn-xs btn-error">

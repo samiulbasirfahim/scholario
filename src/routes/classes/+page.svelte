@@ -6,18 +6,28 @@
 	import ListSubject from '$lib/components/classes/ListSubject.svelte';
 	import Navbar from '$lib/components/global/Navbar.svelte';
 	import { classes, classSubjects, sections, subjects } from '$lib/store/class.svelte';
+	import { sessions } from '$lib/store/session.svelte';
+	import type { Session } from '$lib/types/session';
 	import Icon from '@iconify/svelte';
 	import { onMount } from 'svelte';
 
-	let session = $state<string>('2026');
-
 	let selectedClass: number | null = $state(null);
 
+	let selectedSession: number | null = $state<number>(null);
+
 	onMount(() => {
-		classes.fetch();
-		subjects.fetch();
-		sections.fetch();
-		classSubjects.fetch_all();
+		sessions.fetch();
+	});
+	$effect(() => {
+		selectedSession = sessions.data[sessions.data.length - 1]?.id;
+	});
+
+	$effect(() => {
+		classes.fetch(selectedSession as number);
+	});
+
+	$effect(() => {
+		classSubjects.fetch(selectedClass as number);
 	});
 </script>
 
@@ -27,8 +37,8 @@
 			<ul>
 				<li>Classes</li>
 
-				{#if session}
-					<li>{session.trim().split(' ')[0]}</li>
+				{#if selectedSession}
+					<li>{sessions.get(selectedSession)?.name.trim().split(' ')[0]}</li>
 				{/if}
 			</ul>
 		</div>
@@ -37,17 +47,16 @@
 		<label class="bg-accent text-accent-content flex items-center rounded border-1 px-2">
 			<Icon icon="carbon:prompt-session" font-size="24" />
 			<select
-				bind:value={session}
+				bind:value={selectedSession}
 				class="select rounded-none border-0 bg-transparent focus:outline-none"
 			>
-				<option disabled>Session</option>
-				<option>2024</option>
-				<option>2025</option>
-				<option selected>2026</option>
+				{#each sessions.data as session (session.id)}
+					<option value={session.id}>{session.name}</option>
+				{/each}
 			</select>
 		</label>
 		<button
-			class="btn btn-accent"
+			class="btn btn-primary"
 			onclick={() => {
 				(document.getElementById('create-section-modal') as HTMLDialogElement).showModal();
 			}}
@@ -56,7 +65,7 @@
 			Create Section
 		</button>
 		<button
-			class="btn btn-primary"
+			class="btn btn-secondary"
 			onclick={() => {
 				(document.getElementById('create-class-modal') as HTMLDialogElement).showModal();
 			}}
@@ -69,7 +78,7 @@
 			onclick={() => {
 				(document.getElementById('list-subject-modal') as HTMLDialogElement).showModal();
 			}}
-			class="btn btn-secondary"
+			class="btn btn-info"
 		>
 			<Icon icon="duo-icons:book-2" font-size="20" />
 			Subjects
@@ -123,6 +132,6 @@
 
 <CreateClass />
 <CreateSection />
-<CreateSubject />
+<CreateSubject {selectedSession} />
 <ListSubject />
 <ClassEdit {selectedClass} />

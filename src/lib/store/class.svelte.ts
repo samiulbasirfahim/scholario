@@ -4,34 +4,43 @@ import { toast } from './toast.svelte';
 import type { Section, Subject, Class, ClassSubject } from '$lib/types/class';
 
 export const classes = $state({
-    data: [] as Class[],
-    set(list: Class[]) {
-        this.data = list;
+    data: {} as Record<number, Class[]>,
+
+    set(session_id: number, list: Class[]) {
+        this.data[session_id] = list;
     },
 
-    get(id: number) {
-        return this.data.find((c) => c.id === id);
+    get(session_id: number, id: number) {
+        return this.data[session_id]?.find((c) => c.id === id);
     },
 
-    update(id: number, updated: Class) {
-        const index = this.data.findIndex((c) => c.id === id);
+    update(session_id: number, id: number, updated: Class) {
+        const list = this.data[session_id];
+        if (!list) return;
+        const index = list.findIndex((c) => c.id === id);
         if (index !== -1) {
-            this.data[index] = updated;
+            list[index] = updated;
         }
     },
 
-    add(item: Class) {
-        this.data.push(item);
+    add(session_id: number, item: Class) {
+        if (!this.data[session_id]) {
+            this.data[session_id] = [];
+        }
+        this.data[session_id].push(item);
     },
-    remove(id: number) {
-        this.data = this.data.filter((c) => c.id !== id);
+
+    remove(session_id: number, id: number) {
+        if (!this.data[session_id]) return;
+        this.data[session_id] = this.data[session_id].filter((c) => c.id !== id);
     },
-    async fetch() {
+
+    async fetch(session_id: number) {
         try {
-            const fetched = await invoke<Class[]>('get_classes');
-            this.set(fetched);
+            const fetched = await invoke<Class[]>('get_classes', { session_id });
+            this.set(session_id, fetched);
         } catch (err) {
-            console.error('Error fetching classes:', err);
+            console.error('Error fetching classes for session:', err);
             toast.set({ message: 'Failed to fetch classes', type: 'error' });
         }
     }
