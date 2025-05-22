@@ -10,18 +10,16 @@
 	import Icon from '@iconify/svelte';
 	import { onMount } from 'svelte';
 
-	let selectedSession = $state<number | null>(null);
 	let selectedClass = $state<number | null>(null);
 
 	onMount(async () => {
 		await sessions.fetch();
-		selectedSession = sessions.data[sessions.data?.length - 1]?.id;
+		sessions.select(sessions.data[sessions.data?.length - 1]?.id);
 	});
 
 	$effect(() => {
-		if (selectedSession) {
-			classes.fetch(selectedSession);
-		}
+		if (sessions.selectedSession?.id) classes.fetch(sessions.selectedSession.id);
+		console.log(sessions.selected);
 	});
 </script>
 
@@ -31,8 +29,8 @@
 			<ul>
 				<li>Classes</li>
 
-				{#if selectedSession}
-					<li>{sessions.get(selectedSession)?.name.trim().split(' ')[0]}</li>
+				{#if sessions.selectedSession}
+					<li>{sessions.selectedSession.name.trim().split(' ')[0]}</li>
 				{/if}
 			</ul>
 		</div>
@@ -41,8 +39,9 @@
 		<label class="bg-accent text-accent-content flex items-center rounded border-1 px-2">
 			<Icon icon="carbon:prompt-session" font-size="24" />
 			<select
-				bind:value={selectedSession}
 				class="select rounded-none border-0 bg-transparent focus:outline-none"
+				value={sessions.selected}
+				onchange={(e) => sessions.select(Number(e.target.value))}
 			>
 				{#each sessions.data as session (session.id)}
 					<option value={session.id}>{session.name}</option>
@@ -84,7 +83,7 @@
 	<div class="alert alert-warning">Please create a session first</div>
 {/if}
 
-{#if sessions.data.length > 0 && classes.get_by_session(selectedSession as number)?.length > 0}
+{#if sessions.selectedSession?.id && classes.get_by_current_session()?.length > 0}
 	<div class="border-base-content/5 bg-base-100 overflow-x-auto rounded border">
 		<table class="table-md table">
 			<thead class="bg-secondary text-secondary-content">
@@ -99,7 +98,7 @@
 				</tr>
 			</thead>
 			<tbody>
-				{#each classes.get_by_session(selectedSession as number) as cls, i (i)}
+				{#each classes.get_by_current_session() as cls, i (i)}
 					<tr>
 						<th class="w-2">{i + 1}</th>
 						<td colspan="2">
@@ -126,7 +125,7 @@
 	</div>
 {/if}
 
-{#if sessions.data.length > 0 && classes.get_by_session(selectedSession as number)?.length === 0}
+{#if sessions.selectedSession && classes.get_by_current_session()?.length === 0}
 	<p>No classes yet. Click 'Create Class' to get started!</p>
 {/if}
 
@@ -135,4 +134,4 @@
 <ListSubject />
 <ClassEdit {selectedClass} />
 
-<CreateClass {selectedSession} />
+<CreateClass />

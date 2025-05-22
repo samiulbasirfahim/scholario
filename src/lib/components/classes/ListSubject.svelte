@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { invoke } from '@tauri-apps/api/core';
 	import { subjects } from '$lib/store/class.svelte';
 	import Icon from '@iconify/svelte';
 	import EditSubject from './EditSubject.svelte';
@@ -11,7 +10,7 @@
 		<form method="dialog">
 			<button class="btn btn-sm btn-circle btn-ghost absolute top-2 right-2">✕</button>
 		</form>
-		<h3 class="text-lg font-bold mb-2">Subjects</h3>
+		<h3 class="text-lg font-bold mb-4">Subjects</h3>
 
 		{#if subjects.data.length > 0}
 			<div class="overflow-x-auto max-h-80">

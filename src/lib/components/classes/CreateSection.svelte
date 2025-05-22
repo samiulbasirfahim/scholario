@@ -39,24 +39,13 @@
 </script>
 
 <dialog id="create-section-modal" class="modal">
-	<div
-		class="modal-box border-base-300 bg-base-100 relative w-full max-w-xl rounded border shadow-lg"
-	>
-		<form method="dialog" class="flex justify-end">
-			<button
-				aria-label="Close"
-				class="btn btn-sm btn-circle btn-ghost"
-				type="button"
-				onclick={() =>
-					(document.getElementById('create-section-modal') as HTMLDialogElement).close()}
-			>
-				✕
-			</button>
+	<div class="modal-box">
+		<form method="dialog">
+			<button class="btn btn-sm btn-circle btn-ghost absolute top-2 right-2">✕</button>
 		</form>
+		<h3 class="mb-4 text-lg font-bold">Create Section</h3>
 
-		<h3 class="text-primary text-2xl font-bold mb-4">Create Section</h3>
-
-		{#if classes.data.length > 0}
+		{#if classes.get_by_current_session().length > 0}
 			<form
 				onsubmit={(e) => {
 					e.preventDefault();
@@ -75,7 +64,7 @@
 						bind:value={formData.class_id}
 					>
 						<option value="" disabled selected>Select class</option>
-						{#each classes.data as cls (cls.id)}
+						{#each classes.get_by_current_session() as cls (cls.id)}
 							<option value={cls.id}>{cls.name}</option>
 						{/each}
 					</select>
@@ -100,9 +89,7 @@
 				</div>
 			</form>
 		{:else}
-			<p class="text-secondary text-sm">
-				No classes yet. Click 'Create Class' to get started!
-			</p>
+			<p class="text-secondary text-sm">No classes yet. Click 'Create Class' to get started!</p>
 		{/if}
 	</div>
 

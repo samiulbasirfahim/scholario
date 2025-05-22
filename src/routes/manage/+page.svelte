@@ -16,36 +16,62 @@
 	oneYearLater.setFullYear(today.getFullYear() + 1);
 
 	let form = $state({
+		id: null as number | null,
 		name: '',
 		start_date: formatDate(today),
 		end_date: formatDate(oneYearLater)
 	});
 
-	function addSession() {
+	let isEditing = $state(false);
+
+	function resetForm() {
+		form = {
+			id: null,
+			name: '',
+			start_date: formatDate(new Date()),
+			end_date: formatDate(new Date(new Date().setFullYear(new Date().getFullYear() + 1)))
+		};
+		isEditing = false;
+	}
+
+	function addOrUpdateSession() {
 		if (form.name.trim() && form.start_date && form.end_date) {
-			invoke('create_session', {
-				...form
-			})
-				.then((d) => {
-					sessions.add(d as Session);
-					form = {
-						name: '',
-						start_date: formatDate(new Date()),
-						end_date: formatDate(new Date(new Date().setFullYear(new Date().getFullYear() + 1)))
-					};
-					toast.set({ message: 'Session created successfully', type: 'success' });
-				})
-				.catch((e) => {
-					toast.set({ message: 'Failed to create session', type: 'error' });
-					console.log(e);
+			if (isEditing && form.id != null) {
+				sessions.edit({
+					id: form.id,
+					name: form.name,
+					start_date: form.start_date,
+					end_date: form.end_date
 				});
+				resetForm();
+			} else {
+				invoke('create_session', { ...form })
+					.then((d) => {
+						sessions.add(d as Session);
+						toast.set({ message: 'Session created successfully', type: 'success' });
+						resetForm();
+					})
+					.catch((e) => {
+						toast.set({ message: 'Failed to create session', type: 'error' });
+						console.log(e);
+					});
+			}
 		} else {
 			toast.set({ message: 'Please fill in all required fields', type: 'error' });
 		}
 	}
 
+	function editSession(session: Session) {
+		form = { ...session };
+		isEditing = true;
+	}
+
 	function removeSession(id: number) {
 		sessions.remove(id);
+		invoke('delete_session', { id }).catch((e) => {
+			console.error('Failed to delete session:', e);
+			toast.set({ message: 'Failed to delete session', type: 'error' });
+		});
 	}
 
 	onMount(() => {
@@ -58,7 +84,9 @@
 		<h2 class="text-primary mb-6 text-2xl font-bold">Manage Sessions</h2>
 
 		<form class="border-base-300 bg-base-200 mb-8 rounded border p-6 shadow-sm">
-			<p class="text-secondary mb-2 font-semibold">Create New Session</p>
+			<p class="text-secondary mb-2 font-semibold">
+				{isEditing ? 'Edit Session' : 'Create New Session'}
+			</p>
 			<div class="flex flex-col gap-3 md:flex-row md:items-end">
 				<input
 					bind:value={form.name}
@@ -68,7 +96,12 @@
 				/>
 				<input bind:value={form.start_date} type="date" class="input input-bordered w-full" />
 				<input bind:value={form.end_date} type="date" class="input input-bordered w-full" />
-				<button onclick={addSession} class="btn btn-primary w-full md:w-auto"> Add </button>
+				<button onclick={addOrUpdateSession} class="btn btn-primary w-full md:w-auto">
+					{isEditing ? 'Update' : 'Add'}
+				</button>
+				{#if isEditing}
+					<button onclick={resetForm} class="btn btn-ghost w-full md:w-auto">Cancel</button>
+				{/if}
 			</div>
 		</form>
 
@@ -76,7 +109,7 @@
 			<p class="text-secondary mb-2 font-semibold">All Sessions</p>
 			{#if sessions.data.length > 0}
 				<ul class="space-y-3">
-					{#each sessions.data as session, index (index)}
+					{#each sessions.data as session}
 						<li
 							class="border-accent bg-base-100 flex items-center justify-between rounded border p-4 shadow-sm"
 						>
@@ -86,9 +119,14 @@
 									{session.start_date} → {session.end_date}
 								</p>
 							</div>
-							<button onclick={() => removeSession(index)} class="btn btn-xs btn-error">
-								Delete
-							</button>
+							<div class="flex gap-2">
+								<button onclick={() => editSession(session)} class="btn btn-xs btn-info">
+									Edit
+								</button>
+								<button onclick={() => removeSession(session.id)} class="btn btn-xs btn-error">
+									Delete
+								</button>
+							</div>
 						</li>
 					{/each}
 				</ul>

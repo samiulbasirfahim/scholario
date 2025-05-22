@@ -6,6 +6,7 @@
 	import Icon from '@iconify/svelte';
 	import Toast from '../global/Toast.svelte';
 	import type { Class, ClassSubject } from '$lib/types/class';
+	import { sessions } from '$lib/store/session.svelte';
 
 	let { selectedClass } = $props();
 
@@ -128,10 +129,10 @@
 
 	$effect(() => {
 		if (selectedClass != null) {
-			const cls = classes.get(selectedClass);
+			const cls = classes.get(sessions.selected as number, selectedClass);
 			if (cls) {
 				className = cls.name;
-				level = cls.level;
+				level = cls.level.toString();
 				admissionFee = (cls.admission_fee / 100).toString();
 				monthlyFee = (cls.monthly_fee / 100).toString();
 				readmissionFee = (cls.readmission_fee / 100).toString();
@@ -149,13 +150,14 @@
 			const updated = await invoke('edit_class', {
 				id: selectedClass,
 				name: className,
-				level,
+				level: parseInt(level),
 				admission_fee: parseInt(admissionFee) * 100,
 				monthly_fee: parseInt(monthlyFee) * 100,
-				readmission_fee: parseInt(readmissionFee) * 100
+				readmission_fee: parseInt(readmissionFee) * 100,
+				session_id: sessions.selected as number
 			});
 
-			classes.update(selectedClass, updated as Class);
+			classes.update(sessions.selected as number, selectedClass, updated as Class);
 			toast.set({ message: 'Class updated successfully', type: 'success' });
 		} catch (err) {
 			console.error(err);
@@ -176,8 +178,11 @@
 
 	const deleteClass = async () => {
 		try {
-			await invoke('delete_class', { id: selectedClass });
-			classes.remove(selectedClass);
+			await invoke('delete_class', {
+				id: selectedClass,
+				session_id: sessions.selected as number
+			});
+			classes.remove(sessions.selected as number, selectedClass);
 			toast.set({ message: 'Class deleted', type: 'success' });
 			(document.getElementById('class-edit-modal') as HTMLDialogElement).close();
 		} catch (err) {
@@ -196,7 +201,7 @@
 		<div class="grid grid-cols-2 gap-6">
 			<div>
 				<!-- Edit Class Details -->
-				<div class="space-y-4">
+				<form class="space-y-4">
 					<h3 class="mb-4 text-lg font-bold">Edit Class Details</h3>
 
 					<div class="space-y-2">
@@ -216,7 +221,7 @@
 						<div>
 							<label for="level" class="block text-sm font-medium">Level</label>
 							<input
-								type="text"
+								type="number"
 								id="level"
 								class="input input-bordered w-full"
 								required
@@ -256,7 +261,13 @@
 							/>
 						</div>
 					</div>
-				</div>
+					<div class="join mt-4 flex justify-end">
+						<button type="submit" class="btn btn-primary join-item" onclick={updateClassDetails}>
+							Update
+						</button>
+						<button class="btn btn-error join-item" onclick={deleteClass}>Delete</button>
+					</div>
+				</form>
 
 				<!-- Delete Sections -->
 				<div class="mt-4">

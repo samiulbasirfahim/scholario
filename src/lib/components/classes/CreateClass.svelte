@@ -5,8 +5,7 @@
 
 	import type { Class } from '$lib/types/class';
 	import { classes } from '$lib/store/class.svelte';
-
-	let { selectedSession } = $props();
+	import { sessions } from '$lib/store/session.svelte';
 
 	let formData = $state({
 		name: '',
@@ -22,7 +21,7 @@
 			admission_fee: Number(formData.admission_fee) * 100,
 			monthly_fee: Number(formData.monthly_fee) * 100,
 			readmission_fee: Number(formData.readmission_fee) * 100,
-			session_id: selectedSession
+			session_id: sessions.selectedSession?.id
 		});
 		invoke('create_class', {
 			name: formData.name.trim(),
@@ -30,10 +29,10 @@
 			admission_fee: Number(formData.admission_fee) * 100,
 			monthly_fee: Number(formData.monthly_fee) * 100,
 			readmission_fee: Number(formData.readmission_fee) * 100,
-			session_id: selectedSession
+			session_id: sessions.selectedSession?.id
 		})
 			.then((cls) => {
-				classes.add(selectedSession, cls as Class);
+				classes.add(sessions.selectedSession?.id as number, cls as Class);
 				toast.set({ message: 'Class created successfully', type: 'success' });
 
 				formData.name = '';
@@ -66,7 +65,7 @@
 		</form>
 		<h3 class="mb-4 text-lg font-bold">Create Class</h3>
 
-		{#if selectedSession}
+		{#if sessions.selectedSession?.id}
 			<form
 				onsubmit={(e) => {
 					e.preventDefault();
@@ -162,4 +161,5 @@
 	<form method="dialog" class="modal-backdrop">
 		<button>close</button>
 	</form>
+	<Toast />
 </dialog>

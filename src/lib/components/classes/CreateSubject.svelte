@@ -41,11 +41,11 @@
 </script>
 
 <dialog id="create-subject-modal" class="modal">
-	<div class="modal-box w-full max-w-xl">
+	<div class="modal-box">
 		<form method="dialog">
 			<button class="btn btn-sm btn-circle btn-ghost absolute top-2 right-2">✕</button>
 		</form>
-		<h3 class="text-lg font-bold">Create Subject</h3>
+		<h3 class="mb-4 text-lg font-bold">Create Subject</h3>
 
 		<form
 			onsubmit={(e) => {
