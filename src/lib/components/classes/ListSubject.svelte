@@ -10,10 +10,10 @@
 		<form method="dialog">
 			<button class="btn btn-sm btn-circle btn-ghost absolute top-2 right-2">✕</button>
 		</form>
-		<h3 class="text-lg font-bold mb-4">Subjects</h3>
+		<h3 class="mb-4 text-lg font-bold">Subjects</h3>
 
 		{#if subjects.data.length > 0}
-			<div class="overflow-x-auto max-h-80">
+			<div class="max-h-80 overflow-x-auto">
 				<table class="table">
 					<thead>
 						<tr>
@@ -48,10 +48,10 @@
 				</table>
 			</div>
 		{:else}
-			<p>No Subject yet, create Subject first</p>
+			<div class="alert alert-warning">No classes yet. Click 'Create Class' to get started!</div>
 		{/if}
 
-		<div class="w-full flex justify-end mt-2">
+		<div class="mt-2 flex w-full justify-end">
 			<button
 				class="btn btn-primary"
 				onclick={() => {

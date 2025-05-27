@@ -8,19 +8,8 @@
 	import { classes, classSubjects, sections } from '$lib/store/class.svelte';
 	import { sessions } from '$lib/store/session.svelte';
 	import Icon from '@iconify/svelte';
-	import { onMount } from 'svelte';
 
 	let selectedClass = $state<number | null>(null);
-
-	onMount(async () => {
-		await sessions.fetch();
-		sessions.select(sessions.data[sessions.data?.length - 1]?.id);
-	});
-
-	$effect(() => {
-		if (sessions.selectedSession?.id) classes.fetch(sessions.selectedSession.id);
-		console.log(sessions.selected);
-	});
 </script>
 
 <Navbar>
@@ -36,7 +25,7 @@
 		</div>
 	</div>
 	<div class="flex gap-4">
-		<label class="bg-accent text-accent-content flex items-center rounded border-1 px-2">
+		<label class="bg-accent text-accent-content flex items-center rounded-none border-1 px-2">
 			<Icon icon="carbon:prompt-session" font-size="24" />
 			<select
 				class="select rounded-none border-0 bg-transparent focus:outline-none"
@@ -84,44 +73,50 @@
 {/if}
 
 {#if sessions.selectedSession?.id && classes.get_by_current_session()?.length > 0}
-	<div class="border-base-content/5 bg-base-100 overflow-x-auto rounded border">
-		<table class="table-md table">
-			<thead class="bg-secondary text-secondary-content">
-				<tr>
-					<th></th>
-					<th>Name</th>
-					<th></th>
-					<th>Students</th>
-					<th>Sections</th>
-					<th>Subjects</th>
-					<th></th>
-				</tr>
-			</thead>
-			<tbody>
-				{#each classes.get_by_current_session() as cls, i (i)}
+	<div class="flex justify-between">
+		<div class="border-base-content/5 bg-base-100 overflow-x-auto rounded-none border w-1/2">
+			<table class="table-md table">
+				<thead class="bg-secondary text-secondary-content">
 					<tr>
-						<th class="w-2">{i + 1}</th>
-						<td colspan="2">
-							{cls.name}
-						</td>
-						<td> 40 </td>
-						<td> {sections.get_by_class(cls.id).length} </td>
-						<td> {classSubjects.get(cls.id).length} </td>
-						<td>
-							<button
-								class="btn btn-primary btn-sm"
-								onclickcapture={() => {
-									(document.getElementById('class-edit-modal') as HTMLDialogElement).showModal();
-									selectedClass = cls.id;
-								}}
-							>
-								Edit
-							</button>
-						</td>
+						<th></th>
+						<th>Name</th>
+						<th></th>
+						<th>Students</th>
+						<th>Sections</th>
+						<th>Subjects</th>
+						<th></th>
 					</tr>
-				{/each}
-			</tbody>
-		</table>
+				</thead>
+				<tbody>
+					{#each classes.get_by_current_session() as cls, i (i)}
+						<tr>
+							<th class="w-2">{i + 1}</th>
+							<td colspan="2">
+								{cls.name}
+							</td>
+							<td> 40 </td>
+							<td> {sections.get_by_class(cls.id).length} </td>
+							<td> {classSubjects.get(cls.id).length} </td>
+							<td>
+								<button
+									class="btn btn-primary btn-sm"
+									onclickcapture={() => {
+										(document.getElementById('class-edit-modal') as HTMLDialogElement).showModal();
+										selectedClass = cls.id;
+									}}
+								>
+									Edit
+								</button>
+							</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		</div>
+        <div class="w-1/2">
+
+
+        </div>
 	</div>
 {/if}
 

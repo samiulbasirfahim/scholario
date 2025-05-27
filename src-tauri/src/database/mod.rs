@@ -17,7 +17,11 @@ static DB: OnceLock<Mutex<Connection>> = OnceLock::new();
 
 pub fn conn() -> Result<MutexGuard<'static, Connection>> {
     let conn = DB
-        .get_or_init(|| Mutex::new(Connection::open("/home/rxen/scholario.db").expect("Failed to open database")))
+        .get_or_init(|| {
+            Mutex::new(
+                Connection::open_in_memory().expect("Failed to open database"),
+            )
+        })
         // .get_or_init(|| Mutex::new(Connection::open_in_memory().expect("Failed to open database")))
         .lock()
         .expect("Failed to lock mutex");

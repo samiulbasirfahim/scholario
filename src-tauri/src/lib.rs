@@ -5,6 +5,7 @@ use commands::class::*;
 use commands::guardian::*;
 use commands::session::*;
 use commands::subjects::*;
+use tauri::path::PathResolver;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {

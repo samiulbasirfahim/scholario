@@ -3,7 +3,9 @@
 	import CreateStudent from '$lib/components/students/CreateStudent.svelte';
 	import Filter from '$lib/components/students/Filter.svelte';
 	import { classes, sections } from '$lib/store/class.svelte';
+	import { sessions } from '$lib/store/session.svelte';
 	import Icon from '@iconify/svelte';
+	import { onMount } from 'svelte';
 
 	let filter = $state({
 		class: '',
@@ -11,6 +13,11 @@
 		fee: '',
 		roll: '',
 		session: '2026'
+	});
+
+	onMount(async () => {
+		await sessions.fetch();
+		sessions.select(sessions.data[sessions.data?.length - 1]?.id);
 	});
 </script>
 
@@ -24,7 +31,7 @@
 					<li>{filter.session.trim().split(' ')[0]}</li>
 				{/if}
 				{#if filter.class}
-					<li>{classes.get(Number(filter.class))?.name}</li>
+					<li>{classes.get(sessions.selected as number, Number(filter.class))?.name}</li>
 				{/if}
 				{#if filter.section}
 					<li>{sections.get(Number(filter.section))?.name}</li>
@@ -42,13 +49,13 @@
 		<label class="bg-accent text-accent-content flex items-center rounded border-1 px-2">
 			<Icon icon="carbon:prompt-session" font-size="24" />
 			<select
-				bind:value={filter.session}
 				class="select rounded-none border-0 bg-transparent focus:outline-none"
+				value={sessions.selected}
+				onchange={(e) => sessions.select(Number(e.target.value))}
 			>
-				<option disabled>Session</option>
-				<option>2024</option>
-				<option>2025</option>
-				<option selected>2026</option>
+				{#each sessions.data as session (session.id)}
+					<option value={session.id}>{session.name}</option>
+				{/each}
 			</select>
 		</label>
 
@@ -73,5 +80,8 @@
 	</div>
 </Navbar>
 
+{#if sessions.data.length === 0}
+	<div class="alert alert-warning">Please create a session first</div>
+{/if}
 <Filter bind:filter />
 <CreateStudent />

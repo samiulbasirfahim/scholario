@@ -89,7 +89,7 @@
 				</div>
 			</form>
 		{:else}
-			<p class="text-secondary text-sm">No classes yet. Click 'Create Class' to get started!</p>
+			<div class="alert alert-warning">No classes yet. Click 'Create Class' to get started!</div>
 		{/if}
 	</div>
 

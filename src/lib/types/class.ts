@@ -7,11 +7,6 @@ export interface Class {
     readmission_fee: number;
 }
 
-export interface Section {
-    id: number;
-    name: string;
-    class_id: number;
-}
 
 export interface Subject {
     id: number;

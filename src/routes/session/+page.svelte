@@ -22,7 +22,19 @@
 		end_date: formatDate(oneYearLater)
 	});
 
+	let selectedSession = $derived(sessions.get(sessions.selected as number));
+
 	let isEditing = $state(false);
+
+	function formatMoney(amount: number): string {
+		return (
+			'৳' +
+			(amount / 100).toLocaleString('en-BD', {
+				style: 'decimal',
+				minimumFractionDigits: 2
+			})
+		);
+	}
 
 	function resetForm() {
 		form = {
@@ -108,10 +120,13 @@
 		<div class="border-base-300 bg-base-200 rounded border p-5 shadow-inner">
 			<p class="text-secondary mb-2 font-semibold">All Sessions</p>
 			{#if sessions.data.length > 0}
-				<ul class="space-y-3">
-					{#each sessions.data as session}
+				<ul class="max-h-[65vh] space-y-4 overflow-y-auto">
+					{#each sessions.data as session (session.id)}
 						<li
-							class="border-accent bg-base-100 flex items-center justify-between rounded border p-4 shadow-sm"
+							class={` border-accent flex items-center justify-between rounded-none p-4  shadow-sm hover:cursor-pointer ${session.id === sessions.selected ? 'border-primary' : 'border-base-300'} border`}
+							onclickcapture={() => {
+								sessions.select(session.id);
+							}}
 						>
 							<div>
 								<p class="text-primary font-semibold">{session.name}</p>
@@ -136,11 +151,53 @@
 		</div>
 	</div>
 
-	<!-- Right Column: Placeholder -->
-	<div
-		class="border-accent text-accent hidden w-1/2 items-center justify-center rounded border border-dashed p-4 md:flex"
-	>
-		<p>Right half reserved for future content</p>
+	<div class="w-1/2 pt-10">
+		<div class="border-accent text-accent flex flex-col rounded-none border p-6 shadow-md">
+			<h2 class="text-primary mb-4 text-xl font-bold">Session Overview</h2>
+			<div class="space-y-3 text-sm">
+				{#if sessions.selected}
+					<div>
+						<p class="text-secondary">Name</p>
+						<p class="text-base font-semibold">{selectedSession?.name}</p>
+					</div>
+					<div>
+						<p class="text-secondary">Start Date</p>
+						<p class="text-base font-semibold">{selectedSession?.start_date}</p>
+					</div>
+					<div>
+						<p class="text-secondary">End Date</p>
+						<p class="text-base font-semibold">{selectedSession?.end_date}</p>
+					</div>
+					<hr class="border-base-300 my-4" />
+					<div class="grid grid-cols-2 gap-4 text-sm">
+						<div>
+							<p class="text-secondary">Total Students</p>
+							<p class="text-base font-semibold">[DUMMY DATA]</p>
+						</div>
+						<div>
+							<p class="text-secondary">Total Classes</p>
+							<p class="text-base font-semibold">[DUMMY DATA]</p>
+						</div>
+						<div>
+							<p class="text-secondary">Incoming Money</p>
+							<p class="text-success text-base font-semibold">{formatMoney(10000)}</p>
+						</div>
+						<div>
+							<p class="text-secondary">Outgoing Costs</p>
+							<p class="text-error text-base font-semibold">{formatMoney(10000)}</p>
+						</div>
+						<div class="col-span-2">
+							<p class="text-secondary">Unpaid Money</p>
+							<p class="text-info text-base font-semibold">{formatMoney(10000)}</p>
+						</div>
+					</div>
+				{:else}
+					<div>
+						<p>No session is selected.</p>
+					</div>
+				{/if}
+			</div>
+		</div>
 	</div>
 </div>
 

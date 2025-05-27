@@ -7,6 +7,7 @@
 	import { invoke } from '@tauri-apps/api/core';
 
 	import type { Student, StudentRelationship } from '$lib/types/student';
+	import { sessions } from '$lib/store/session.svelte';
 
 	type Guardian = {
 		id: number;
@@ -94,8 +95,9 @@
 		}
 	}
 
-	onMount(() => {
-		classes.fetch();
+	onMount(async () => {
+		await sessions.fetch();
+		classes.fetch(sessions.selected as number);
 		sections.fetch();
 	});
 </script>
@@ -106,9 +108,10 @@
 			<button class="btn btn-sm btn-circle btn-ghost absolute top-2 right-2">✕</button>
 		</form>
 
-		<form on:submit|preventDefault={submitStudentForm} class="space-y-2">
+		<h3 class="mb-4 text-lg font-bold">Create Student</h3>
 
-			{#if classes.data.length === 0}
+		<form on:submit|preventDefault={submitStudentForm} class="space-y-2">
+			{#if classes.get_by_current_session().length === 0}
 				<div class="alert alert-warning">Please create a class first</div>
 			{:else}
 				<div class="grid grid-cols-1 gap-2 md:grid-cols-2">
@@ -123,7 +126,7 @@
 						<label class="label">Class</label>
 						<select class="input input-bordered w-full" bind:value={form_data.class_id} required>
 							<option value="">Select Class</option>
-							{#each classes.data as cls, i (i)}
+							{#each classes.get_by_current_session() as cls, i (i)}
 								<option value={cls.id}>{cls.name}</option>
 							{/each}
 						</select>

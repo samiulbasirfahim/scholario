@@ -5,29 +5,30 @@
 	const { children } = $props();
 
 	const links = [
-		['Dashboard', '/', 'lucide:layout-grid'],
-		['Students', '/students', 'fa-solid:user-graduate'],
-		['Classes', '/classes', 'fa-solid:user-graduate'],
-		['Teachers', '/teachers', 'fa-solid:user-graduate'],
-		['Staffs', '/staffs', 'fa-solid:user-graduate'],
-		['Billing', '/billing', 'fa-solid:user-graduate'],
-		['Exams', '/exams', 'fa-solid:user-graduate']
+		['Dashboard', '/'],
+		['Students', '/students'],
+		['Classes', '/classes'],
+		['Teachers', '/teachers'],
+		['Staffs', '/staffs'],
+		['Billing', '/billing'],
+		['Exams', '/exams'],
+		['Session', '/session'],
+		['Broadcast', '/broadcast']
 	];
 
 	let theme = $state<'LIGHT' | 'DARK'>('LIGHT');
-	onMount(function () {
-		theme = localStorage.theme;
+	onMount(async function () {
+		theme = await localStorage.theme;
+		const htmlEl = document.documentElement;
+		htmlEl.setAttribute('data-theme', theme === 'LIGHT' ? 'corporate-custom' : 'business-custom');
 	});
 
-	$effect(() => {
+	function toggleTheme() {
+		const htmlEl = document.documentElement;
+		theme = theme === 'LIGHT' ? 'DARK' : 'LIGHT';
 		localStorage.theme = theme;
-
-		document.body.setAttribute('data-theme', theme === 'LIGHT' ? 'corporate' : 'business');
-		document.documentElement.setAttribute(
-			'data-theme',
-			theme === 'LIGHT' ? 'corporate' : 'business'
-		);
-	});
+		htmlEl.setAttribute('data-theme', theme === 'LIGHT' ? 'corporate-custom' : 'business-custom');
+	}
 </script>
 
 <div class="drawer drawer-open">
@@ -37,14 +38,14 @@
 	</div>
 	<div class="drawer-side">
 		<label for="my-drawer-2" aria-label="close sidebar" class="drawer-overlay"></label>
-		<ul class="menu min-h-full w-80 justify-between p-4">
+		<ul class="menu min-h-full w-80 justify-between">
 			<div class="flex h-full flex-col justify-between">
 				<div class="flex flex-col items-center justify-center pt-4">
 					<h1 class="text-center font-semibold">Madrasaye Abu Bakar Momensahi</h1>
 					<h1 class="text-center opacity-60">Ghagra, Mymensingh</h1>
 				</div>
 				<div class="divider"></div>
-				<ul class="space-y-1">
+				<ul class="space-y-2">
 					{#each links as link, i (i)}
 						<li>
 							<a
@@ -61,10 +62,7 @@
 				</ul>
 			</div>
 			<div class="flex justify-between">
-				<button
-					class="btn btn-square btn-ghost m-1"
-					onclick={() => (theme = theme === 'LIGHT' ? 'DARK' : 'LIGHT')}
-				>
+				<button class="btn btn-square btn-ghost m-1" onclick={toggleTheme}>
 					{#if theme === 'LIGHT'}
 						<Icon icon="line-md:moon-filled-to-sunny-filled-transition" font-size="26" />
 					{:else}
