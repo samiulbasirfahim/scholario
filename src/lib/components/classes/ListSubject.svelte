@@ -48,7 +48,7 @@
 				</table>
 			</div>
 		{:else}
-			<div class="alert alert-warning">No classes yet. Click 'Create Class' to get started!</div>
+			<div class="alert alert-warning">No subjects yet. Click 'Create' to get started!</div>
 		{/if}
 
 		<div class="mt-2 flex w-full justify-end">

@@ -26,12 +26,12 @@
 	--color-warning-content: oklch(0% 0 0);
 	--color-error: oklch(70% 0.191 22.216);
 	--color-error-content: oklch(0% 0 0);
-	--radius-selector: 0rem;
-	--radius-field: 0rem;
-	--radius-box: 0rem;
+	--radius-selector: 0.25rem;
+	--radius-field: 0.25rem;
+	--radius-box: 0.25rem;
 	--size-selector: 0.25rem;
 	--size-field: 0.25rem;
-	--border: 1.5px;
+	--border: 1px;
 	--depth: 0;
 	--noise: 0;
 }
@@ -61,11 +61,11 @@
 	--color-error: oklch(51.61% 0.146 29.674);
 	--color-error-content: oklch(90.322% 0.029 29.674);
 	--radius-selector: 0rem;
-	--radius-field: 0rem;
-	--radius-box: 0rem;
+	--radius-field: 0.25rem;
+	--radius-box: 0.25rem;
 	--size-selector: 0.25rem;
 	--size-field: 0.25rem;
-	--border: 1.5px;
+	--border: 1px;
 	--depth: 0;
 	--noise: 0;
 }
@@ -73,5 +73,5 @@
 html,
 body {
 	scrollbar-gutter: stable;
-	font-family: 'Victor Mono', monospace;
+	font-family: 'IBM Plex Mono', monospace;
 }

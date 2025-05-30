@@ -47,12 +47,14 @@ class Classes {
     }
 
     async fetch(session_id: number): Promise<void> {
-        try {
-            const fetched = await invoke<Class[]>('get_classes', { session_id });
-            this.set(session_id, fetched);
-        } catch (err) {
-            console.error('Error fetching classes for session:', err);
-            toast.set({ message: 'Failed to fetch classes', type: 'error' });
+        if (session_id) {
+            try {
+                const fetched = await invoke<Class[]>('get_classes', { session_id });
+                this.set(session_id, fetched);
+            } catch (err) {
+                console.error('Error fetching classes for session:', err);
+                toast.set({ message: 'Failed to fetch classes', type: 'error' });
+            }
         }
     }
 }

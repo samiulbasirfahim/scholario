@@ -1,7 +1,6 @@
 <script lang="ts">
 	import Toast from '$lib/components/global/Toast.svelte';
 	import { toast } from '$lib/store/toast.svelte';
-
 	import { sessions } from '$lib/store/session.svelte';
 	import { invoke } from '@tauri-apps/api/core';
 	import type { Session } from '$lib/types/session';
@@ -23,7 +22,6 @@
 	});
 
 	let selectedSession = $derived(sessions.get(sessions.selected as number));
-
 	let isEditing = $state(false);
 
 	function formatMoney(amount: number): string {
@@ -52,8 +50,8 @@
 				sessions.edit({
 					id: form.id,
 					name: form.name,
-					start_date: form.start_date,
-					end_date: form.end_date
+					end_date: form.end_date,
+					start_date: form.start_date
 				});
 				resetForm();
 			} else {
@@ -91,112 +89,129 @@
 	});
 </script>
 
-<div class="flex flex-col gap-8 md:flex-row">
+<div class="flex gap-6">
 	<div class="w-full md:w-1/2">
-		<h2 class="text-primary mb-6 text-2xl font-bold">Manage Sessions</h2>
+		<h2 class="text-primary mb-3 text-xl font-bold">Manage Sessions</h2>
 
-		<form class="border-base-300 bg-base-200 mb-8 rounded border p-6 shadow-sm">
-			<p class="text-secondary mb-2 font-semibold">
+		<form class="bg-base-100 border-base-300 space-y-3 rounded border p-4">
+			<p class="text-secondary font-semibold">
 				{isEditing ? 'Edit Session' : 'Create New Session'}
 			</p>
-			<div class="flex flex-col gap-3 md:flex-row md:items-end">
-				<input
-					bind:value={form.name}
-					type="text"
-					placeholder="Session name"
-					class="input input-bordered w-full"
-				/>
+
+			<input
+				bind:value={form.name}
+				type="text"
+				placeholder="Session name"
+				class="input input-bordered w-full"
+			/>
+			<div class="flex gap-3">
 				<input bind:value={form.start_date} type="date" class="input input-bordered w-full" />
 				<input bind:value={form.end_date} type="date" class="input input-bordered w-full" />
-				<button onclick={addOrUpdateSession} class="btn btn-primary w-full md:w-auto">
+			</div>
+			<div class="flex gap-3">
+				<button type="submit" onclick={addOrUpdateSession} class="btn btn-primary w-full">
 					{isEditing ? 'Update' : 'Add'}
 				</button>
 				{#if isEditing}
-					<button onclick={resetForm} class="btn btn-ghost w-full md:w-auto">Cancel</button>
+					<button type="button" onclick={resetForm} class="btn btn-ghost w-full">Cancel</button>
 				{/if}
 			</div>
 		</form>
 
-		<div class="border-base-300 bg-base-200 rounded border p-5 shadow-inner">
-			<p class="text-secondary mb-2 font-semibold">All Sessions</p>
-			{#if sessions.data.length > 0}
-				<ul class="max-h-[65vh] space-y-4 overflow-y-auto">
-					{#each sessions.data as session (session.id)}
-						<li
-							class={` border-accent flex items-center justify-between rounded-none p-4  shadow-sm hover:cursor-pointer ${session.id === sessions.selected ? 'border-primary' : 'border-base-300'} border`}
-							onclickcapture={() => {
-								sessions.select(session.id);
-							}}
-						>
-							<div>
-								<p class="text-primary font-semibold">{session.name}</p>
-								<p class="text-secondary text-sm">
-									{session.start_date} → {session.end_date}
-								</p>
-							</div>
-							<div class="flex gap-2">
-								<button onclick={() => editSession(session)} class="btn btn-xs btn-info">
-									Edit
-								</button>
-								<button onclick={() => removeSession(session.id)} class="btn btn-xs btn-error">
-									Delete
-								</button>
-							</div>
-						</li>
-					{/each}
-				</ul>
-			{:else}
-				<p class="text-secondary text-sm">No sessions added yet.</p>
-			{/if}
-		</div>
+		{#if sessions.data.length > 0}
+			<div class="bg-base-100 border-base-300 mt-4 space-y-3 rounded border p-4">
+				<div class="overflow-x-auto">
+					<table class="table">
+						<thead>
+							<tr>
+								<th>#</th>
+								<th>Name</th>
+								<th>Start date</th>
+								<th>End date</th>
+							</tr>
+						</thead>
+						<tbody>
+							{#each sessions.data as session, i (session.id)}
+								<tr
+									class="{session.id === sessions.selected
+										? 'bg-primary text-primary-content'
+										: ''} cursor-pointer"
+									onclick={() => {
+										sessions.select(session.id);
+									}}
+								>
+									<th>{i + 1}</th>
+									<td>{session.name}</td>
+									<td>{session.start_date}</td>
+									<td>{session.end_date}</td>
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		{:else}
+			<p class="text-secondary text-sm">No sessions added yet.</p>
+		{/if}
 	</div>
 
-	<div class="w-1/2 pt-10">
-		<div class="border-accent text-accent flex flex-col rounded-none border p-6 shadow-md">
-			<h2 class="text-primary mb-4 text-xl font-bold">Session Overview</h2>
-			<div class="space-y-3 text-sm">
-				{#if sessions.selected}
+	<div class="w-full pt-8 md:w-1/2">
+		<div class="border-accent text-accent bg-base-200 rounded border p-4">
+			<h2 class="text-primary mb-3 text-lg font-semibold">Session Overview</h2>
+			{#if sessions.selected}
+				<div class="space-y-3 text-sm">
 					<div>
 						<p class="text-secondary">Name</p>
-						<p class="text-base font-semibold">{selectedSession?.name}</p>
+						<p class="font-medium">{selectedSession?.name}</p>
 					</div>
 					<div>
-						<p class="text-secondary">Start Date</p>
-						<p class="text-base font-semibold">{selectedSession?.start_date}</p>
+						<p class="text-secondary">Start</p>
+						<p class="font-medium">{selectedSession?.start_date}</p>
 					</div>
 					<div>
-						<p class="text-secondary">End Date</p>
-						<p class="text-base font-semibold">{selectedSession?.end_date}</p>
+						<p class="text-secondary">End</p>
+						<p class="font-medium">{selectedSession?.end_date}</p>
 					</div>
-					<hr class="border-base-300 my-4" />
-					<div class="grid grid-cols-2 gap-4 text-sm">
+
+					<div class="flex flex-wrap gap-3 pt-2">
+						<button
+							class="btn btn-info w-full sm:w-auto"
+							onclick={() => editSession(selectedSession as Session)}>Edit</button
+						>
+						<button
+							class="btn btn-error w-full sm:w-auto"
+							onclick={() => removeSession(selectedSession?.id as number)}>Delete</button
+						>
+					</div>
+
+					<hr class="border-base-300 my-3" />
+
+					<div class="grid grid-cols-2 gap-3 text-sm">
 						<div>
 							<p class="text-secondary">Total Students</p>
-							<p class="text-base font-semibold">[DUMMY DATA]</p>
+							<p class="font-medium">[DUMMY]</p>
 						</div>
 						<div>
 							<p class="text-secondary">Total Classes</p>
-							<p class="text-base font-semibold">[DUMMY DATA]</p>
+							<p class="font-medium">[DUMMY]</p>
 						</div>
 						<div>
-							<p class="text-secondary">Incoming Money</p>
-							<p class="text-success text-base font-semibold">{formatMoney(10000)}</p>
+							<p class="text-secondary">Incoming</p>
+							<p class="text-success font-medium">{formatMoney(10000)}</p>
 						</div>
 						<div>
-							<p class="text-secondary">Outgoing Costs</p>
-							<p class="text-error text-base font-semibold">{formatMoney(10000)}</p>
+							<p class="text-secondary">Outgoing</p>
+							<p class="text-error font-medium">{formatMoney(10000)}</p>
 						</div>
 						<div class="col-span-2">
-							<p class="text-secondary">Unpaid Money</p>
-							<p class="text-info text-base font-semibold">{formatMoney(10000)}</p>
+							<p class="text-secondary">Unpaid</p>
+							<p class="text-info font-medium">{formatMoney(10000)}</p>
 						</div>
 					</div>
-				{:else}
-					<div>
-						<p>No session is selected.</p>
-					</div>
-				{/if}
-			</div>
+				</div>
+			{:else}
+				<p class="text-secondary text-sm">No session is selected.</p>
+			{/if}
 		</div>
 	</div>
 </div>

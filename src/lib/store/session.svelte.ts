@@ -28,6 +28,10 @@ class Sessions {
             toast.set({ message: 'Failed to update session', type: 'error' });
         }
     }
+    add(session: Session): void {
+        this.data.push(session);
+        this.selected = session.id;
+    }
 
     select(id: number | null) {
         this.selected = id;
@@ -39,10 +43,6 @@ class Sessions {
 
     get(id: number): Session | undefined {
         return this.data.find((s) => s.id === id);
-    }
-
-    add(session: Session): void {
-        this.data.push(session);
     }
 
     update(id: number, updated: Session): void {

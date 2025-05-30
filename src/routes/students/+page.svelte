@@ -5,7 +5,6 @@
 	import { classes, sections } from '$lib/store/class.svelte';
 	import { sessions } from '$lib/store/session.svelte';
 	import Icon from '@iconify/svelte';
-	import { onMount } from 'svelte';
 
 	let filter = $state({
 		class: '',
@@ -13,11 +12,6 @@
 		fee: '',
 		roll: '',
 		session: '2026'
-	});
-
-	onMount(async () => {
-		await sessions.fetch();
-		sessions.select(sessions.data[sessions.data?.length - 1]?.id);
 	});
 </script>
 
@@ -46,12 +40,12 @@
 			class="input input-bordered w-48 transition-all ease-linear focus:w-64 focus:outline-none"
 		/>
 
-		<label class="bg-accent text-accent-content flex items-center rounded border-1 px-2">
-			<Icon icon="carbon:prompt-session" font-size="24" />
+		<label class="bg-accent text-accent-content flex items-center rounded px-2">
+			<Icon icon="carbon:prompt-session" font-size="20" />
 			<select
-				class="select rounded-none border-0 bg-transparent focus:outline-none"
-				value={sessions.selected}
-				onchange={(e) => sessions.select(Number(e.target.value))}
+				class="select border-0 bg-transparent focus:outline-none"
+				bind:value={sessions.selected}
+				onchange={(e) => sessions.select(Number((e.target as HTMLOptionElement).value))}
 			>
 				{#each sessions.data as session (session.id)}
 					<option value={session.id}>{session.name}</option>

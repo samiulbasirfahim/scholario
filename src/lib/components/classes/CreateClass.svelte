@@ -7,33 +7,44 @@
 	import { classes } from '$lib/store/class.svelte';
 	import { sessions } from '$lib/store/session.svelte';
 
-	let formData = $state({
-		name: '',
-		level: '',
-		admission_fee: '',
-		monthly_fee: '',
-		readmission_fee: ''
+	let { isEditing = $bindable(false), selectedClass } = $props();
+
+	let selectedClassData = $derived(classes.get(sessions.selected as number, selectedClass));
+
+	let formData = $derived({
+		name: isEditing ? selectedClassData?.name : '',
+		level: isEditing ? selectedClassData?.level : '',
+		admission_fee: isEditing ? selectedClassData?.admission_fee : '',
+		monthly_fee: isEditing ? selectedClassData?.monthly_fee : '',
+		readmission_fee: isEditing ? selectedClassData?.readmission_fee : ''
 	});
+
 	const submitForm = () => {
 		console.log({
-			name: formData.name.trim(),
+			name: (formData.name as string).trim(),
 			level: Number(formData.level),
 			admission_fee: Number(formData.admission_fee) * 100,
 			monthly_fee: Number(formData.monthly_fee) * 100,
 			readmission_fee: Number(formData.readmission_fee) * 100,
 			session_id: sessions.selectedSession?.id
 		});
-		invoke('create_class', {
-			name: formData.name.trim(),
-			level: Number(formData.level),
-			admission_fee: Number(formData.admission_fee) * 100,
-			monthly_fee: Number(formData.monthly_fee) * 100,
-			readmission_fee: Number(formData.readmission_fee) * 100,
-			session_id: sessions.selectedSession?.id
+		invoke(isEditing ? 'edit_class' : 'create_class', {
+			id: selectedClassData?.id as number,
+			name: (formData.name as string).trim(),
+			level: Number(formData.level as string),
+			admission_fee: Number(formData.admission_fee as string) * 100,
+			monthly_fee: Number(formData.monthly_fee as string) * 100,
+			readmission_fee: Number(formData.readmission_fee as string) * 100,
+			session_id: sessions.selectedSession?.id as number
 		})
 			.then((cls) => {
-				classes.add(sessions.selectedSession?.id as number, cls as Class);
-				toast.set({ message: 'Class created successfully', type: 'success' });
+				if (isEditing) {
+					classes.update(sessions.selected as number, selectedClass, cls as Class);
+					toast.set({ message: 'Class updated successfully', type: 'success' });
+				} else {
+					classes.add(sessions.selectedSession?.id as number, cls as Class);
+					toast.set({ message: 'Class created successfully', type: 'success' });
+				}
 
 				formData.name = '';
 				formData.level = '';
@@ -51,7 +62,8 @@
 						toast.set({ message: 'Duplicate entry detected', type: 'error' });
 					}
 				} else {
-					toast.set({ message: 'Failed to create class', type: 'error' });
+					if (isEditing) toast.set({ message: 'Failed to update class', type: 'error' });
+					else toast.set({ message: 'Failed to create class', type: 'error' });
 				}
 				console.error(err);
 			});
@@ -61,18 +73,18 @@
 <dialog id="create-class-modal" class="modal">
 	<div class="modal-box">
 		<form method="dialog">
-			<button class="btn btn-sm btn-circle btn-ghost absolute top-2 right-2">✕</button>
+			<button
+				class="btn btn-sm btn-circle btn-ghost absolute top-2 right-2"
+				on:click|preventDefault={() => {
+					(document.getElementById('create-class-modal') as HTMLDialogElement).close();
+					isEditing = false;
+				}}>✕</button
+			>
 		</form>
-		<h3 class="mb-4 text-lg font-bold">Create Class</h3>
+		<h3 class="mb-4 text-lg font-bold">{isEditing ? 'Edit ' : 'Create '} Class</h3>
 
 		{#if sessions.selectedSession?.id}
-			<form
-				onsubmit={(e) => {
-					e.preventDefault();
-					submitForm();
-				}}
-				class="space-y-2"
-			>
+			<form on:submit|preventDefault={submitForm} class="space-y-2">
 				<div class="form-control w-full">
 					<label class="label" for="name">
 						<span class="label-text font-semibold">Name</span>
@@ -151,7 +163,9 @@
 				</div>
 
 				<div class="flex justify-end pt-4">
-					<button type="submit" class="btn btn-primary px-8"> Create </button>
+					<button type="submit" class="btn btn-primary px-8"
+						>{isEditing ? 'Save' : 'Create'}
+					</button>
 				</div>
 			</form>
 		{:else}

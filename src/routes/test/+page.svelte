@@ -1,6 +1,5 @@
-<!-- Fancy Table Container -->
 <div class="mt-32 px-6">
-	<div class="bg-base-200 ring-base-300 overflow-x-auto rounded-xl shadow-lg ring-1">
+	<div class="bg-base-200 ring-base-300 overflow-x-auto rounded-xl ring-1">
 		<table class="table-md table-zebra table w-full">
 			<!-- Table Header -->
 			<thead class="bg-base-300 text-base-content rounded-t-xl">

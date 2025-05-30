@@ -51,7 +51,7 @@
 							<a
 								class="flex items-center justify-start gap-2 p-2 font-normal {page.route.id ===
 								link[1]
-									? 'bg-primary'
+									? 'bg-primary text-primary-content'
 									: ''}"
 								href={link[1]}
 							>
