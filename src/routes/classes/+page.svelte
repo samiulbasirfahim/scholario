@@ -168,7 +168,7 @@
 
 <Navbar>
 	<div class="flex-1">
-		<div class="breadcrumbs text-sm">
+		<div class="breadcrumbs font-semibold">
 			<ul>
 				<li>Classes</li>
 				{#if sessions.selectedSession}
@@ -347,9 +347,9 @@
 										<h3 class="mb-3 text-lg font-bold">Subjects</h3>
 										<ul class="bg-base-300 max-h-54 space-y-2 overflow-y-auto rounded p-2 text-sm">
 											{#each subjects.data as subject, i (i)}
-												<li class="">
+												<li class="bg-base-200 rounded p-2">
 													<div class="flex items-center justify-between">
-														<label class="flex items-center gap-2">
+														<label class="flex cursor-pointer items-center gap-2">
 															<input
 																type="checkbox"
 																class="checkbox checkbox-sm"
@@ -360,7 +360,7 @@
 														</label>
 
 														{#if isSelected(subject.id)}
-															<label class="flex items-center gap-1 text-xs">
+															<label class="flex cursor-pointer items-center gap-1 text-xs">
 																<input
 																	type="checkbox"
 																	class="checkbox checkbox-xs"
@@ -402,7 +402,7 @@
 												class="bg-base-300 max-h-54 space-y-2 overflow-y-auto rounded p-2 text-sm"
 											>
 												{#each sections.get_by_class(selectedClass) as section, i (i)}
-													<li class="flex items-center justify-between rounded">
+													<li class="bg-base-200 flex items-center justify-between rounded p-2">
 														<span>{section.name}</span>
 														<button
 															class="btn btn-error btn-xs"
@@ -429,7 +429,7 @@
 			</div>
 		</div>
 	{:else}
-		<p class="text-base-content/70 alert alert-warning mt-4 text-sm">
+		<p class="alert alert-warning mt-4 text-sm">
 			No classes yet. Click 'Create Class' to get started!
 		</p>
 	{/if}

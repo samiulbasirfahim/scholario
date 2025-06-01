@@ -11,23 +11,33 @@
 
 	let selectedClassData = $derived(classes.get(sessions.selected as number, selectedClass));
 
-	let formData = $derived({
-		name: isEditing ? selectedClassData?.name : '',
-		level: isEditing ? selectedClassData?.level : '',
-		admission_fee: isEditing ? selectedClassData?.admission_fee : '',
-		monthly_fee: isEditing ? selectedClassData?.monthly_fee : '',
-		readmission_fee: isEditing ? selectedClassData?.readmission_fee : ''
+	let formData = $state({
+		name: '',
+		level: '',
+		admission_fee: '',
+		monthly_fee: '',
+		readmission_fee: ''
+	});
+
+	$effect(() => {
+		if (isEditing && selectedClassData) {
+			formData.name = isEditing ? selectedClassData?.name : '';
+			formData.level = isEditing ? selectedClassData?.level.toString() : '';
+			formData.admission_fee = isEditing ? (selectedClassData?.admission_fee / 100).toString() : '';
+			formData.monthly_fee = isEditing ? (selectedClassData?.monthly_fee / 100).toString() : '';
+			formData.readmission_fee = isEditing
+				? (selectedClassData?.readmission_fee / 100).toString()
+				: '';
+		} else {
+			formData.name = '' as string;
+			formData.level = '' as string;
+			formData.admission_fee = '' as string;
+			formData.monthly_fee = '' as string;
+			formData.readmission_fee = '' as string;
+		}
 	});
 
 	const submitForm = () => {
-		console.log({
-			name: (formData.name as string).trim(),
-			level: Number(formData.level),
-			admission_fee: Number(formData.admission_fee) * 100,
-			monthly_fee: Number(formData.monthly_fee) * 100,
-			readmission_fee: Number(formData.readmission_fee) * 100,
-			session_id: sessions.selectedSession?.id
-		});
 		invoke(isEditing ? 'edit_class' : 'create_class', {
 			id: selectedClassData?.id as number,
 			name: (formData.name as string).trim(),
@@ -53,6 +63,7 @@
 				formData.readmission_fee = '';
 
 				(document.getElementById('create-class-modal') as HTMLDialogElement).close();
+				isEditing = false;
 			})
 			.catch((err) => {
 				if (typeof err === 'string' && err.includes('UNIQUE constraint failed')) {

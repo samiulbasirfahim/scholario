@@ -148,6 +148,38 @@ impl Student {
         ))
     }
 
+    pub fn get_paginated(limit: i32, skip: i32) -> Result<Vec<Self>> {
+        let db = conn()?;
+        let mut stmt = db.prepare(
+            "SELECT id, name, class_id, section_id, session_id, dob, gender, religion, address,
+                phone, admission_date, is_resident, photo, health_notes, general_notes
+         FROM students
+         LIMIT ?1 OFFSET ?2",
+        )?;
+
+        let iter = stmt.query_map(params![limit, skip], |row| {
+            Ok(Student {
+                id: row.get(0)?,
+                name: row.get(1)?,
+                class_id: row.get(2)?,
+                section_id: row.get(3)?,
+                session_id: row.get(4)?,
+                dob: row.get(5)?,
+                gender: row.get(6)?,
+                religion: row.get(7)?,
+                address: row.get(8)?,
+                phone: row.get(9)?,
+                admission_date: row.get(10)?,
+                is_resident: row.get(11)?,
+                photo: row.get(12)?,
+                health_notes: row.get(13)?,
+                general_notes: row.get(14)?,
+            })
+        })?;
+
+        iter.collect()
+    }
+
     pub fn get() -> Result<Vec<Self>> {
         let db = conn()?;
         let mut stmt = db.prepare(

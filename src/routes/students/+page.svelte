@@ -17,7 +17,7 @@
 
 <Navbar>
 	<div class="flex-1">
-		<div class="breadcrumbs text-sm">
+		<div class="breadcrumbs font-semibold">
 			<ul>
 				<li>Students</li>
 
@@ -37,7 +37,7 @@
 		<input
 			type="text"
 			placeholder="Search"
-			class="input input-bordered w-48 transition-all ease-linear focus:w-64 focus:outline-none"
+			class="input input-bordered w-48 transition-all ease-linear focus:w-64 focus:outline-none transform-gpu"
 		/>
 
 		<label class="bg-accent text-accent-content flex items-center rounded px-2">

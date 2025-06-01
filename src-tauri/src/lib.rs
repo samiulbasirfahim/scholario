@@ -1,18 +1,20 @@
 mod commands;
 mod database;
+mod fake;
 
 use commands::class::*;
 use commands::guardian::*;
 use commands::session::*;
+use commands::student::*;
 use commands::subjects::*;
-use tauri::path::PathResolver;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
+            database::init().expect("Failed to create neccesary tables.");
             if cfg!(debug_assertions) {
-                database::init().expect("Failed to create neccesary tables.");
+                fake::generate_fake_data();
                 app.handle().plugin(
                     tauri_plugin_log::Builder::default()
                         .level(log::LevelFilter::Info)
@@ -22,6 +24,23 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            // Student commands
+            create_student,
+            get_students,
+            get_students_paginated,
+            delete_student,
+            edit_student,
+            // guardian commands
+            create_guardian,
+            get_guardians,
+            search_guardians,
+            delete_guardian,
+            edit_guardian,
+            //student guardian relationship
+            create_student_relationship,
+            get_student_relationships,
+            delete_student_relationship,
+            edit_student_relationship,
             // session commands
             create_session,
             get_sessions,
@@ -49,31 +68,6 @@ pub fn run() {
             get_class_subjects,
             delete_class_subject,
             edit_class_subject,
-            // // New commands for Student
-            // create_student,
-            // get_students,
-            // delete_student,
-            // edit_student,
-            // // New commands for Guardian
-            // create_guardian,
-            // get_guardians,
-            // delete_guardian,
-            // edit_guardian,
-            // // New commands for Teacher
-            // create_teacher,
-            // get_teachers,
-            // delete_teacher,
-            // edit_teacher,
-            // // New commands for Staff
-            // create_staff,
-            // get_staff,
-            // delete_staff,
-            // edit_staff,
-            // // New commands for StudentRelationship
-            // create_student_relationship,
-            // get_student_relationships,
-            // delete_student_relationship,
-            // edit_student_relationship,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

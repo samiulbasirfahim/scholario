@@ -1,11 +1,10 @@
 <script lang="ts">
 	import { toast } from '$lib/store/toast.svelte';
 	import { guardians } from '$lib/store/guardian.svelte';
-	import Icon from '@iconify/svelte';
 	import { invoke } from '@tauri-apps/api/core';
 	import type { Guardian } from '$lib/types/guardian';
 	import Toast from '../global/Toast.svelte';
-	import { onMount } from 'svelte';
+	import Icon from '@iconify/svelte';
 
 	let { guardians: guardians_selected = $bindable() } = $props();
 
@@ -31,7 +30,24 @@
 		studentModal.showModal();
 	}
 
-	onMount(() => guardians.fetch());
+	let searched_guardians = $state<Guardian[]>([]);
+
+	$effect(() => {
+		const q = searchTerm.trim();
+
+		if (!q) {
+			searched_guardians = guardians.data.slice(0, 9);
+			return;
+		}
+
+		(async () => {
+			try {
+				searched_guardians = await invoke<Guardian[]>('search_guardians', { query: q });
+			} catch (err) {
+				console.error(err);
+			}
+		})();
+	});
 
 	async function submitForm() {
 		try {
@@ -57,7 +73,6 @@
 	function handleFileUpload(event: Event) {
 		const input = event.target as HTMLInputElement;
 		const file = input.files ? input.files[0] : null;
-
 		if (file && file.type.startsWith('image/')) {
 			const reader = new FileReader();
 			reader.onload = function (e) {
@@ -72,7 +87,7 @@
 </script>
 
 <dialog id="manage-guardians-modal" class="modal">
-	<div class="modal-box w-11/12 max-w-4xl">
+	<div class="modal-box w-11/12 max-w-3xl">
 		<form method="dialog">
 			<button
 				class="btn btn-sm btn-circle btn-ghost absolute top-2 right-2"
@@ -95,47 +110,45 @@
 					required
 					bind:value={searchTerm}
 				/>
-				{#if guardians.data.length > 0}
-					<ul class="list grid max-h-86 grid-cols-1 gap-4 overflow-y-auto">
-						{#each guardians.data.filter((g) => !guardians_selected.some((existing: Guardian) => existing.id === g.id)) as guardian, i (i)}
-							<li
-								class="list-row bg-base-300 rounded-box flex items-center justify-between gap-4 p-2"
+				<ul class="list grid max-h-86 grid-cols-1 gap-4 overflow-y-auto">
+					{#each searched_guardians.filter((g) => !guardians_selected.some((existing: Guardian) => existing.id === g.id)) as guardian, i (i)}
+						<li
+							class="list-row bg-base-300 rounded-box flex items-center justify-between gap-4 p-2"
+						>
+							<div class="shrink-0">
+								<img
+									class="size-12 rounded-full object-cover"
+									src={guardian.photo}
+									alt="{guardian.name}'s photo"
+								/>
+							</div>
+
+							<div class="min-w-0 flex-1">
+								<div class="truncate font-medium">{guardian.name}</div>
+								<div class="truncate text-sm text-gray-500">
+									{guardian.phone}
+								</div>
+								<div class="truncate text-sm text-gray-400">{guardian.address}</div>
+							</div>
+
+							<button
+								class="btn btn-square btn-ghost"
+								onclick={(e) => {
+									e.preventDefault();
+									(
+										document.getElementById('guardian_relationship') as HTMLDialogElement
+									).showModal();
+									(document.getElementById('manage-guardians-modal') as HTMLDialogElement).close();
+									guardian_selected = guardian;
+								}}
 							>
-								<div class="shrink-0">
-									<img
-										class="size-12 rounded-full object-cover"
-										src={guardian.photo}
-										alt="{guardian.name}'s photo"
-									/>
-								</div>
+								<Icon icon="fluent:add-12-filled" font-size="26" />
+							</button>
+						</li>
+					{/each}
+				</ul>
 
-								<div class="min-w-0 flex-1">
-									<div class="truncate font-medium">{guardian.name}</div>
-									<div class="truncate text-sm text-gray-500">
-										{guardian.phone}
-									</div>
-									<div class="truncate text-sm text-gray-400">{guardian.address}</div>
-								</div>
-
-								<button
-									class="btn btn-square btn-ghost"
-									onclick={(e) => {
-										e.preventDefault();
-										(
-											document.getElementById('guardian_relationship') as HTMLDialogElement
-										).showModal();
-										(
-											document.getElementById('manage-guardians-modal') as HTMLDialogElement
-										).close();
-										guardian_selected = guardian;
-									}}
-								>
-									<Icon icon="fluent:add-12-filled" font-size="26" />
-								</button>
-							</li>
-						{/each}
-					</ul>
-				{:else}
+				{#if searched_guardians.filter((g) => !guardians_selected.some((existing: Guardian) => existing.id === g.id)).length < 1}
 					<div class="alert alert-info col-span-2">
 						<span>You haven't created any guardians yet, create one first</span>
 					</div>
@@ -150,7 +163,7 @@
 						submitForm();
 					}}
 				>
-					<p class="mb-4">Create guardian</p>
+					<p class="mb-4 text-lg font-bold">Create guardian</p>
 
 					<div>
 						<label for="name" class="block text-sm font-medium">Name</label>
@@ -172,7 +185,7 @@
 							id="name"
 							name="name"
 							class="input input-bordered w-full"
-							placeholder="Enter Guardian Name"
+							placeholder="Enter Guardian Address"
 							required
 							bind:value={form_data.address}
 						/>
@@ -190,6 +203,7 @@
 								minlength="10"
 								maxlength="10"
 								title="Must be 10 digits"
+								placeholder="10 digits"
 								bind:value={form_data.phone}
 							/>
 						</label>
@@ -237,9 +251,9 @@
 					class="btn btn-primary join-item"
 					onclick={(e) => {
 						e.preventDefault();
-						if (guardian_selected) {
+						if (guardian_selected !== null) {
 							guardians_selected.push({
-								...guardian_selected,
+								...(guardian_selected as Guardian),
 								relation
 							});
 						}

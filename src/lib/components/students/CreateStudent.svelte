@@ -29,8 +29,8 @@
 		class_id: '',
 		section_id: '',
 		dob: '',
-		gender: '',
-		religion: '',
+		gender: 'MALE',
+		religion: 'ISLAM',
 		address: '',
 		phone: '',
 		admission_date: new Date().toISOString().split('T')[0],
@@ -53,8 +53,8 @@
 	}
 
 	function openGuardiansModal() {
-		document.getElementById('create-student-modal')?.close();
-		document.getElementById('manage-guardians-modal')?.showModal();
+		(document.getElementById('create-student-modal') as HTMLDialogElement).close();
+		(document.getElementById('manage-guardians-modal') as HTMLDialogElement).showModal();
 	}
 
 	async function submitStudentForm(e: Event) {
@@ -65,6 +65,7 @@
 				name: form_data.name,
 				classId: Number(form_data.class_id),
 				sectionId: Number(form_data.section_id),
+				sessionId: sessions.selected,
 				dob: form_data.dob,
 				gender: form_data.gender,
 				religion: form_data.religion,
@@ -103,7 +104,7 @@
 </script>
 
 <dialog id="create-student-modal" class="modal">
-	<div class="modal-box w-11/12 max-w-4xl">
+	<div class="modal-box w-11/12 max-w-3xl">
 		<form method="dialog">
 			<button class="btn btn-sm btn-circle btn-ghost absolute top-2 right-2">✕</button>
 		</form>
@@ -118,7 +119,12 @@
 					<!-- Name -->
 					<div>
 						<label class="label">Name</label>
-						<input class="input input-bordered w-full" bind:value={form_data.name} required />
+						<input
+							class="input input-bordered w-full"
+							bind:value={form_data.name}
+							required
+							placeholder="Enter student name"
+						/>
 					</div>
 
 					<!-- Class -->
@@ -156,13 +162,19 @@
 							class="input input-bordered w-full"
 							bind:value={form_data.dob}
 							required
+							placeholder="Enter date of birth"
 						/>
 					</div>
 
 					<!-- Address -->
 					<div>
 						<label class="label">Address</label>
-						<input class="input input-bordered w-full" bind:value={form_data.address} required />
+						<input
+							class="input input-bordered w-full"
+							bind:value={form_data.address}
+							required
+							placeholder="Enter address"
+						/>
 					</div>
 
 					<!-- Phone -->
@@ -190,20 +202,27 @@
 							class="file-input w-full"
 							accept="image/*"
 							on:change={handleFileUpload}
+							placeholder="Upload student photo"
 						/>
 					</div>
 
 					<!-- Health Notes -->
 					<div class="md:col-span-2">
 						<label class="label">Health Notes</label>
-						<textarea class="textarea textarea-bordered w-full" bind:value={form_data.health_notes}
+						<textarea
+							class="textarea textarea-bordered w-full"
+							bind:value={form_data.health_notes}
+							placeholder="Enter any health-related notes"
 						></textarea>
 					</div>
 
 					<!-- General Notes -->
 					<div class="md:col-span-2">
 						<label class="label">General Notes</label>
-						<textarea class="textarea textarea-bordered w-full" bind:value={form_data.general_notes}
+						<textarea
+							class="textarea textarea-bordered w-full"
+							bind:value={form_data.general_notes}
+							placeholder="Enter any general notes"
 						></textarea>
 					</div>
 
@@ -217,15 +236,28 @@
 					{#if guardians.length > 0}
 						<div class="bg-base-200 rounded p-4 md:col-span-2">
 							<p class="mb-2 text-sm text-gray-500">Guardians</p>
-							<ul class="grid max-h-48 grid-cols-2 gap-4 overflow-y-auto">
+							<ul class="grid max-h-48 grid-cols-2 gap-4 overflow-y-auto pr-1">
 								{#each guardians as g (g.id)}
-									<li class="bg-base-300 flex items-center gap-4 rounded p-2">
-										<img src={g.photo} class="size-12 rounded-full object-cover" />
-										<div class="flex-1">
-											<div class="font-medium">{g.name}</div>
-											<div class="text-sm opacity-70">{g.relation} • {g.phone}</div>
+									<li class="bg-base-300 flex items-center gap-4 rounded p-2 shadow-sm">
+										<div class="size-12 flex-shrink-0 overflow-hidden rounded-full">
+											<img
+												src={g.photo}
+												alt={`Photo of ${g.name}`}
+												class="h-full w-full object-cover object-center"
+											/>
 										</div>
-										<button class="btn btn-square btn-ghost" on:click={() => removeGuardian(g.id)}>
+										<div class="min-w-0 flex-1">
+											<p class="truncate font-medium">{g.name}</p>
+											<p class="truncate text-sm text-gray-500">{g.relation ?? '—'} • {g.phone}</p>
+											<p class="truncate text-sm text-gray-500">{g.address ?? 'No address'}</p>
+										</div>
+										<button
+											type="button"
+											class="btn btn-square btn-ghost"
+											on:click={() => removeGuardian(g.id)}
+											title="Remove Guardian"
+											aria-label="Remove Guardian"
+										>
 											<Icon icon="fa:remove" />
 										</button>
 									</li>

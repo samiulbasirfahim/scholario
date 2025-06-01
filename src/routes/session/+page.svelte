@@ -77,26 +77,35 @@
 	}
 
 	function removeSession(id: number) {
-		sessions.remove(id);
-		invoke('delete_session', { id }).catch((e) => {
-			console.error('Failed to delete session:', e);
-			toast.set({ message: 'Failed to delete session', type: 'error' });
-		});
+		invoke('delete_session', { id })
+			.then(() => {
+				sessions.remove(id);
+				toast.set({ message: 'Session deleted successfully', type: 'success' });
+				if (sessions.selected === id) {
+					sessions.selected = null;
+				}
+			})
+			.catch((e) => {
+				console.error('Failed to delete session:', e);
+				toast.set({ message: 'Failed to delete session', type: 'error' });
+			});
 	}
 
 	onMount(() => {
 		sessions.fetch();
 	});
+	$effect(() => {
+		console.log($state.snapshot(sessions.data));
+	});
 </script>
 
-<div class="flex gap-6">
-	<div class="w-full md:w-1/2">
-		<h2 class="text-primary mb-3 text-xl font-bold">Manage Sessions</h2>
-
+<h2 class="text-primary mb-3 text-xl font-bold">Manage Sessions</h2>
+<div class="flex gap-2">
+	<div class="w-1/2">
 		<form class="bg-base-100 border-base-300 space-y-3 rounded border p-4">
-			<p class="text-secondary font-semibold">
+			<h2 class="text-primary mb-3 text-lg font-semibold">
 				{isEditing ? 'Edit Session' : 'Create New Session'}
-			</p>
+			</h2>
 
 			<input
 				bind:value={form.name}
@@ -118,8 +127,8 @@
 			</div>
 		</form>
 
-		{#if sessions.data.length > 0}
-			<div class="bg-base-100 border-base-300 mt-4 space-y-3 rounded border p-4">
+		<div class="bg-base-100 border-base-300 mt-4 space-y-3 rounded border p-4">
+			{#if sessions.data.length > 0}
 				<div class="overflow-x-auto">
 					<table class="table">
 						<thead>
@@ -149,15 +158,15 @@
 						</tbody>
 					</table>
 				</div>
-			</div>
-		{:else}
-			<p class="text-secondary text-sm">No sessions added yet.</p>
-		{/if}
+			{:else}
+				<p class="text-secondary text-sm">No sessions added yet.</p>
+			{/if}
+		</div>
 	</div>
 
-	<div class="w-full pt-8 md:w-1/2">
-		<div class="border-accent text-accent bg-base-200 rounded border p-4">
-			<h2 class="text-primary mb-3 text-lg font-semibold">Session Overview</h2>
+	<div class="w-1/2">
+		<div class="bg-base-100 border-base-300 text-accent w-full rounded border p-4">
+			<h2 class="text-primary mb-3 text-xl font-bold">Session Details</h2>
 			{#if sessions.selected}
 				<div class="space-y-3 text-sm">
 					<div>
