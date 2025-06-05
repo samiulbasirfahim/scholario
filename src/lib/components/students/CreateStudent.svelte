@@ -3,11 +3,15 @@
 	import Guardians from './Guardians.svelte';
 	import { onMount } from 'svelte';
 	import { classes, sections } from '$lib/store/class.svelte';
-	import { students, studentRelationships } from '$lib/store/student.svelte';
+	import { students } from '$lib/store/student.svelte';
 	import { invoke } from '@tauri-apps/api/core';
 
-	import type { Student, StudentRelationship } from '$lib/types/student';
+	import type { Student } from '$lib/types/student';
 	import { sessions } from '$lib/store/session.svelte';
+	import { toast } from '$lib/store/toast.svelte';
+	import Toast from '../global/Toast.svelte';
+	import { studentRelationships } from '$lib/store/guardian.svelte';
+	import type { StudentRelationship } from '$lib/types/guardian';
 
 	type Guardian = {
 		id: number;
@@ -35,6 +39,7 @@
 		phone: '',
 		admission_date: new Date().toISOString().split('T')[0],
 		is_resident: false,
+		roll: '',
 		photo: '',
 		health_notes: '',
 		general_notes: ''
@@ -63,21 +68,21 @@
 		try {
 			const student: Student = await invoke('create_student', {
 				name: form_data.name,
-				classId: Number(form_data.class_id),
-				sectionId: Number(form_data.section_id),
-				sessionId: sessions.selected,
+				class_id: Number(form_data.class_id),
+				section_id: Number(form_data.section_id),
+				session_id: sessions.selected,
 				dob: form_data.dob,
 				gender: form_data.gender,
 				religion: form_data.religion,
 				address: form_data.address,
 				phone: form_data.phone ? '+880' + form_data.phone : null,
-				admissionDate: form_data.admission_date,
-				isResident: form_data.is_resident,
+				admission_date: form_data.admission_date,
+				is_resident: form_data.is_resident,
+				roll: -1,
 				photo: form_data.photo || null,
-				healthNotes: form_data.health_notes || null,
-				generalNotes: form_data.general_notes || null
+				health_notes: form_data.health_notes || null,
+				general_notes: form_data.general_notes || null
 			});
-
 			students.add(student);
 
 			for (const guardian of guardians) {
@@ -89,17 +94,15 @@
 				studentRelationships.add(relation);
 			}
 
-			alert('Student created successfully!');
+			toast.set({ message: 'Student created successfully!', type: 'success' });
 		} catch (err) {
 			console.error(err);
-			alert('Failed to create student');
+			toast.set({ message: 'Failed to create student', type: 'error' });
 		}
 	}
 
 	onMount(async () => {
-		await sessions.fetch();
 		classes.fetch(sessions.selected as number);
-		sections.fetch();
 	});
 </script>
 
@@ -115,10 +118,10 @@
 			{#if classes.get_by_current_session().length === 0}
 				<div class="alert alert-warning">Please create a class first</div>
 			{:else}
-				<div class="grid grid-cols-1 gap-2 md:grid-cols-2">
+				<div class="grid grid-cols-1 gap-3 md:grid-cols-2">
 					<!-- Name -->
 					<div>
-						<label class="label">Name</label>
+						<label class="mb-1 block text-sm font-medium">Name</label>
 						<input
 							class="input input-bordered w-full"
 							bind:value={form_data.name}
@@ -129,7 +132,7 @@
 
 					<!-- Class -->
 					<div>
-						<label class="label">Class</label>
+						<label class="mb-1 block text-sm font-medium">Class</label>
 						<select class="input input-bordered w-full" bind:value={form_data.class_id} required>
 							<option value="">Select Class</option>
 							{#each classes.get_by_current_session() as cls, i (i)}
@@ -141,7 +144,7 @@
 					<!-- Section -->
 					{#if sections.get_by_class(Number(form_data.class_id)).length > 0}
 						<div>
-							<label class="label">Section</label>
+							<label class="mb-1 block text-sm font-medium">Section</label>
 							<select
 								class="input input-bordered w-full"
 								bind:value={form_data.section_id}
@@ -155,20 +158,20 @@
 						</div>
 					{/if}
 
+					<!-- Date of Birth -->
 					<div>
-						<label class="label">Date of Birth</label>
+						<label class="mb-1 block text-sm font-medium">Date of Birth</label>
 						<input
 							type="date"
 							class="input input-bordered w-full"
 							bind:value={form_data.dob}
 							required
-							placeholder="Enter date of birth"
 						/>
 					</div>
 
 					<!-- Address -->
 					<div>
-						<label class="label">Address</label>
+						<label class="mb-1 block text-sm font-medium">Address</label>
 						<input
 							class="input input-bordered w-full"
 							bind:value={form_data.address}
@@ -178,17 +181,19 @@
 					</div>
 
 					<!-- Phone -->
-					<div class="w-full">
-						<label class="label">Phone</label>
-						<label class="input input-bordered flex w-full items-center gap-2">
+					<div>
+						<label class="mb-1 block text-sm font-medium">Phone</label>
+						<label class="input validator w-full">
 							+880
 							<input
-								class="w-full grow"
 								type="tel"
-								placeholder="10 digits"
-								pattern="[0-9]{10}"
+								class="w-full tabular-nums"
+								required
+								pattern="[0-9]*"
 								minlength="10"
 								maxlength="10"
+								title="Must be 10 digits"
+								placeholder="10 digits"
 								bind:value={form_data.phone}
 							/>
 						</label>
@@ -196,19 +201,18 @@
 
 					<!-- Photo Upload -->
 					<div>
-						<label class="label">Photo</label>
+						<label class="mb-1 block text-sm font-medium">Photo</label>
 						<input
 							type="file"
 							class="file-input w-full"
 							accept="image/*"
 							on:change={handleFileUpload}
-							placeholder="Upload student photo"
 						/>
 					</div>
 
 					<!-- Health Notes -->
 					<div class="md:col-span-2">
-						<label class="label">Health Notes</label>
+						<label class="mb-1 block text-sm font-medium">Health Notes</label>
 						<textarea
 							class="textarea textarea-bordered w-full"
 							bind:value={form_data.health_notes}
@@ -218,7 +222,7 @@
 
 					<!-- General Notes -->
 					<div class="md:col-span-2">
-						<label class="label">General Notes</label>
+						<label class="mb-1 block text-sm font-medium">General Notes</label>
 						<textarea
 							class="textarea textarea-bordered w-full"
 							bind:value={form_data.general_notes}
@@ -280,6 +284,7 @@
 			{/if}
 		</form>
 	</div>
+	<Toast />
 </dialog>
 
 <Guardians bind:guardians />

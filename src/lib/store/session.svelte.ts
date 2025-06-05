@@ -6,10 +6,21 @@ class Sessions {
     data = $state<Session[]>([]);
     selected = $state<null | number>(null);
 
+    fetched = false;
+
     async fetch() {
+        if (this.fetched) return;
         try {
             this.data = await invoke<Session[]>('get_sessions');
-            sessions.selected = sessions.data[sessions.data?.length - 1]?.id;
+            this.fetched = true;
+            if (this.data.length > 0) {
+                const latestSession = this.data.reduce((latest, current) => {
+                    return new Date(current.end_date) > new Date(latest.end_date) ? current : latest;
+                }, this.data[0]);
+                this.selected = latestSession.id;
+            } else {
+                this.selected = null;
+            }
         } catch (err) {
             console.error('Error fetching sessions:', err);
             toast.set({ message: 'Failed to fetch sessions', type: 'error' });
@@ -41,7 +52,7 @@ class Sessions {
         return this.selected != null ? (this.data.find((s) => s.id === this.selected) ?? null) : null;
     }
 
-    get(id: number): Session | undefined {
+    async get(id: number) {
         return this.data.find((s) => s.id === id);
     }
 

@@ -55,9 +55,7 @@
 			class="space-y-4"
 		>
 			<div class="form-control">
-				<label class="label" for="name">
-					<span class="label-text">Name</span>
-				</label>
+				<label class="mb-1 block text-sm font-medium">Name</label>
 				<input
 					type="text"
 					class="input input-bordered w-full"
@@ -67,9 +65,7 @@
 			</div>
 
 			<div class="form-control">
-				<label class="label" for="code">
-					<span class="label-text">Code</span>
-				</label>
+				<label class="mb-1 block text-sm font-medium">Code</label>
 				<input
 					type="number"
 					class="input input-bordered w-full"

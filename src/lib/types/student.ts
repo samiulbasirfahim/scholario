@@ -3,19 +3,16 @@ export interface Student {
     name: string;
     class_id: number;
     section_id: number;
-    dob: string; // or Date if you parse it
+    session_id: number;
+    dob: string; // ISO date string
     gender: string;
     religion: string;
     address: string;
-    phone: string;
-    admission_date: string;
+    phone: string | null;
+    admission_date: string; // ISO date string
     is_resident: boolean;
-    photo?: string | null;
-}
-
-export interface StudentRelationship {
-    id: number;
-    student_id: number;
-    related_id: number;
-    relationship?: string | null;
+    roll: number;
+    photo: string | null;
+    health_notes: string | null;
+    general_notes: string | null;
 }

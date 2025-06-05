@@ -54,9 +54,7 @@
 				class="space-y-2"
 			>
 				<div class="form-control w-full">
-					<label class="label" for="class">
-						<span class="label-text text-xs font-semibold">Class</span>
-					</label>
+					<label class="mb-1 block text-sm font-medium">Class</label>
 					<select
 						id="class"
 						class="select select-bordered w-full"
@@ -71,9 +69,7 @@
 				</div>
 
 				<div class="form-control w-full">
-					<label class="label" for="name">
-						<span class="label-text text-xs font-semibold">Section Name</span>
-					</label>
+					<label class="mb-1 block text-sm font-medium">Name</label>
 					<input
 						id="name"
 						type="text"

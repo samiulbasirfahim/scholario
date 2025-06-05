@@ -28,7 +28,7 @@
 				</label>
 				<select bind:value={filter.class} class="select select-bordered w-full">
 					<option value="">All Classes</option>
-					{#each classes.data as cls, i (i)}
+					{#each classes.get_by_current_session() as cls, i (i)}
 						<option value={cls.id}>{cls.name}</option>
 					{/each}
 				</select>

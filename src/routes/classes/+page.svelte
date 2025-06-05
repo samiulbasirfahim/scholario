@@ -43,7 +43,7 @@
 		}
 	});
 
-	let selectedClass: number | null = $state(null);
+	let selectedClass: number = $state(-1);
 	let selectedClassData = $derived(classes.get(sessions.selected as number, selectedClass));
 
 	const toggleSubject = (subject_id: number) => {
@@ -228,7 +228,7 @@
 		<div class="mt-4 flex gap-2">
 			<div class="w-1/2">
 				<div
-					class="bg-base-100 border-base-300 max-h-[60vh] w-full overflow-auto rounded border p-4"
+					class="bg-base-100 border-base-300 max-h-[85vh] w-full overflow-auto rounded border p-4"
 				>
 					<div class="overflow-x-auto">
 						<table class="table">
@@ -267,7 +267,7 @@
 				<div class="bg-base-100 border-base-300 text-accent w-full rounded border p-4">
 					<h2 class="text-primary mb-3 text-xl font-bold">Class Details</h2>
 
-					{#if selectedClass !== null}
+					{#if selectedClass >= 0}
 						<div class="space-y-3 text-sm">
 							<div class="flex w-full">
 								<div class="w-1/2">

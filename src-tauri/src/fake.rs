@@ -1,14 +1,18 @@
-use chrono::NaiveDate;
+use tauri::path::PathResolver;
 
-use crate::commands::{class, session};
+use std::path;
+use tauri::Runtime;
 
+pub fn get_app_data_dir(resolver: &PathResolver<impl Runtime>) -> path::PathBuf {
+    let app_data_dir = path::Path::new(&resolver.local_data_dir().unwrap()).join("lichess-tauri");
+
+    assert!(
+        app_data_dir.exists() || std::fs::create_dir(&app_data_dir).is_ok(),
+        "Error creating app data directory at {:?}",
+        app_data_dir.to_str().unwrap()
+    );
+
+    app_data_dir
+}
 pub fn generate_fake_data() {
-    let s = session::create_session(
-        "2025".to_string(),
-        NaiveDate::parse_from_str("2025-06-01", "%Y-%m-%d").unwrap(),
-        NaiveDate::parse_from_str("2026-06-01", "%Y-%m-%d").unwrap(),
-    )
-    .unwrap();
-    let c = class::create_class("Primary".to_string(), 1, 100000, 40000, 80000, s.id).unwrap();
-    let sec = class::create_section(c.id, "Basic".to_string()).unwrap();
 }

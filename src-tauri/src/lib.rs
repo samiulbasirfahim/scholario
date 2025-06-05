@@ -1,6 +1,7 @@
 mod commands;
 mod database;
 mod fake;
+mod utility;
 
 use commands::class::*;
 use commands::guardian::*;
@@ -12,7 +13,7 @@ use commands::subjects::*;
 pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
-            database::init().expect("Failed to create neccesary tables.");
+            database::setup(app);
             if cfg!(debug_assertions) {
                 fake::generate_fake_data();
                 app.handle().plugin(
@@ -27,7 +28,6 @@ pub fn run() {
             // Student commands
             create_student,
             get_students,
-            get_students_paginated,
             delete_student,
             edit_student,
             // guardian commands

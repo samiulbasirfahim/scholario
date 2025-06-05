@@ -91,9 +91,6 @@
 			});
 	}
 
-	onMount(() => {
-		sessions.fetch();
-	});
 	$effect(() => {
 		console.log($state.snapshot(sessions.data));
 	});

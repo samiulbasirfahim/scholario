@@ -97,9 +97,7 @@
 		{#if sessions.selectedSession?.id}
 			<form on:submit|preventDefault={submitForm} class="space-y-2">
 				<div class="form-control w-full">
-					<label class="label" for="name">
-						<span class="label-text font-semibold">Name</span>
-					</label>
+					<label class="mb-1 block text-sm font-medium">Name</label>
 					<input
 						id="name"
 						type="text"
@@ -111,9 +109,7 @@
 				</div>
 
 				<div class="form-control w-full">
-					<label class="label" for="level">
-						<span class="label-text font-semibold">Level</span>
-					</label>
+					<label class="mb-1 block text-sm font-medium">Level</label>
 					<input
 						id="level"
 						type="number"
@@ -126,9 +122,7 @@
 				</div>
 
 				<div class="form-control w-full">
-					<label class="label" for="admission_fee">
-						<span class="label-text font-semibold">Admission Fee</span>
-					</label>
+					<label class="mb-1 block text-sm font-medium">Admission Fee</label>
 					<input
 						id="admission_fee"
 						type="number"
@@ -142,9 +136,7 @@
 				</div>
 
 				<div class="form-control w-full">
-					<label class="label" for="monthly_fee">
-						<span class="label-text font-semibold">Monthly Fee</span>
-					</label>
+					<label class="mb-1 block text-sm font-medium">Monthly Fee</label>
 					<input
 						id="monthly_fee"
 						type="number"
@@ -158,9 +150,7 @@
 				</div>
 
 				<div class="form-control w-full">
-					<label class="label" for="readmission_fee">
-						<span class="label-text font-semibold">Re-admission Fee</span>
-					</label>
+					<label class="mb-1 block text-sm font-medium">Re-admission Fee</label>
 					<input
 						id="readmission_fee"
 						type="number"

@@ -3,7 +3,7 @@ use tauri::command;
 
 use crate::database::student::Student;
 
-#[command(rename_all = "snake_case")]
+#[command]
 pub fn create_student(
     name: String,
     class_id: i32,
@@ -16,6 +16,7 @@ pub fn create_student(
     phone: Option<String>,
     admission_date: String,
     is_resident: bool,
+    roll: i32,
     photo: Option<String>,
     health_notes: Option<String>,
     general_notes: Option<String>,
@@ -24,6 +25,7 @@ pub fn create_student(
         .map_err(|e| format!("Invalid date of birth: {}", e))?;
     let admission_date = NaiveDate::parse_from_str(&admission_date, "%Y-%m-%d")
         .map_err(|e| format!("Invalid admission date: {}", e))?;
+
     Student::create(
         &name,
         class_id,
@@ -36,6 +38,7 @@ pub fn create_student(
         phone,
         admission_date,
         is_resident,
+        roll,
         photo,
         health_notes,
         general_notes,
@@ -44,16 +47,15 @@ pub fn create_student(
 }
 
 #[command]
-pub fn get_students() -> Result<Vec<Student>, String> {
-    Student::get().map_err(|e| e.to_string())
+pub fn get_students(
+    session_id: i32,
+    class_id: Option<i32>,
+    section_id: Option<i32>,
+) -> Result<Vec<Student>, String> {
+    Student::get(session_id, class_id, section_id).map_err(|e| e.to_string())
 }
 
-#[command(rename_all = "snake_case")]
-pub fn get_students_paginated(limit: i32, skip: i32) -> Result<Vec<Student>, String> {
-    Student::get_paginated(limit, skip).map_err(|e| e.to_string())
-}
-
-#[command(rename_all = "snake_case")]
+#[command]
 pub fn edit_student(
     id: i32,
     name: String,
@@ -67,6 +69,7 @@ pub fn edit_student(
     phone: Option<String>,
     admission_date: String,
     is_resident: bool,
+    roll: i32,
     photo: Option<String>,
     health_notes: Option<String>,
     general_notes: Option<String>,
@@ -75,6 +78,7 @@ pub fn edit_student(
         .map_err(|e| format!("Invalid date of birth: {}", e))?;
     let admission_date = NaiveDate::parse_from_str(&admission_date, "%Y-%m-%d")
         .map_err(|e| format!("Invalid admission date: {}", e))?;
+
     Student::edit(
         id,
         &name,
@@ -88,6 +92,7 @@ pub fn edit_student(
         phone,
         admission_date,
         is_resident,
+        roll,
         photo,
         health_notes,
         general_notes,
