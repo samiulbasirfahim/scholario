@@ -8,7 +8,7 @@ pub struct Student {
     pub id: i32,
     pub name: String,
     pub class_id: i32,
-    pub section_id: i32,
+    pub section_id: Option<i32>,
     pub session_id: i32,
     pub dob: NaiveDate,
     pub gender: String,
@@ -28,7 +28,7 @@ impl Student {
         id: i32,
         name: &str,
         class_id: i32,
-        section_id: i32,
+        section_id: Option<i32>,
         session_id: i32,
         dob: NaiveDate,
         gender: &str,
@@ -70,7 +70,7 @@ impl Student {
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
                 class_id INTEGER NOT NULL,
-                section_id INTEGER NOT NULL,
+                section_id INTEGER,
                 session_id INTEGER NOT NULL,
                 dob DATE NOT NULL,
                 gender TEXT NOT NULL,
@@ -85,7 +85,7 @@ impl Student {
                 general_notes TEXT,
                 FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE RESTRICT,
                 FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE,
-                FOREIGN KEY (section_id) REFERENCES sections(id) ON DELETE RESTRICT,
+                FOREIGN KEY (section_id) REFERENCES sections(id) ON DELETE SET NULL,
                 UNIQUE (class_id, section_id, roll)
             )",
             [],
@@ -96,7 +96,7 @@ impl Student {
     pub fn create(
         name: &str,
         class_id: i32,
-        section_id: i32,
+        section_id: Option<i32>,
         session_id: i32,
         dob: NaiveDate,
         gender: &str,
@@ -105,19 +105,43 @@ impl Student {
         phone: Option<String>,
         admission_date: NaiveDate,
         is_resident: bool,
-        roll: i32,
+        mut roll: i32,
         photo: Option<String>,
         health_notes: Option<String>,
         general_notes: Option<String>,
     ) -> Result<Self> {
         let db = conn()?;
         db.execute("PRAGMA foreign_keys = ON", [])?;
+
+        if roll == -1 {
+            let mut query =
+                String::from("SELECT COUNT(*) FROM students WHERE class_id = ? AND session_id = ?");
+            let mut params_vec: Vec<Box<dyn rusqlite::ToSql>> =
+                vec![Box::new(class_id), Box::new(session_id)];
+
+            if let Some(sec_id) = section_id {
+                query.push_str(" AND section_id = ?");
+                params_vec.push(Box::new(sec_id));
+            } else {
+                query.push_str(" AND section_id IS NULL");
+            }
+
+            let mut stmt = db.prepare(&query)?;
+
+            let params_refs: Vec<&dyn rusqlite::ToSql> =
+                params_vec.iter().map(|p| p.as_ref()).collect();
+            roll = stmt.query_row(&params_refs[..], |row| {
+                let count: i32 = row.get(0)?;
+                Ok(count + 1)
+            })?;
+        }
+
         db.execute(
             "INSERT INTO students (
-                name, class_id, section_id, session_id, dob, gender, religion,
-                address, phone, admission_date, is_resident, roll, photo,
-                health_notes, general_notes
-            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15)",
+            name, class_id, section_id, session_id, dob, gender, religion,
+            address, phone, admission_date, is_resident, roll, photo,
+            health_notes, general_notes
+        ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15)",
             params![
                 name,
                 class_id,
@@ -157,14 +181,12 @@ impl Student {
             general_notes,
         ))
     }
-
     pub fn get(
         session_id: i32,
         class_id: Option<i32>,
         section_id: Option<i32>,
     ) -> Result<Vec<Self>> {
         let db = conn()?;
-        db.execute("PRAGMA foreign_keys = ON", [])?;
 
         let mut query = String::from(
             "SELECT id, name, class_id, section_id, session_id, dob, gender, religion, address,
@@ -184,6 +206,8 @@ impl Student {
             params_c.push(Box::new(section));
         }
 
+        query.push_str(" ORDER BY roll ASC");
+
         let param_refs: Vec<&dyn rusqlite::ToSql> = params_c.iter().map(|p| p.as_ref()).collect();
         let mut stmt = db.prepare(&query)?;
         let students = stmt.query_map(param_refs.as_slice(), |row| {
@@ -191,7 +215,7 @@ impl Student {
                 id: row.get(0)?,
                 name: row.get(1)?,
                 class_id: row.get(2)?,
-                section_id: row.get(3)?,
+                section_id: row.get::<_, Option<i32>>(3)?,
                 session_id: row.get(4)?,
                 dob: row.get(5)?,
                 gender: row.get(6)?,
@@ -213,7 +237,7 @@ impl Student {
         id: i32,
         name: &str,
         class_id: i32,
-        section_id: i32,
+        section_id: Option<i32>,
         session_id: i32,
         dob: NaiveDate,
         gender: &str,

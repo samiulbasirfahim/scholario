@@ -3,11 +3,11 @@ use tauri::command;
 
 use crate::database::student::Student;
 
-#[command]
+#[command(rename_all = "snake_case")]
 pub fn create_student(
     name: String,
     class_id: i32,
-    section_id: i32,
+    section_id: Option<i32>,
     session_id: i32,
     dob: String,
     gender: String,
@@ -46,7 +46,7 @@ pub fn create_student(
     .map_err(|e| e.to_string())
 }
 
-#[command]
+#[command(rename_all = "snake_case")]
 pub fn get_students(
     session_id: i32,
     class_id: Option<i32>,
@@ -55,12 +55,12 @@ pub fn get_students(
     Student::get(session_id, class_id, section_id).map_err(|e| e.to_string())
 }
 
-#[command]
+#[command(rename_all = "snake_case")]
 pub fn edit_student(
     id: i32,
     name: String,
     class_id: i32,
-    section_id: i32,
+    section_id: Option<i32>, // <-- fixed this to Option<i32>
     session_id: i32,
     dob: String,
     gender: String,
@@ -100,7 +100,7 @@ pub fn edit_student(
     .map_err(|e| e.to_string())
 }
 
-#[command]
+#[command(rename_all = "snake_case")]
 pub fn delete_student(id: i32) -> Result<(), String> {
     Student::delete(id).map_err(|e| e.to_string())
 }

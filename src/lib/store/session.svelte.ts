@@ -52,7 +52,7 @@ class Sessions {
         return this.selected != null ? (this.data.find((s) => s.id === this.selected) ?? null) : null;
     }
 
-    async get(id: number) {
+    get(id: number) {
         return this.data.find((s) => s.id === id);
     }
 

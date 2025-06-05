@@ -13,6 +13,8 @@
 	import { studentRelationships } from '$lib/store/guardian.svelte';
 	import type { StudentRelationship } from '$lib/types/guardian';
 
+	let { isEditing = $bindable(false), selectedStudentData } = $props();
+
 	type Guardian = {
 		id: number;
 		name: string;
@@ -33,8 +35,8 @@
 		class_id: '',
 		section_id: '',
 		dob: '',
-		gender: 'MALE',
-		religion: 'ISLAM',
+		gender: '',
+		religion: '',
 		address: '',
 		phone: '',
 		admission_date: new Date().toISOString().split('T')[0],
@@ -43,6 +45,42 @@
 		photo: '',
 		health_notes: '',
 		general_notes: ''
+	});
+
+	$effect(() => {
+		if (isEditing && selectedStudentData) {
+			form_data.name = selectedStudentData.name ?? '';
+			form_data.class_id = selectedStudentData.class_id ?? '';
+			form_data.section_id = selectedStudentData.section_id ?? '';
+			form_data.dob = selectedStudentData.dob ?? '';
+			form_data.gender = selectedStudentData.gender ?? '';
+			form_data.religion = selectedStudentData.religion ?? '';
+			form_data.address = selectedStudentData.address ?? '';
+			form_data.phone = selectedStudentData.phone?.slice(4) ?? '';
+			form_data.admission_date = selectedStudentData.admission_date ?? '';
+			form_data.is_resident = selectedStudentData.is_resident ?? false;
+			form_data.roll = selectedStudentData.roll?.toString() ?? '';
+			form_data.photo = selectedStudentData.photo ?? '';
+			form_data.health_notes = selectedStudentData.health_notes ?? '';
+			form_data.general_notes = selectedStudentData.general_notes ?? '';
+		} else {
+			form_data = {
+				name: '',
+				class_id: '',
+				section_id: '',
+				dob: '',
+				gender: '',
+				religion: '',
+				address: '',
+				phone: '',
+				admission_date: new Date().toISOString().split('T')[0],
+				is_resident: false,
+				roll: '',
+				photo: '',
+				health_notes: '',
+				general_notes: ''
+			};
+		}
 	});
 
 	function handleFileUpload(event: Event) {
@@ -62,43 +100,77 @@
 		(document.getElementById('manage-guardians-modal') as HTMLDialogElement).showModal();
 	}
 
-	async function submitStudentForm(e: Event) {
-		e.preventDefault();
+	async function submitStudentForm() {
+		invoke(isEditing ? 'edit_student' : 'create_student', {
+			id: isEditing ? selectedStudentData?.id : undefined,
+			name: form_data.name,
+			class_id: Number(form_data.class_id),
+			section_id: form_data.section_id ? Number(form_data.section_id) : null,
+			session_id: sessions.selected,
+			dob: form_data.dob,
+			gender: form_data.gender,
+			religion: form_data.religion,
+			address: form_data.address,
+			phone: form_data.phone ? '+880' + form_data.phone : null,
+			admission_date: form_data.admission_date,
+			is_resident: form_data.is_resident,
+			roll: isEditing ? Number(form_data.roll) : -1,
+			photo: form_data.photo || null,
+			health_notes: form_data.health_notes || null,
+			general_notes: form_data.general_notes || null
+		})
+			.then((student) => {
+				if (isEditing) {
+					students.update(student as Student);
+					toast.set({ message: 'Student updated successfully!', type: 'success' });
+				} else {
+					students.add(student as Student);
+					toast.set({ message: 'Student created successfully!', type: 'success' });
+				}
 
-		try {
-			const student: Student = await invoke('create_student', {
-				name: form_data.name,
-				class_id: Number(form_data.class_id),
-				section_id: Number(form_data.section_id),
-				session_id: sessions.selected,
-				dob: form_data.dob,
-				gender: form_data.gender,
-				religion: form_data.religion,
-				address: form_data.address,
-				phone: form_data.phone ? '+880' + form_data.phone : null,
-				admission_date: form_data.admission_date,
-				is_resident: form_data.is_resident,
-				roll: -1,
-				photo: form_data.photo || null,
-				health_notes: form_data.health_notes || null,
-				general_notes: form_data.general_notes || null
+				form_data.name = '';
+				form_data.class_id = '';
+				form_data.section_id = '';
+				form_data.dob = '';
+				form_data.gender = '';
+				form_data.religion = '';
+				form_data.address = '';
+				form_data.phone = '';
+				form_data.admission_date = new Date().toISOString().split('T')[0];
+				form_data.is_resident = false;
+				form_data.roll = '';
+				form_data.photo = '';
+				form_data.health_notes = '';
+				form_data.general_notes = '';
+
+				isEditing = false;
+			})
+			.catch((err) => {
+				console.error(err);
+
+				if (typeof err === 'string' && err.includes('UNIQUE constraint failed')) {
+					if (err.includes('students.roll')) {
+						toast.set({ message: 'Roll number must be unique', type: 'error' });
+					} else {
+						toast.set({ message: 'Duplicate entry detected', type: 'error' });
+					}
+				} else {
+					toast.set({
+						message: isEditing ? 'Failed to update student' : 'Failed to create student',
+						type: 'error'
+					});
+				}
 			});
-			students.add(student);
-
-			for (const guardian of guardians) {
-				const relation: StudentRelationship = await invoke('create_student_relationship', {
-					studentId: student.id!,
-					relatedId: guardian.id,
-					relationship: guardian.relation || null
-				});
-				studentRelationships.add(relation);
-			}
-
-			toast.set({ message: 'Student created successfully!', type: 'success' });
-		} catch (err) {
-			console.error(err);
-			toast.set({ message: 'Failed to create student', type: 'error' });
-		}
+		// 	for (const guardian of guardians) {
+		// 		const relation: StudentRelationship = await invoke('create_student_relationship', {
+		// 			studentId: student.id!,
+		// 			relatedId: guardian.id,
+		// 			relationship: guardian.relation || null
+		// 		});
+		// 		studentRelationships.add(relation);
+		// 	}
+		//
+		// 	toast.set({ message: 'Student created successfully!', type: 'success' });
 	}
 
 	onMount(async () => {
@@ -112,7 +184,7 @@
 			<button class="btn btn-sm btn-circle btn-ghost absolute top-2 right-2">✕</button>
 		</form>
 
-		<h3 class="mb-4 text-lg font-bold">Create Student</h3>
+		<h3 class="mb-4 text-lg font-bold">{isEditing ? 'Edit' : 'Create'} Student</h3>
 
 		<form on:submit|preventDefault={submitStudentForm} class="space-y-2">
 			{#if classes.get_by_current_session().length === 0}
@@ -180,7 +252,6 @@
 						/>
 					</div>
 
-					<!-- Phone -->
 					<div>
 						<label class="mb-1 block text-sm font-medium">Phone</label>
 						<label class="input validator w-full">
@@ -199,7 +270,28 @@
 						</label>
 					</div>
 
-					<!-- Photo Upload -->
+					<div>
+						<label class="mb-1 block text-sm font-medium">Gender</label>
+						<select class="select w-full" bind:value={form_data.gender}>
+							<option disabled selected value="">Select gender</option>
+							<option value="Male">Male</option>
+							<option value="Female">Female</option>
+							<option value="Other">Other</option>
+						</select>
+					</div>
+
+					<div>
+						<label class="mb-1 block text-sm font-medium">Religion</label>
+						<select class="select w-full" bind:value={form_data.religion}>
+							<option disabled selected value="">Select religion</option>
+							<option value="Islam">Islam</option>
+							<option value="Hinduism">Hinduism</option>
+							<option value="Christianity">Christianity</option>
+							<option value="Buddhism">Buddhism</option>
+							<option value="Other">Other</option>
+						</select>
+					</div>
+
 					<div>
 						<label class="mb-1 block text-sm font-medium">Photo</label>
 						<input
@@ -279,7 +371,7 @@
 					<button class="btn btn-secondary" on:click|preventDefault={openGuardiansModal}>
 						Manage Guardians
 					</button>
-					<button type="submit" class="btn btn-primary">Create Student</button>
+					<button type="submit" class="btn btn-primary">{isEditing ? 'Edit' : 'Create'}</button>
 				</div>
 			{/if}
 		</form>

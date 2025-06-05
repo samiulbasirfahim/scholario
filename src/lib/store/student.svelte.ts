@@ -5,8 +5,8 @@ import { sessions } from './session.svelte';
 
 class Students {
     data: Map<number, Map<number, Map<number, Student[]>>> = new Map();
-
-    fetchedKeys: Set<string> = new Set();
+    fetchedKeys = new Set();
+    reactiveCounter = $state(0);
 
     private makeKey(session_id: number, class_id?: number, section_id?: number): string {
         return `${session_id}-${class_id ?? 'all'}-${section_id ?? 'all'}`;
@@ -36,17 +36,43 @@ class Students {
         }
     }
 
-    private async fetch(session_id: number, class_id?: number, section_id?: number) {
+    async fetch(session_id: number, class_id?: number, section_id?: number) {
+        const sessionKey = this.makeKey(session_id);
+        const classKey = this.makeKey(session_id, class_id);
+        const sectionKey = this.makeKey(session_id, class_id, section_id);
+
+        const alreadyFetched =
+            this.fetchedKeys.has(sessionKey) ||
+            (class_id !== undefined && this.fetchedKeys.has(classKey)) ||
+            this.fetchedKeys.has(sectionKey);
+
+        if (alreadyFetched) return;
+
         if (sessions.selected === null) return;
+
         try {
-            const args: { sessionId: number; classId?: number; sectionId?: number } = {
-                sessionId: session_id
+            const args: { session_id: number; class_id?: number; section_id?: number } = {
+                session_id
             };
-            if (class_id !== undefined) args.classId = class_id;
-            if (section_id !== undefined) args.sectionId = section_id;
+            if (class_id !== undefined) args.class_id = class_id;
+            if (section_id !== undefined) args.section_id = section_id;
 
             const fetchedStudents: Student[] = await invoke('get_students', args);
             this.fillCache(fetchedStudents);
+
+            console.log('FETCHING from students');
+
+            let newKey: string;
+            if (section_id !== undefined) {
+                newKey = sectionKey;
+            } else if (class_id !== undefined) {
+                newKey = classKey;
+            } else {
+                newKey = sessionKey;
+            }
+
+            this.fetchedKeys = new Set(this.fetchedKeys).add(newKey);
+            this.reactiveCounter++;
         } catch (err) {
             console.error('Failed to fetch students:', err);
             toast.set({ message: 'Failed to fetch students', type: 'error' });
@@ -55,9 +81,11 @@ class Students {
 
     add(student: Student): void {
         this.insert(student);
+        this.reactiveCounter++;
     }
 
     getById(id: number): Student | undefined {
+        console.log('Reactive counter', this.reactiveCounter);
         const classMap = this.data.get(sessions.selected as number);
         if (!classMap) return undefined;
 
@@ -72,30 +100,16 @@ class Students {
     }
 
     async get(session_id: number, class_id?: number, section_id?: number): Promise<Student[]> {
-        const sectionKey = this.makeKey(session_id, class_id, section_id);
-        const sessionKey = this.makeKey(session_id);
-        const classKey = this.makeKey(session_id, class_id);
-
-        if (
-            !(
-                this.fetchedKeys.has(sessionKey) ||
-                (class_id !== undefined && this.fetchedKeys.has(classKey)) ||
-                this.fetchedKeys.has(sectionKey)
-            )
-        ) {
-            await this.fetch(session_id, class_id, section_id);
-            this.fetchedKeys.add(sectionKey);
-        }
+        console.log('Reactive counter', this.reactiveCounter);
+        await this.fetch(session_id, class_id, section_id);
 
         const classMap = this.data.get(session_id);
 
         if (!classMap) {
-            // No data at all for this session
             return [];
         }
 
         if (class_id === undefined) {
-            // Return all students in the session (flatten all classes & sections)
             let allStudents: Student[] = [];
             for (const sectionMap of classMap.values()) {
                 for (const students of sectionMap.values()) {
@@ -107,7 +121,6 @@ class Students {
 
         const sectionMap = classMap.get(class_id);
         if (!sectionMap) {
-            // No data for this class
             return [];
         }
 
@@ -125,6 +138,45 @@ class Students {
         }
 
         return students;
+    }
+
+    update(updatedStudent: Student): void {
+        const { session_id, class_id, section_id, id } = updatedStudent;
+        const classMap = this.data.get(session_id);
+        if (!classMap) return;
+
+        const sectionMap = classMap.get(class_id);
+        if (!sectionMap) return;
+
+        const studentList = sectionMap.get(section_id);
+        if (!studentList) return;
+
+        const index = studentList.findIndex((s) => s.id === id);
+        if (index !== -1) {
+            studentList[index] = updatedStudent;
+        }
+        this.reactiveCounter++;
+    }
+
+    remove(studentId: number): void {
+        const student = this.getById(studentId);
+        if (!student) return;
+
+        const { session_id, class_id, section_id, id } = student;
+        const classMap = this.data.get(session_id);
+        if (!classMap) return;
+
+        const sectionMap = classMap.get(class_id);
+        if (!sectionMap) return;
+
+        const studentList = sectionMap.get(section_id);
+        if (!studentList) return;
+
+        const index = studentList.findIndex((s) => s.id === id);
+        if (index !== -1) {
+            studentList.splice(index, 1);
+        }
+        this.reactiveCounter--;
     }
 }
 

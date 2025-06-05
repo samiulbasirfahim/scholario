@@ -4,7 +4,6 @@
 	import { sessions } from '$lib/store/session.svelte';
 	import { invoke } from '@tauri-apps/api/core';
 	import type { Session } from '$lib/types/session';
-	import { onMount } from 'svelte';
 
 	function formatDate(date: Date): string {
 		return date.toISOString().split('T')[0];
@@ -21,7 +20,6 @@
 		end_date: formatDate(oneYearLater)
 	});
 
-	let selectedSession = $derived(sessions.get(sessions.selected as number));
 	let isEditing = $state(false);
 
 	function formatMoney(amount: number): string {
@@ -168,25 +166,25 @@
 				<div class="space-y-3 text-sm">
 					<div>
 						<p class="text-secondary">Name</p>
-						<p class="font-medium">{selectedSession?.name}</p>
+						<p class="font-medium">{sessions.selectedSession?.name}</p>
 					</div>
 					<div>
 						<p class="text-secondary">Start</p>
-						<p class="font-medium">{selectedSession?.start_date}</p>
+						<p class="font-medium">{sessions.selectedSession?.start_date}</p>
 					</div>
 					<div>
 						<p class="text-secondary">End</p>
-						<p class="font-medium">{selectedSession?.end_date}</p>
+						<p class="font-medium">{sessions.selectedSession?.end_date}</p>
 					</div>
 
 					<div class="flex flex-wrap gap-3 pt-2">
 						<button
 							class="btn btn-info w-full sm:w-auto"
-							onclick={() => editSession(selectedSession as Session)}>Edit</button
+							onclick={() => editSession(sessions.selectedSession as Session)}>Edit</button
 						>
 						<button
 							class="btn btn-error w-full sm:w-auto"
-							onclick={() => removeSession(selectedSession?.id as number)}>Delete</button
+							onclick={() => removeSession(sessions.selectedSession?.id as number)}>Delete</button
 						>
 					</div>
 

@@ -7,6 +7,7 @@
 	const links = [
 		['Dashboard', '/'],
 		['Students', '/students'],
+        ['Attendance', '/attendance'],
 		['Classes', '/classes'],
 		['Teachers', '/teachers'],
 		['Staffs', '/staffs'],

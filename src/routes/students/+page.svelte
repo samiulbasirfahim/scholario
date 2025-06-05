@@ -15,10 +15,14 @@
 		roll: ''
 	});
 
+	let isEditing = $state(false);
+
 	let students_d = $state<Student[]>([]);
 
 	let selectedStudent = $state<number>(-1);
 	let selectedStudentData = $derived(students.getById(selectedStudent));
+
+	let deleteStudent = () => {};
 
 	$effect(() => {
 		const sessionId = sessions.selected as number;
@@ -84,6 +88,7 @@
 		<button
 			class="btn btn-primary"
 			on:click={() => {
+				isEditing = false;
 				(document.getElementById('create-student-modal') as HTMLDialogElement).showModal();
 			}}
 		>
@@ -112,7 +117,7 @@
 								</tr>
 							</thead>
 							<tbody>
-								{#each students_d as student, i (student.id)}
+								{#each students_d as student, i ((student.id, i))}
 									<tr
 										class="{student.id === selectedStudent
 											? 'bg-primary text-primary-content'
@@ -143,34 +148,109 @@
 			<div class="w-1/2">
 				<div class="bg-base-100 border-base-300 text-accent w-full rounded border p-4">
 					<h2 class="text-primary mb-3 text-xl font-bold">Student Details</h2>
+
 					{#if selectedStudent >= 0 && selectedStudentData}
 						<div class="text-sm">
-							<div class="grid grid-cols-2 gap-2">
+							<div class="grid grid-cols-2 gap-4">
 								<div class="space-y-2">
 									<div>
 										<p class="text-secondary">Name</p>
-										<p class="font-medium">{selectedStudentData?.name}</p>
+										<p class="font-medium">{selectedStudentData.name}</p>
+									</div>
+
+									<div>
+										<p class="text-secondary">Gender</p>
+										<p class="font-medium">{selectedStudentData.gender}</p>
+									</div>
+
+									<div>
+										<p class="text-secondary">Date of Birth</p>
+										<p class="font-medium">{selectedStudentData.dob}</p>
+									</div>
+
+									<div>
+										<p class="text-secondary">Phone</p>
+										<p class="font-medium">
+											{selectedStudentData.phone || 'N/A'}
+										</p>
+									</div>
+
+									<div>
+										<p class="text-secondary">Admission Date</p>
+										<p class="font-medium">{selectedStudentData.admission_date}</p>
+									</div>
+
+									<div class="flex flex-wrap gap-3 pt-2">
+										<button
+											class="btn btn-info btn-sm"
+											on:click={() => {
+												isEditing = true;
+												(
+													document.getElementById('create-student-modal') as HTMLDialogElement
+												).show();
+											}}
+										>
+											Edit
+										</button>
+										<button class="btn btn-error btn-sm" on:click={deleteStudent}> Delete</button>
 									</div>
 								</div>
+
 								<div class="space-y-2">
 									<div>
 										<p class="text-secondary">Class</p>
 										<p class="font-medium">
 											{classes.get(
 												sessions.selected as number,
-												selectedStudentData?.class_id as number
+												selectedStudentData.class_id as number
 											)?.name}
 										</p>
 									</div>
 
-									{#if selectedStudentData?.section_id >= 0}
+									{#if selectedStudentData.section_id !== null}
 										<div>
 											<p class="text-secondary">Section</p>
 											<p class="font-medium">
-												{sections.get(selectedStudentData?.section_id)?.name}
+												{sections.get(selectedStudentData.section_id)?.name}
 											</p>
 										</div>
 									{/if}
+
+									<div>
+										<p class="text-secondary">Roll</p>
+										<p class="font-medium">{selectedStudentData.roll}</p>
+									</div>
+
+									<div>
+										<p class="text-secondary">Resident</p>
+										<p class="font-medium">
+											{selectedStudentData.is_resident ? 'Yes' : 'No'}
+										</p>
+									</div>
+
+									<div>
+										<p class="text-secondary">Religion</p>
+										<p class="font-medium">{selectedStudentData.religion}</p>
+									</div>
+								</div>
+							</div>
+
+							<div class="mt-2 space-y-2 border-t-1 pt-2">
+								{#if selectedStudentData.health_notes}
+									<div>
+										<p class="text-secondary">Health Notes</p>
+										<p class="font-medium">{selectedStudentData.health_notes}</p>
+									</div>
+								{/if}
+								{#if selectedStudentData.general_notes}
+									<div>
+										<p class="text-secondary">General Notes</p>
+										<p class="font-medium">{selectedStudentData.general_notes}</p>
+									</div>
+								{/if}
+								<div>
+									<p class="text-secondary">Address</p>
+									<p class="font-medium">{selectedStudentData.address}</p>
 								</div>
 							</div>
 						</div>
@@ -190,4 +270,4 @@
 {/if}
 
 <Filter bind:filter />
-<CreateStudent />
+<CreateStudent bind:isEditing {selectedStudentData} />
