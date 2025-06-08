@@ -104,16 +104,16 @@
 	{#if students_d.length > 0}
 		<div class="mt-4 flex gap-2">
 			<div class="w-1/2">
-				<div class="bg-base-100 border-base-300 w-full flex-1 overflow-auto rounded border p-4">
+				<div class="bg-base-100 border-base-300 w-full flex-1 overflow-auto rounded border">
 					<div class="max-h-[85vh] overflow-x-auto">
 						<table class="table-pin-rows table">
 							<thead>
-								<tr>
-									<th>#</th>
+								<tr class="bg-base-200">
+									<th>{filter.class === '' ? '#' : 'Roll'}</th>
 									<th>Name</th>
 									<th>Class</th>
 									<th>Section</th>
-									<th>Roll</th>
+									<!-- <th>Roll</th> -->
 								</tr>
 							</thead>
 							<tbody>
@@ -126,17 +126,16 @@
 											selectedStudent = student.id;
 										}}
 									>
-										<th>{i + 1}</th>
+										<td>{filter.class === '' ? i : student.roll}</td>
 										<td>{student.name}</td>
 										<td>{classes.get(sessions.selected as number, student.class_id)?.name}</td>
 										<td>
-											{#if student.section_id >= 0}
+											{#if student.section_id}
 												{sections.get(student.section_id)?.name}
 											{:else}
-												"0"
+												Base
 											{/if}
 										</td>
-										<td>40</td>
 									</tr>
 								{/each}
 							</tbody>
@@ -147,7 +146,9 @@
 
 			<div class="w-1/2">
 				<div class="bg-base-100 border-base-300 text-accent w-full rounded border p-4">
-					<h2 class="text-primary mb-3 text-xl font-bold">Student Details</h2>
+					<h2 class="text-primary border-accent mb-3 border-b-1 pb-2 text-xl font-bold">
+						Student Details
+					</h2>
 
 					{#if selectedStudent >= 0 && selectedStudentData}
 						<div class="text-sm">
@@ -180,23 +181,9 @@
 										<p class="font-medium">{selectedStudentData.admission_date}</p>
 									</div>
 
-									<div class="flex flex-wrap gap-3 pt-2">
-										<button
-											class="btn btn-info btn-sm"
-											on:click={() => {
-												isEditing = true;
-												(
-													document.getElementById('create-student-modal') as HTMLDialogElement
-												).show();
-											}}
-										>
-											Edit
-										</button>
-										<button class="btn btn-error btn-sm" on:click={deleteStudent}> Delete</button>
-									</div>
-								</div>
-
-								<div class="space-y-2">
+									<!-- </div> -->
+									<!---->
+									<!-- <div class="space-y-2"> -->
 									<div>
 										<p class="text-secondary">Class</p>
 										<p class="font-medium">
@@ -232,28 +219,50 @@
 										<p class="text-secondary">Religion</p>
 										<p class="font-medium">{selectedStudentData.religion}</p>
 									</div>
-								</div>
-							</div>
 
-							<div class="mt-2 space-y-2 border-t-1 pt-2">
-								{#if selectedStudentData.health_notes}
-									<div>
-										<p class="text-secondary">Health Notes</p>
-										<p class="font-medium">{selectedStudentData.health_notes}</p>
+									<div class="flex flex-wrap gap-3 pt-2">
+										<button
+											class="btn btn-info btn-sm"
+											on:click={() => {
+												isEditing = true;
+												(
+													document.getElementById('create-student-modal') as HTMLDialogElement
+												).show();
+											}}
+										>
+											Edit
+										</button>
+										<button class="btn btn-error btn-sm" on:click={deleteStudent}> Delete</button>
 									</div>
-								{/if}
-								{#if selectedStudentData.general_notes}
-									<div>
-										<p class="text-secondary">General Notes</p>
-										<p class="font-medium">{selectedStudentData.general_notes}</p>
+								</div>
+								<div class="space-y-2">
+									<img
+										src={selectedStudentData.photo}
+										alt="Photo of {selectedStudentData.name}"
+										class="h-38 w-38 flex-shrink-0 rounded object-cover"
+									/>
+
+									{#if selectedStudentData.health_notes}
+										<div class="max-h-22 overflow-y-auto rounded border p-2">
+											<p class="text-secondary">Health Notes</p>
+											<p class="font-medium text-wrap">{selectedStudentData.health_notes}</p>
+										</div>
+									{/if}
+									{#if selectedStudentData.general_notes}
+										<div class="max-h-22 overflow-y-auto rounded border p-2">
+											<p class="text-secondary">General Notes</p>
+											<p class="font-medium text-wrap">{selectedStudentData.general_notes}</p>
+										</div>
+									{/if}
+									<div class="max-h-22 overflow-y-auto rounded border p-2">
+										<p class="text-secondary">Address</p>
+										<p class="font-medium">{selectedStudentData.address}</p>
 									</div>
-								{/if}
-								<div>
-									<p class="text-secondary">Address</p>
-									<p class="font-medium">{selectedStudentData.address}</p>
 								</div>
 							</div>
 						</div>
+
+						<div class="border-accent mt-2 space-y-2 border-t-1 pt-2"></div>
 					{:else}
 						<p class="text-secondary alert alert-warning text-sm">
 							Select a student to view details.

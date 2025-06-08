@@ -10,7 +10,7 @@
 	import { sessions } from '$lib/store/session.svelte';
 	import { toast } from '$lib/store/toast.svelte';
 	import Toast from '../global/Toast.svelte';
-	import { studentRelationships } from '$lib/store/guardian.svelte';
+	import { guardians, studentRelationships } from '$lib/store/guardian.svelte';
 	import type { StudentRelationship } from '$lib/types/guardian';
 
 	let { isEditing = $bindable(false), selectedStudentData } = $props();
@@ -24,10 +24,10 @@
 		photo: string;
 	};
 
-	let guardians: Guardian[] = $state([]);
+	let selectedGuardians: Guardian[] = $state([]);
 
 	function removeGuardian(id: number) {
-		guardians = guardians.filter((g) => g.id !== id);
+		selectedGuardians = selectedGuardians.filter((g) => g.id !== id);
 	}
 
 	let form_data = $state({
@@ -63,6 +63,26 @@
 			form_data.photo = selectedStudentData.photo ?? '';
 			form_data.health_notes = selectedStudentData.health_notes ?? '';
 			form_data.general_notes = selectedStudentData.general_notes ?? '';
+			selectedGuardians = [];
+			studentRelationships
+				.get(selectedStudentData.id)
+				.then((data) => {
+					data.map((d) => {
+						let guardian = guardians.get(d.related_id);
+						selectedGuardians.push({
+							id: guardian?.id ?? -1,
+							address: guardian?.address ?? '',
+							name: guardian?.name ?? '',
+							relation: d.relationship as string,
+							phone: guardian?.phone ?? '',
+							photo: guardian?.photo ?? ''
+						});
+						console.log(d);
+					});
+				})
+				.catch((err) => {
+					console.log('Something wrong with fetching guardians');
+				});
 		} else {
 			form_data = {
 				name: '',
@@ -80,6 +100,7 @@
 				health_notes: '',
 				general_notes: ''
 			};
+			selectedGuardians = [];
 		}
 	});
 
@@ -119,14 +140,26 @@
 			health_notes: form_data.health_notes || null,
 			general_notes: form_data.general_notes || null
 		})
-			.then((student) => {
+			.then(async (student) => {
 				if (isEditing) {
 					students.update(student as Student);
 					toast.set({ message: 'Student updated successfully!', type: 'success' });
 				} else {
 					students.add(student as Student);
+
+					for (const guardian of selectedGuardians) {
+						const relation: StudentRelationship = await invoke('create_student_relationship', {
+							student_id: (student as Student).id!,
+							related_id: guardian.id,
+							relationship: guardian.relation || null
+						});
+						studentRelationships.add(relation);
+					}
+
 					toast.set({ message: 'Student created successfully!', type: 'success' });
 				}
+
+				toast.set({ message: 'Student created successfully!', type: 'success' });
 
 				form_data.name = '';
 				form_data.class_id = '';
@@ -161,16 +194,6 @@
 					});
 				}
 			});
-		// 	for (const guardian of guardians) {
-		// 		const relation: StudentRelationship = await invoke('create_student_relationship', {
-		// 			studentId: student.id!,
-		// 			relatedId: guardian.id,
-		// 			relationship: guardian.relation || null
-		// 		});
-		// 		studentRelationships.add(relation);
-		// 	}
-		//
-		// 	toast.set({ message: 'Student created successfully!', type: 'success' });
 	}
 
 	onMount(async () => {
@@ -312,7 +335,6 @@
 						></textarea>
 					</div>
 
-					<!-- General Notes -->
 					<div class="md:col-span-2">
 						<label class="mb-1 block text-sm font-medium">General Notes</label>
 						<textarea
@@ -322,18 +344,21 @@
 						></textarea>
 					</div>
 
-					<!-- Is Resident -->
 					<div class="flex items-center gap-2">
-						<input type="checkbox" class="checkbox" bind:checked={form_data.is_resident} />
+						<input
+							type="checkbox"
+							class="checkbox checkbox-sm"
+							bind:checked={form_data.is_resident}
+						/>
 						<span>Is Resident</span>
 					</div>
 
 					<!-- Guardians -->
-					{#if guardians.length > 0}
+					{#if selectedGuardians.length > 0}
 						<div class="bg-base-200 rounded p-4 md:col-span-2">
 							<p class="mb-2 text-sm text-gray-500">Guardians</p>
 							<ul class="grid max-h-48 grid-cols-2 gap-4 overflow-y-auto pr-1">
-								{#each guardians as g (g.id)}
+								{#each selectedGuardians as g, i ((g.id, i))}
 									<li class="bg-base-300 flex items-center gap-4 rounded p-2 shadow-sm">
 										<div class="size-12 flex-shrink-0 overflow-hidden rounded-full">
 											<img
@@ -379,4 +404,4 @@
 	<Toast />
 </dialog>
 
-<Guardians bind:guardians />
+<Guardians bind:guardians={selectedGuardians} />

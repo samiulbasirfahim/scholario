@@ -5,12 +5,14 @@
 	import '../app.css';
 	import { sessions } from '$lib/store/session.svelte';
 	import { classes, sections } from '$lib/store/class.svelte';
+	import { setting } from '$lib/store/setting.svelte';
 
 	let { children } = $props();
 
 	onMount(() => {
 		sessions.fetch();
 		sections.fetch();
+        setting.fetch();
 	});
 
 	$effect(() => {

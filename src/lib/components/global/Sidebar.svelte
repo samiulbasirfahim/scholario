@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { setting } from '$lib/store/setting.svelte';
 	import Icon from '@iconify/svelte';
 	import { onMount } from 'svelte';
 	const { children } = $props();
@@ -7,7 +8,7 @@
 	const links = [
 		['Dashboard', '/'],
 		['Students', '/students'],
-        ['Attendance', '/attendance'],
+		['Attendance', '/attendance'],
 		['Classes', '/classes'],
 		['Teachers', '/teachers'],
 		['Staffs', '/staffs'],
@@ -42,8 +43,8 @@
 		<ul class="menu min-h-full w-80 justify-between">
 			<div class="flex h-full flex-col justify-between">
 				<div class="flex flex-col items-center justify-center pt-4">
-					<h1 class="text-center font-semibold">Madrasaye Abu Bakar Momensahi</h1>
-					<h1 class="text-center opacity-60">Ghagra, Mymensingh</h1>
+					<h1 class="text-center font-semibold text-xl">{setting.title}</h1>
+					<h1 class="text-center opacity-90">{setting.address}</h1>
 				</div>
 				<div class="divider"></div>
 				<ul class="space-y-2">

@@ -1,11 +1,11 @@
 <script lang="ts">
-
 	import { toast } from '$lib/store/toast.svelte';
 	import { guardians } from '$lib/store/guardian.svelte';
 	import { invoke } from '@tauri-apps/api/core';
 	import type { Guardian } from '$lib/types/guardian';
 	import Toast from '../global/Toast.svelte';
 	import Icon from '@iconify/svelte';
+	import { onMount } from 'svelte';
 
 	let { guardians: guardians_selected = $bindable() } = $props();
 
@@ -30,6 +30,10 @@
 		guardianModal.close();
 		studentModal.showModal();
 	}
+
+	onMount(() => {
+		guardians.fetch();
+	});
 
 	let searched_guardians = $state<Guardian[]>([]);
 
@@ -133,7 +137,7 @@
 							</div>
 
 							<button
-								class="btn btn-square btn-ghost"
+								class="btn btn-square btn-ghost btn-sm"
 								onclick={(e) => {
 									e.preventDefault();
 									(
@@ -249,7 +253,7 @@
 			</form>
 			<form method="dialog" class="join">
 				<button
-					class="btn btn-primary join-item"
+					class="btn btn-primary join-item btn-sm"
 					onclick={(e) => {
 						e.preventDefault();
 						if (guardian_selected !== null) {
@@ -264,7 +268,7 @@
 					}}>Save</button
 				>
 				<button
-					class="btn btn-error join-item"
+					class="btn btn-error join-item btn-sm"
 					onclick={(e) => {
 						e.preventDefault();
 						(document.getElementById('manage-guardians-modal') as HTMLDialogElement).showModal();
