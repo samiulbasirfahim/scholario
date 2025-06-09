@@ -43,7 +43,7 @@
 		<ul class="menu min-h-full w-80 justify-between">
 			<div class="flex h-full flex-col justify-between">
 				<div class="flex flex-col items-center justify-center pt-4">
-					<h1 class="text-center font-semibold text-xl">{setting.title}</h1>
+					<h1 class="text-center text-xl font-semibold">{setting.title}</h1>
 					<h1 class="text-center opacity-90">{setting.address}</h1>
 				</div>
 				<div class="divider"></div>
@@ -51,8 +51,9 @@
 					{#each links as link, i (i)}
 						<li>
 							<a
-								class="flex items-center justify-start gap-2 p-2 font-normal {page.route.id ===
-								link[1]
+								class="flex items-center justify-start gap-2 p-2 font-normal {page.url.pathname.split(
+									'/'
+								)[1] === link[1].split('/')[1]
 									? 'bg-primary text-primary-content'
 									: ''}"
 								href={link[1]}
@@ -63,34 +64,65 @@
 					{/each}
 				</ul>
 			</div>
-			<div class="flex justify-between">
-				<button class="btn btn-square btn-ghost m-1" onclick={toggleTheme}>
-					{#if theme === 'LIGHT'}
-						<Icon icon="line-md:moon-filled-to-sunny-filled-transition" font-size="26" />
-					{:else}
-						<Icon icon="line-md:sunny-filled-loop-to-moon-filled-transition" font-size="26" />
-					{/if}
-				</button>
-				<div class="dropdown dropdown-top dropdown-left">
-					<div tabindex="0" role="button" class="btn btn-square btn-ghost m-1 rounded-full">
-						<Icon icon="ep:more-filled" />
-					</div>
-					<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-					<ul
-						tabindex="0"
-						class="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm"
+			<div class="text-accent hover:text-accent">
+				<li class="border-accent flex flex-row justify-between border-b-1">
+					<button
+						class="btn btn-square btn-ghost tooltip-right tooltip-accent tooltip m-1 text-2xl"
+						data-tip="Backward"
+						onclick={() => {
+							window.history.back();
+						}}
 					>
-						<li>
-							<a class="flex items-center justify-start gap-2 p-2" href="/broadcast">Broadcast</a>
-						</li>
-						<li>
-							<a class="flex items-center justify-start gap-2 p-2" href="/manage">Manage</a>
-						</li>
+						<Icon icon="mingcute:arrow-left-fill" />
+					</button>
+					<button
+						class="btn btn-square btn-ghost tooltip tooltip-left tooltip-accent m-1 text-2xl"
+						data-tip="Forward"
+						onclick={() => {
+							window.history.forward();
+						}}
+					>
+						<Icon icon="mingcute:arrow-right-fill" />
+					</button>
+				</li>
+				<div class="flex justify-between">
+					<button
+						class="btn btn-square btn-ghost tooltip tooltip-accent tooltip-right m-1 text-2xl"
+						data-tip="toggle Theme"
+						onclick={toggleTheme}
+					>
+						{#if theme === 'LIGHT'}
+							<Icon icon="line-md:moon-filled-to-sunny-filled-transition" font-size="26" />
+						{:else}
+							<Icon icon="line-md:sunny-filled-loop-to-moon-filled-transition" font-size="26" />
+						{/if}
+					</button>
+					<div class="dropdown dropdown-top dropdown-left">
+						<div
+							tabindex="0"
+							role="button"
+							class="btn btn-square btn-ghost tooltip tooltip-left tooltip-accent m-1 text-2xl"
+							data-tip="More"
+						>
+							<Icon icon="ep:more-filled" />
+						</div>
+						<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+						<ul
+							tabindex="0"
+							class="dropdown-content menu bg-base-100 rounded-box text-base-content z-1 w-52 p-2 shadow-sm"
+						>
+							<li>
+								<a class="flex items-center justify-start gap-2 p-2" href="/broadcast">Broadcast</a>
+							</li>
+							<li>
+								<a class="flex items-center justify-start gap-2 p-2" href="/manage">Manage</a>
+							</li>
 
-						<li>
-							<a class="flex items-center justify-start gap-2 p-2" href="/test">Test</a>
-						</li>
-					</ul>
+							<li>
+								<a class="flex items-center justify-start gap-2 p-2" href="/test">Test</a>
+							</li>
+						</ul>
+					</div>
 				</div>
 			</div>
 		</ul>

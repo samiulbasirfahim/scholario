@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import CreateClass from '$lib/components/classes/CreateClass.svelte';
 	import CreateSection from '$lib/components/classes/CreateSection.svelte';
 	import CreateSubject from '$lib/components/classes/CreateSubject.svelte';
@@ -7,10 +8,12 @@
 	import { classes, classSubjects, sections, subjects } from '$lib/store/class.svelte';
 	import { sessions } from '$lib/store/session.svelte';
 	import { toast } from '$lib/store/toast.svelte';
-	import type { ClassSubject } from '$lib/types/class';
+	import type { Class, ClassSubject } from '$lib/types/class';
 	import Icon from '@iconify/svelte';
 	import { invoke } from '@tauri-apps/api/core';
 	import { onMount } from 'svelte';
+
+	const { data } = $props();
 
 	interface SelectedSubject {
 		id?: number;
@@ -21,15 +24,18 @@
 	let selectedSubjects = $state<SelectedSubject[]>([]);
 
 	let isEditing = $state<boolean>(false);
+	let selectedClass: number | null = $state<number | null>(null);
 
 	onMount(() => {
+		selectedClass = Number(data.selectedClass);
 		if (subjects.data.length === 0) {
 			subjects.fetch();
 		}
 	});
 
 	$effect(() => {
-		if (selectedClass != null) {
+		if (selectedClass) {
+			goto('?selectedClass=' + selectedClass, { replaceState: true });
 			classSubjects.fetch(selectedClass);
 			let selected: SelectedSubject[] = [];
 			classSubjects.get(selectedClass).forEach((s) => {
@@ -43,8 +49,12 @@
 		}
 	});
 
-	let selectedClass: number = $state(-1);
-	let selectedClassData = $derived(classes.get(sessions.selected as number, selectedClass));
+	let selectedClassData: Class | null = $state(null);
+	$effect(() => {
+		if (selectedClass) {
+			selectedClassData = classes.get(sessions.selected as number, selectedClass) as Class;
+		}
+	});
 
 	const toggleSubject = (subject_id: number) => {
 		const exists = selectedSubjects.some((s) => s.subject_id === subject_id);
@@ -227,12 +237,10 @@
 	{#if classes.get_by_current_session()?.length > 0}
 		<div class="mt-4 flex gap-2">
 			<div class="w-1/2">
-				<div
-					class="bg-base-100 border-base-300 max-h-[85vh] w-full overflow-auto rounded border p-4"
-				>
+				<div class="bg-base-100 border-base-300 max-h-[85vh] w-full overflow-auto rounded border">
 					<div class="overflow-x-auto">
 						<table class="table">
-							<thead>
+							<thead class="bg-base-200">
 								<tr>
 									<th>#</th>
 									<th>Name</th>
@@ -267,7 +275,7 @@
 				<div class="bg-base-100 border-base-300 text-accent w-full rounded border p-4">
 					<h2 class="text-primary mb-3 text-xl font-bold">Class Details</h2>
 
-					{#if selectedClass >= 0}
+					{#if selectedClass}
 						<div class="space-y-3 text-sm">
 							<div class="flex w-full">
 								<div class="w-1/2">

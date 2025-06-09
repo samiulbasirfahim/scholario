@@ -3,10 +3,60 @@
 	import CreateStudent from '$lib/components/students/CreateStudent.svelte';
 	import Filter from '$lib/components/students/Filter.svelte';
 	import { classes, sections } from '$lib/store/class.svelte';
+	import { guardians, studentRelationships } from '$lib/store/guardian.svelte';
 	import { sessions } from '$lib/store/session.svelte';
 	import { students } from '$lib/store/student.svelte';
 	import type { Student } from '$lib/types/student';
 	import Icon from '@iconify/svelte';
+	import { onMount } from 'svelte';
+
+	import { goto } from '$app/navigation';
+	import { invoke } from '@tauri-apps/api/core';
+	import Toast from '$lib/components/global/Toast.svelte';
+	import { toast } from '$lib/store/toast.svelte.js';
+	const { data } = $props();
+
+	type Guardian = {
+		id: number;
+		name: string;
+		relation: string;
+		phone: string;
+		address: string;
+		photo: string;
+	};
+
+	let selectedStudent = $state<number | null>(null);
+	let selectedStudentData = $state<Student | null>();
+
+	$effect(() => {
+		if (selectedStudent) {
+			goto('?selectedStudent=' + selectedStudent, { replaceState: true });
+			selectedStudentData = students.getById(selectedStudent);
+		}
+	});
+
+	onMount(() => {
+		selectedStudent = Number(data.selectedStudent);
+	});
+
+	let guardians_s = $state<Guardian[]>([]);
+
+	$effect(() => {
+		console.log(studentRelationships.reactiveCounter);
+		(async () => {
+			if (selectedStudent) {
+				await studentRelationships.fetch(selectedStudent);
+				const srls = studentRelationships.get(selectedStudent);
+
+				const guardiansList: Guardian[] = srls.map((srl) => ({
+					...(guardians.get(srl.related_id) as Guardian),
+					relation: srl.relationship as string
+				}));
+
+				guardians_s = guardiansList;
+			}
+		})();
+	});
 
 	let filter = $state({
 		class: '',
@@ -19,10 +69,22 @@
 
 	let students_d = $state<Student[]>([]);
 
-	let selectedStudent = $state<number>(-1);
-	let selectedStudentData = $derived(students.getById(selectedStudent));
-
-	let deleteStudent = () => {};
+	const deleteStudent = async () => {
+		try {
+			if (selectedStudent) {
+				await invoke('delete_student', {
+					id: selectedStudent,
+					session_id: sessions.selected as number
+				});
+				students.remove(selectedStudent);
+                selectedStudent = null;
+				toast.set({ message: 'Student deleted', type: 'success' });
+			}
+		} catch (err) {
+			console.log(err);
+			toast.set({ message: 'Failed to delete student', type: 'error' });
+		}
+	};
 
 	$effect(() => {
 		const sessionId = sessions.selected as number;
@@ -150,10 +212,10 @@
 						Student Details
 					</h2>
 
-					{#if selectedStudent >= 0 && selectedStudentData}
+					{#if selectedStudent && selectedStudentData}
 						<div class="text-sm">
 							<div class="grid grid-cols-2 gap-4">
-								<div class="space-y-2">
+								<div class="space-y-3">
 									<div>
 										<p class="text-secondary">Name</p>
 										<p class="font-medium">{selectedStudentData.name}</p>
@@ -181,9 +243,6 @@
 										<p class="font-medium">{selectedStudentData.admission_date}</p>
 									</div>
 
-									<!-- </div> -->
-									<!---->
-									<!-- <div class="space-y-2"> -->
 									<div>
 										<p class="text-secondary">Class</p>
 										<p class="font-medium">
@@ -235,7 +294,7 @@
 										<button class="btn btn-error btn-sm" on:click={deleteStudent}> Delete</button>
 									</div>
 								</div>
-								<div class="space-y-2">
+								<div class="space-y-3">
 									<img
 										src={selectedStudentData.photo}
 										alt="Photo of {selectedStudentData.name}"
@@ -243,26 +302,60 @@
 									/>
 
 									{#if selectedStudentData.health_notes}
-										<div class="max-h-22 overflow-y-auto rounded border p-2">
+										<div>
 											<p class="text-secondary">Health Notes</p>
-											<p class="font-medium text-wrap">{selectedStudentData.health_notes}</p>
+											<div class="bg-base-200 max-h-22 overflow-y-auto rounded p-2">
+												<p class="font-medium text-wrap">{selectedStudentData.health_notes}</p>
+											</div>
 										</div>
 									{/if}
 									{#if selectedStudentData.general_notes}
-										<div class="max-h-22 overflow-y-auto rounded border p-2">
+										<div>
 											<p class="text-secondary">General Notes</p>
-											<p class="font-medium text-wrap">{selectedStudentData.general_notes}</p>
+											<div class="bg-base-200 max-h-22 overflow-y-auto rounded p-2">
+												<p class="font-medium text-wrap">{selectedStudentData.general_notes}</p>
+											</div>
 										</div>
 									{/if}
-									<div class="max-h-22 overflow-y-auto rounded border p-2">
+									<div>
 										<p class="text-secondary">Address</p>
-										<p class="font-medium">{selectedStudentData.address}</p>
+										<div class="bg-base-200 max-h-22 overflow-y-auto rounded p-2">
+											<p class="font-medium">{selectedStudentData.address}</p>
+										</div>
 									</div>
 								</div>
 							</div>
 						</div>
 
-						<div class="border-accent mt-2 space-y-2 border-t-1 pt-2"></div>
+						{#if guardians_s.length > 0}
+							<div class="border-accent mt-4">
+								<h2 class="text-primary border-accent mb-3 border-b-1 pb-2 text-xl font-bold">
+									Guardians
+								</h2>
+								<ul class="grid max-h-48 grid-cols-2 gap-4 overflow-y-auto pr-1">
+									{#each guardians_s as g, i ((g.id, i))}
+										<li class="bg-base-300 flex items-center gap-4 rounded p-2 shadow-sm">
+											<div class="size-12 flex-shrink-0 overflow-hidden rounded-full">
+												<img
+													src={g.photo}
+													alt={`Photo of ${g.name}`}
+													class="h-full w-full object-cover object-center"
+												/>
+											</div>
+											<div class="min-w-0 flex-1">
+												<p class="truncate font-medium">{g.name}</p>
+												<p class="truncate text-sm text-gray-500">
+													{g.relation ?? '—'} • {g.phone}
+												</p>
+
+												<!-- <p class="truncate text-sm text-gray-500">Smone • {g.phone}</p> -->
+												<p class="truncate text-sm text-gray-500">{g.address ?? 'No address'}</p>
+											</div>
+										</li>
+									{/each}
+								</ul>
+							</div>
+						{/if}
 					{:else}
 						<p class="text-secondary alert alert-warning text-sm">
 							Select a student to view details.

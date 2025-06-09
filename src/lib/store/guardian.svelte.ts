@@ -37,40 +37,60 @@ export const guardians = $state({
 });
 
 class StudentRelationships {
-    private data: Map<number, StudentRelationship[]> = new Map(); // Map student_id => relationships[]
-    private fetchedStudents: Set<number> = new Set();
+    private data: Map<number, StudentRelationship[]> = new Map(); // student_id -> [relationships]
+    reactiveCounter = $state(0);
+    private fetchedStudents: Set<number> = new Set(); // track fetched student_ids
+    private allFetched: boolean = false;
+    private pendingFetches: Map<number | 'all', Promise<void>> = new Map(); // prevent duplicate fetches
 
     private insert(rel: StudentRelationship) {
-        if (!this.data.has(rel.student_id)) {
-            this.data.set(rel.student_id, []);
+        const rels = this.data.get(rel.student_id) ?? [];
+        this.reactiveCounter++;
+        if (!rels.some((r) => r.id === rel.id)) {
+            rels.push(rel);
+            this.data.set(rel.student_id, rels);
         }
-        this.data.get(rel.student_id)!.push(rel);
     }
 
     private fillCache(relationships: StudentRelationship[]) {
         for (const rel of relationships) {
-            this.insert(rel);
+            this.insert(rel); // deduplicated insert
         }
     }
 
-    async fetch(student_id?: number) {
-        try {
-            const args: { student_id?: number } = {};
-            if (student_id !== undefined) args.student_id = student_id;
+    async fetch(student_id?: number): Promise<void> {
+        if (this.allFetched || (student_id !== undefined && this.fetchedStudents.has(student_id)))
+            return;
 
-            console.log('FETCHING');
-
-            const fetched: StudentRelationship[] = await invoke('get_student_relationships', args);
-
-            this.fillCache(fetched);
-
-            if (student_id !== undefined) {
-                this.fetchedStudents.add(student_id);
-            }
-        } catch (err) {
-            console.error('Failed to fetch student relationships:', err);
-            toast.set({ message: 'Failed to fetch student relationships', type: 'error' });
+        const key = student_id ?? 'all';
+        if (this.pendingFetches.has(key)) {
+            return this.pendingFetches.get(key);
         }
+
+        const fetchPromise = (async () => {
+            try {
+                const args: { student_id?: number } = {};
+                if (student_id !== undefined) args.student_id = student_id;
+
+                const fetched: StudentRelationship[] = await invoke('get_student_relationships', args);
+
+                this.fillCache(fetched);
+
+                if (student_id !== undefined) {
+                    this.fetchedStudents.add(student_id);
+                } else {
+                    this.allFetched = true;
+                }
+            } catch (err) {
+                console.error('Failed to fetch student relationships:', err);
+                toast.set({ message: 'Failed to fetch student relationships', type: 'error' });
+            } finally {
+                this.pendingFetches.delete(key);
+            }
+        })();
+
+        this.pendingFetches.set(key, fetchPromise);
+        return fetchPromise;
     }
 
     get(student_id: number): StudentRelationship[] {
@@ -78,7 +98,7 @@ class StudentRelationships {
     }
 
     add(rel: StudentRelationship) {
-        this.insert(rel);
+        this.insert(rel); // already deduplicated
     }
 
     update(id: number, updated: StudentRelationship) {
@@ -86,6 +106,7 @@ class StudentRelationships {
         if (!rels) return;
 
         const index = rels.findIndex((r) => r.id === id);
+        this.reactiveCounter++;
         if (index !== -1) {
             rels[index] = updated;
         }
@@ -93,10 +114,14 @@ class StudentRelationships {
 
     remove(id: number) {
         for (const [studentId, rels] of this.data.entries()) {
-            this.data.set(
-                studentId,
-                rels.filter((r) => r.id !== id)
-            );
+            this.reactiveCounter++;
+            const filtered = rels.filter((r) => r.id !== id);
+
+            if (filtered.length === 0) {
+                this.data.delete(studentId);
+            } else {
+                this.data.set(studentId, filtered);
+            }
         }
     }
 }

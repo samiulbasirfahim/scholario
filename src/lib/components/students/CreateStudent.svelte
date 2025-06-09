@@ -19,12 +19,14 @@
 		id: number;
 		name: string;
 		relation: string;
+		relation_id?: number;
 		phone: string;
 		address: string;
 		photo: string;
 	};
 
 	let selectedGuardians: Guardian[] = $state([]);
+	let selectedGuardians_s: Guardian[] = $state([]);
 
 	function removeGuardian(id: number) {
 		selectedGuardians = selectedGuardians.filter((g) => g.id !== id);
@@ -63,26 +65,22 @@
 			form_data.photo = selectedStudentData.photo ?? '';
 			form_data.health_notes = selectedStudentData.health_notes ?? '';
 			form_data.general_notes = selectedStudentData.general_notes ?? '';
-			selectedGuardians = [];
-			studentRelationships
-				.get(selectedStudentData.id)
-				.then((data) => {
-					data.map((d) => {
-						let guardian = guardians.get(d.related_id);
-						selectedGuardians.push({
-							id: guardian?.id ?? -1,
-							address: guardian?.address ?? '',
-							name: guardian?.name ?? '',
-							relation: d.relationship as string,
-							phone: guardian?.phone ?? '',
-							photo: guardian?.photo ?? ''
-						});
-						console.log(d);
-					});
-				})
-				.catch((err) => {
-					console.log('Something wrong with fetching guardians');
-				});
+
+			(async () => {
+				if (selectedStudentData.id) {
+					await studentRelationships.fetch(selectedStudentData.id);
+					const srls = studentRelationships.get(selectedStudentData.id);
+
+					const guardiansList: Guardian[] = srls.map((srl) => ({
+						...(guardians.get(srl.related_id) as Guardian),
+						relation_id: srl.id,
+						relation: srl.relationship as string
+					}));
+
+					selectedGuardians = guardiansList;
+					selectedGuardians_s = guardiansList;
+				}
+			})();
 		} else {
 			form_data = {
 				name: '',
@@ -143,6 +141,33 @@
 			.then(async (student) => {
 				if (isEditing) {
 					students.update(student as Student);
+
+					const guardianForDelete = selectedGuardians_s.filter(
+						(g1) => !selectedGuardians.some((g2) => g2.id === g1.id)
+					);
+
+					const guardianForAdd = selectedGuardians.filter(
+						(g1) => !selectedGuardians_s.some((g2) => g2.id === g1.id)
+					);
+
+					for (const guardian of guardianForDelete) {
+						if (guardian.relation_id) {
+							await invoke('delete_student_relationship', {
+								id: guardian.relation_id
+							});
+							studentRelationships.remove(guardian.id);
+						}
+					}
+
+					for (const guardian of guardianForAdd) {
+						const relation: StudentRelationship = await invoke('create_student_relationship', {
+							student_id: (student as Student).id!,
+							related_id: guardian.id,
+							relationship: guardian.relation || null
+						});
+						studentRelationships.add(relation);
+					}
+
 					toast.set({ message: 'Student updated successfully!', type: 'success' });
 				} else {
 					students.add(student as Student);
@@ -158,6 +183,9 @@
 
 					toast.set({ message: 'Student created successfully!', type: 'success' });
 				}
+
+				console.log('edited: ', $state.snapshot(selectedGuardians));
+				console.log('Constant: ', $state.snapshot(selectedGuardians_s));
 
 				toast.set({ message: 'Student created successfully!', type: 'success' });
 
