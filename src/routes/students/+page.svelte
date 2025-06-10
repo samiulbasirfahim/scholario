@@ -12,7 +12,6 @@
 
 	import { goto } from '$app/navigation';
 	import { invoke } from '@tauri-apps/api/core';
-	import Toast from '$lib/components/global/Toast.svelte';
 	import { toast } from '$lib/store/toast.svelte.js';
 	const { data } = $props();
 
@@ -77,7 +76,7 @@
 					session_id: sessions.selected as number
 				});
 				students.remove(selectedStudent);
-                selectedStudent = null;
+				selectedStudent = null;
 				toast.set({ message: 'Student deleted', type: 'success' });
 			}
 		} catch (err) {

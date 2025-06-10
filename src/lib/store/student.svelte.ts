@@ -5,6 +5,7 @@ import { sessions } from './session.svelte';
 
 class Students {
     data: Map<number, Map<number, Map<number, Student[]>>> = new Map();
+    selected: number | null = null;
     fetchedKeys = new Set();
     reactiveCounter = $state(0);
 
@@ -162,7 +163,8 @@ class Students {
         const student = this.getById(studentId);
         if (!student) return;
 
-        const { session_id, class_id, section_id, id } = student;
+        const { session_id, class_id, section_id, id, roll } = student;
+
         const classMap = this.data.get(session_id);
         if (!classMap) return;
 
@@ -173,9 +175,17 @@ class Students {
         if (!studentList) return;
 
         const index = studentList.findIndex((s) => s.id === id);
-        if (index !== -1) {
-            studentList.splice(index, 1);
+        if (index === -1) return;
+
+        studentList.splice(index, 1);
+
+        for (const s of studentList) {
+            if (s.roll > roll) {
+                console.log(s);
+                s.roll -= 1;
+            }
         }
+
         this.reactiveCounter--;
     }
 }

@@ -1,6 +1,7 @@
 use super::conn;
 use chrono::NaiveDate;
 use rusqlite::{params, Result};
+use serde::de::Error;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -318,12 +319,48 @@ impl Student {
     pub fn delete(id: i32) -> Result<()> {
         let db = conn()?;
         db.execute("PRAGMA foreign_keys = ON", [])?;
-        let affected = db.execute("DELETE FROM students WHERE id = ?", params![id])?;
 
+        let mut stmt =
+            db.prepare("SELECT session_id, class_id, section_id, roll FROM students WHERE id = ?")?;
+
+        let student = stmt.query_row(params![id], |row| {
+            Ok((
+                row.get::<_, i32>(0)?,         // session_id
+                row.get::<_, i32>(1)?,         // class_id
+                row.get::<_, Option<i32>>(2)?, // ✅ section_id as Option<i32>
+                row.get::<_, i32>(3)?,         // roll
+            ))
+        })?;
+
+        let (session_id, class_id, section_id, roll) = student;
+
+        let affected = db.execute("DELETE FROM students WHERE id = ?", params![id])?;
         if affected == 0 {
-            Err(rusqlite::Error::QueryReturnedNoRows)
-        } else {
-            Ok(())
+            return Err(rusqlite::Error::QueryReturnedNoRows);
         }
+
+        if let Some(section_id) = section_id {
+            db.execute(
+                "UPDATE students
+             SET roll = roll - 1
+             WHERE session_id = ?
+             AND class_id = ?
+             AND section_id = ?
+             AND roll > ?",
+                params![session_id, class_id, section_id, roll],
+            )?;
+        } else {
+            db.execute(
+                "UPDATE students
+             SET roll = roll - 1
+             WHERE session_id = ?
+             AND class_id = ?
+             AND section_id IS NULL
+             AND roll > ?",
+                params![session_id, class_id, roll],
+            )?;
+        }
+
+        Ok(())
     }
 }

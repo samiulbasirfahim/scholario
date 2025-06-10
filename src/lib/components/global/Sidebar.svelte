@@ -67,7 +67,7 @@
 			<div class="text-accent hover:text-accent">
 				<li class="border-accent flex flex-row justify-between border-b-1">
 					<button
-						class="btn btn-square btn-ghost tooltip-right tooltip-accent tooltip m-1 text-2xl"
+						class="btn btn-ghost tooltip-right tooltip-accent tooltip m-1 text-xl"
 						data-tip="Backward"
 						onclick={() => {
 							window.history.back();
@@ -76,7 +76,7 @@
 						<Icon icon="mingcute:arrow-left-fill" />
 					</button>
 					<button
-						class="btn btn-square btn-ghost tooltip tooltip-left tooltip-accent m-1 text-2xl"
+						class="btn btn-ghost tooltip tooltip-left tooltip-accent m-1 text-xl"
 						data-tip="Forward"
 						onclick={() => {
 							window.history.forward();
@@ -87,21 +87,21 @@
 				</li>
 				<div class="flex justify-between">
 					<button
-						class="btn btn-square btn-ghost tooltip tooltip-accent tooltip-right m-1 text-2xl"
+						class="btn btn-square btn-ghost tooltip tooltip-accent tooltip-right m-1 text-xl"
 						data-tip="toggle Theme"
 						onclick={toggleTheme}
 					>
 						{#if theme === 'LIGHT'}
-							<Icon icon="line-md:moon-filled-to-sunny-filled-transition" font-size="26" />
+							<Icon icon="line-md:moon-filled-to-sunny-filled-transition" />
 						{:else}
-							<Icon icon="line-md:sunny-filled-loop-to-moon-filled-transition" font-size="26" />
+							<Icon icon="line-md:sunny-filled-loop-to-moon-filled-transition" />
 						{/if}
 					</button>
 					<div class="dropdown dropdown-top dropdown-left">
 						<div
 							tabindex="0"
 							role="button"
-							class="btn btn-square btn-ghost tooltip tooltip-left tooltip-accent m-1 text-2xl"
+							class="btn btn-square btn-ghost tooltip tooltip-left tooltip-accent m-1 text-xl"
 							data-tip="More"
 						>
 							<Icon icon="ep:more-filled" />
