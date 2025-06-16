@@ -1,7 +1,6 @@
 use super::conn;
-use chrono::NaiveDate;
+use chrono::{Datelike, Local, NaiveDate};
 use rusqlite::{params, Result};
-use serde::de::Error;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -325,10 +324,10 @@ impl Student {
 
         let student = stmt.query_row(params![id], |row| {
             Ok((
-                row.get::<_, i32>(0)?,         // session_id
-                row.get::<_, i32>(1)?,         // class_id
-                row.get::<_, Option<i32>>(2)?, // ✅ section_id as Option<i32>
-                row.get::<_, i32>(3)?,         // roll
+                row.get::<_, i32>(0)?,
+                row.get::<_, i32>(1)?,
+                row.get::<_, Option<i32>>(2)?,
+                row.get::<_, i32>(3)?,
             ))
         })?;
 
@@ -362,5 +361,139 @@ impl Student {
         }
 
         Ok(())
+    }
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct Attendance {
+    pub id: i32,
+    pub student_id: i32,
+    pub date: NaiveDate,
+    pub status: String,
+}
+
+impl Attendance {
+    pub fn new(id: i32, student_id: i32, date: NaiveDate, status: String) -> Self {
+        Self {
+            id,
+            student_id,
+            date,
+            status,
+        }
+    }
+
+    pub fn init() -> Result<()> {
+        let db = conn()?;
+        db.execute("PRAGMA foreign_keys = ON", [])?;
+
+        db.execute(
+            "CREATE TABLE IF NOT EXISTS attendance (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                student_id INTEGER NOT NULL,
+                date DATE NOT NULL,
+                status TEXT NOT NULL,
+                FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+                UNIQUE (student_id, date)
+            )",
+            [],
+        )?;
+        Ok(())
+    }
+
+    pub fn create(student_id: i32, date: NaiveDate, status: &str) -> Result<Self> {
+        let db = conn()?;
+        db.execute("PRAGMA foreign_keys = ON", [])?;
+
+        db.execute(
+            "INSERT OR REPLACE INTO attendance (student_id, date, status) VALUES (?1, ?2, ?3)",
+            params![student_id, date, status],
+        )?;
+
+        let id = db.last_insert_rowid() as i32;
+
+        Ok(Self::new(id, student_id, date, status.to_string()))
+    }
+
+    pub fn get_by_date(date: NaiveDate) -> Result<Vec<Self>> {
+        let db = conn()?;
+        let mut stmt = db.prepare(
+            "SELECT id, student_id, date, status
+             FROM attendance
+             WHERE date = ?
+             ORDER BY student_id ASC",
+        )?;
+
+        let rows = stmt.query_map(params![date], |row| {
+            Ok(Self {
+                id: row.get(0)?,
+                student_id: row.get(1)?,
+                date: row.get(2)?,
+                status: row.get(3)?,
+            })
+        })?;
+
+        rows.collect()
+    }
+
+    pub fn get_by_student(
+        student_id: i32,
+        year: Option<i32>,
+        month: Option<u32>,
+    ) -> Result<Vec<Self>> {
+        let today = Local::now().naive_local().date();
+
+        let year = year.unwrap_or(today.year());
+        let month = month.unwrap_or(today.month());
+
+        let start_date =
+            NaiveDate::from_ymd_opt(year, month, 1).ok_or_else(|| rusqlite::Error::InvalidQuery)?;
+
+        let end_date = if month == 12 {
+            NaiveDate::from_ymd_opt(year + 1, 1, 1).ok_or_else(|| rusqlite::Error::InvalidQuery)?
+        } else {
+            NaiveDate::from_ymd_opt(year, month + 1, 1)
+                .ok_or_else(|| rusqlite::Error::InvalidQuery)?
+        };
+
+        let db = conn()?;
+        let mut stmt = db.prepare(
+            "SELECT id, student_id, date, status
+             FROM attendance
+             WHERE student_id = ?1 AND date >= ?2 AND date < ?3
+             ORDER BY date ASC",
+        )?;
+
+        let rows = stmt.query_map(params![student_id, start_date, end_date], |row| {
+            Ok(Self {
+                id: row.get(0)?,
+                student_id: row.get(1)?,
+                date: row.get(2)?,
+                status: row.get(3)?,
+            })
+        })?;
+
+        rows.collect()
+    }
+
+    pub fn delete_by_student_and_date(student_id_val: i32, date_val: NaiveDate) -> Result<()> {
+        let conn = conn()?;
+
+        conn.execute(
+            "DELETE FROM attendances WHERE student_id = ?1 AND date = ?2",
+            params![student_id_val, date_val],
+        )?;
+
+        Ok(())
+    }
+
+    pub fn delete(id: i32) -> Result<()> {
+        let db = conn()?;
+        let affected = db.execute("DELETE FROM attendance WHERE id = ?", params![id])?;
+
+        if affected == 0 {
+            Err(rusqlite::Error::QueryReturnedNoRows)
+        } else {
+            Ok(())
+        }
     }
 }

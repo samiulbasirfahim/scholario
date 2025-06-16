@@ -1,7 +1,7 @@
 use chrono::NaiveDate;
 use tauri::command;
 
-use crate::database::student::Student;
+use crate::database::student::{Attendance, Student};
 
 #[command(rename_all = "snake_case")]
 pub fn create_student(
@@ -60,7 +60,7 @@ pub fn edit_student(
     id: i32,
     name: String,
     class_id: i32,
-    section_id: Option<i32>, // <-- fixed this to Option<i32>
+    section_id: Option<i32>,
     session_id: i32,
     dob: String,
     gender: String,
@@ -103,4 +103,52 @@ pub fn edit_student(
 #[command(rename_all = "snake_case")]
 pub fn delete_student(id: i32) -> Result<(), String> {
     Student::delete(id).map_err(|e| e.to_string())
+}
+
+#[command(rename_all = "snake_case")]
+pub fn create_attendance(
+    student_id: i32,
+    date: String,
+    status: String,
+) -> Result<Attendance, String> {
+    let date =
+        NaiveDate::parse_from_str(&date, "%Y-%m-%d").map_err(|e| format!("Invalid date: {}", e))?;
+
+    match Attendance::create(student_id, date, &status) {
+        Ok(attendance) => Ok(attendance),
+
+        Err(e) => {
+            if e.to_string().contains("UNIQUE constraint failed") {
+                Attendance::delete_by_student_and_date(student_id, date)
+                    .map_err(|err| format!("Failed to delete existing record: {}", err))?;
+
+                Attendance::create(student_id, date, &status)
+                    .map_err(|err| format!("Retry failed: {}", err))
+            } else {
+                Err(format!("Insert failed: {}", e))
+            }
+        }
+    }
+}
+
+#[command(rename_all = "snake_case")]
+pub fn get_attendance_by_date(date: String) -> Result<Vec<Attendance>, String> {
+    let date =
+        NaiveDate::parse_from_str(&date, "%Y-%m-%d").map_err(|e| format!("Invalid date: {}", e))?;
+
+    Attendance::get_by_date(date).map_err(|e| e.to_string())
+}
+
+#[command(rename_all = "snake_case")]
+pub fn get_attendance_by_student(
+    student_id: i32,
+    year: Option<i32>,
+    month: Option<u32>,
+) -> Result<Vec<Attendance>, String> {
+    Attendance::get_by_student(student_id, year, month).map_err(|e| e.to_string())
+}
+
+#[command(rename_all = "snake_case")]
+pub fn delete_attendance(id: i32) -> Result<(), String> {
+    Attendance::delete(id).map_err(|e| e.to_string())
 }

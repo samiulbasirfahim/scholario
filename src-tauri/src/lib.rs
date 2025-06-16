@@ -30,6 +30,11 @@ pub fn run() {
             get_students,
             delete_student,
             edit_student,
+            // Attendance commands
+            create_attendance,
+            get_attendance_by_date,
+            get_attendance_by_student,
+            delete_attendance,
             // guardian commands
             create_guardian,
             get_guardians,

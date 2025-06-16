@@ -179,11 +179,11 @@
 
 					<div class="flex flex-wrap gap-3 pt-2">
 						<button
-							class="btn btn-info w-full sm:w-auto"
+							class="btn btn-info btn-sm w-full sm:w-auto"
 							onclick={() => editSession(sessions.selectedSession as Session)}>Edit</button
 						>
 						<button
-							class="btn btn-error w-full sm:w-auto"
+							class="btn btn-error btn-sm w-full sm:w-auto"
 							onclick={() => removeSession(sessions.selectedSession?.id as number)}>Delete</button
 						>
 					</div>

@@ -61,7 +61,7 @@ class Students {
             const fetchedStudents: Student[] = await invoke('get_students', args);
             this.fillCache(fetchedStudents);
 
-            console.log('FETCHING from students');
+            toast.warning('FETCHING STUDENTS');
 
             let newKey: string;
             if (section_id !== undefined) {

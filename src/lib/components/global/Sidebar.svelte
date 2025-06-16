@@ -35,7 +35,7 @@
 
 <div class="drawer drawer-open">
 	<input id="sidebar" type="checkbox" class="drawer-toggle" />
-	<div class="drawer-content bg-base-300 space-y-4 p-4">
+	<div class="drawer-content bg-base-300 space-y-4 p-3">
 		{@render children()}
 	</div>
 	<div class="drawer-side">
@@ -51,11 +51,11 @@
 					{#each links as link, i (i)}
 						<li>
 							<a
-								class="flex items-center justify-start gap-2 p-2 font-normal {page.url.pathname.split(
+								class="flex items-center justify-start gap-2 p-2 {page.url.pathname.split(
 									'/'
 								)[1] === link[1].split('/')[1]
 									? 'bg-primary text-primary-content'
-									: ''}"
+									: 'opacity-80'}"
 								href={link[1]}
 							>
 								{link[0]}

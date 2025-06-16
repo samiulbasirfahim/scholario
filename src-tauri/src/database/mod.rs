@@ -12,7 +12,7 @@ use tauri::{App, Manager};
 use self::class::{Class, Section};
 use self::guardian::{Guardian, StudentRelationship};
 use self::session::Session;
-use self::student::Student;
+use self::student::{Attendance, Student};
 use self::subject::{ClassSubject, Subject};
 
 use super::utility::get_db_path;
@@ -36,15 +36,6 @@ pub fn setup(app: &App) {
     self::init().expect("Failed to create neccesary tables.");
 }
 
-// pub fn conn() -> Result<MutexGuard<'static, Connection>> {
-//     let conn = DB
-//         // .get_or_init(|| Mutex::new(Connection::open_in_memory().expect("Failed to open database")))
-//         .get_or_init(|| Mutex::new(Connection::open().expect("Failed to open database")))
-//         .lock()
-//         .expect("Failed to lock mutex");
-//     Ok(conn)
-// }
-
 pub fn init() -> Result<()> {
     Session::init()?;
     Subject::init()?;
@@ -54,5 +45,6 @@ pub fn init() -> Result<()> {
     Guardian::init()?;
     Student::init()?;
     StudentRelationship::init()?;
+    Attendance::init()?;
     Ok(())
 }

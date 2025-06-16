@@ -99,7 +99,7 @@
 
 <Navbar>
 	<div class="flex-1">
-		<div class="breadcrumbs font-semibold">
+		<div class="breadcrumbs text-sm font-semibold">
 			<ul>
 				<li>Students</li>
 
@@ -118,27 +118,26 @@
 		</div>
 	</div>
 	<div class="flex gap-2">
-		<input
-			type="text"
-			placeholder="Search"
-			class="input input-bordered w-48 transform-gpu transition-all ease-linear focus:w-64 focus:outline-none"
-		/>
+		<div class="isolate">
+			<input
+				type="text"
+				placeholder="Search"
+				class="input input-sm input-bordered w-48 transform-gpu transition-all ease-linear focus:w-64 focus:outline-none"
+			/>
+		</div>
 
-		<label class="bg-accent text-accent-content flex items-center rounded px-2">
-			<Icon icon="carbon:prompt-session" font-size="20" />
-			<select
-				class="select border-0 bg-transparent focus:outline-none"
-				bind:value={sessions.selected}
-				on:change={(e) => sessions.select(Number((e.target as HTMLOptionElement).value))}
-			>
-				{#each sessions.data as session (session.id)}
-					<option value={session.id}>{session.name}</option>
-				{/each}
-			</select>
-		</label>
+		<select
+			class="select select-sm select-accent"
+			bind:value={sessions.selected}
+			on:change={(e) => sessions.select(Number((e.target as HTMLOptionElement).value))}
+		>
+			{#each sessions.data as session (session.id)}
+				<option value={session.id}>{session.name}</option>
+			{/each}
+		</select>
 
 		<button
-			class="btn btn-secondary"
+			class="btn btn-secondary btn-sm"
 			on:click={() => {
 				(document.getElementById('filter-modal') as HTMLDialogElement).showModal();
 			}}
@@ -147,7 +146,7 @@
 			FILTER
 		</button>
 		<button
-			class="btn btn-primary"
+			class="btn btn-primary btn-sm"
 			on:click={() => {
 				isEditing = false;
 				(document.getElementById('create-student-modal') as HTMLDialogElement).showModal();

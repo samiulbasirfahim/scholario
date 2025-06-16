@@ -2,6 +2,6 @@
 	const { children } = $props();
 </script>
 
-<div class="navbar bg-base-100 z-50 rounded px-4">
+<div class="z-50 rounded flex bg-base-100  p-3">
 	{@render children()}
 </div>

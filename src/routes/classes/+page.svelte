@@ -178,7 +178,7 @@
 
 <Navbar>
 	<div class="flex-1">
-		<div class="breadcrumbs font-semibold">
+		<div class="breadcrumbs text-sm font-semibold">
 			<ul>
 				<li>Classes</li>
 				{#if sessions.selectedSession}
@@ -187,11 +187,10 @@
 			</ul>
 		</div>
 	</div>
-	<div class="flex flex-wrap gap-2">
-		<label class="bg-accent text-accent-content flex items-center rounded px-2">
-			<Icon icon="carbon:prompt-session" font-size="20" />
+	<div class="flex w-full justify-end gap-2">
+		<div>
 			<select
-				class="select border-0 bg-transparent focus:outline-none"
+				class="select select-sm select-accent"
 				bind:value={sessions.selected}
 				on:change={(e) => sessions.select(Number((e.target as HTMLOptionElement).value))}
 			>
@@ -199,10 +198,10 @@
 					<option value={session.id}>{session.name}</option>
 				{/each}
 			</select>
-		</label>
+		</div>
 
 		<button
-			class="btn btn-primary"
+			class="btn btn-primary btn-sm"
 			on:click={() =>
 				(document.getElementById('create-section-modal') as HTMLDialogElement).showModal()}
 		>
@@ -211,7 +210,7 @@
 		</button>
 
 		<button
-			class="btn btn-secondary"
+			class="btn btn-secondary btn-sm"
 			on:click={() => {
 				(document.getElementById('create-class-modal') as HTMLDialogElement).showModal();
 			}}
@@ -221,7 +220,7 @@
 		</button>
 
 		<button
-			class="btn btn-info"
+			class="btn btn-info btn-sm"
 			on:click={() =>
 				(document.getElementById('list-subject-modal') as HTMLDialogElement).showModal()}
 		>

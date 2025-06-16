@@ -421,10 +421,12 @@
 				</div>
 
 				<div class="modal-action mt-6 flex justify-between">
-					<button class="btn btn-secondary" on:click|preventDefault={openGuardiansModal}>
+					<button class="btn btn-secondary btn-sm" on:click|preventDefault={openGuardiansModal}>
 						Manage Guardians
 					</button>
-					<button type="submit" class="btn btn-primary">{isEditing ? 'Edit' : 'Create'}</button>
+					<button type="submit" class="btn btn-primary btn-sm"
+						>{isEditing ? 'Edit' : 'Create'}</button
+					>
 				</div>
 			{/if}
 		</form>
