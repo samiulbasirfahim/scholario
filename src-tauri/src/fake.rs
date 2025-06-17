@@ -1,8 +1,10 @@
-use chrono::NaiveDate;
-use fake::faker::chrono::ar_sa::Date;
+use base64::engine::general_purpose;
+use base64::Engine;
+use chrono::{Local, NaiveDate};
 use fake::Fake;
 use rand::seq::{IndexedRandom, SliceRandom};
 use rand::thread_rng;
+use reqwest::blocking::get;
 
 use crate::database::class::{Class, Section};
 use crate::database::session::Session;
@@ -17,7 +19,7 @@ pub fn generate_fake_data() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut rng = thread_rng();
 
-    for _ in 0..100 {
+    for i in 0..100 {
         // Pick a random session
         let session = sessions.choose(&mut rng).unwrap();
 
@@ -38,42 +40,44 @@ pub fn generate_fake_data() -> Result<(), Box<dyn std::error::Error>> {
             None
         };
 
-        // // Generate fake data fields
-        // // let name: String = fake::faker::name::raw::Name();
-        // let dob = /* generate dob */;
-        // let gender = if fake::Fake::fake::<f32>() > 0.5 { "Male" } else { "Female" };
-        // let religion = "None";
-        // let address: String = fake::faker::address::raw::StreetAddress().fake();
-        // let phone = None;
-        // let admission_date = /* generate admission date */;
-        // let is_resident = fake::Fake::fake::<f32>() > 0.7;
-        // let roll = -1;
-        // let photo = None;
-        // let health_notes = None;
-        // let general_notes = None;
-
         let name: String = fake::faker::name::en::Name().fake();
-        // let dob: NaiveDate = 
+        let dob: String = fake::faker::chrono::en::Date().fake();
+        let dobnd = NaiveDate::parse_from_str(&dob, "%Y-%m-%d").unwrap();
+        let address: String = fake::faker::address::en::CityName().fake();
+        let phone = fake::faker::phone_number::en::PhoneNumber().fake();
 
-        // Student::create(
-        //     name,
-        //     class.id,
-        //     section,
-        //     session.id,
-        //     dob,
-        //     gender,
-        //     religion,
-        //     &address,
-        //     phone,
-        //     admission_date,
-        //     is_resident,
-        //     roll,
-        //     photo,
-        //     health_notes,
-        //     general_notes,
-        // )?;
+        let healtnote: String = fake::faker::lorem::en::Paragraph(0..3).fake();
+        let gnote: String = fake::faker::lorem::en::Paragraph(0..3).fake();
+
+        let url = format!("https://robohash.org/{}.png?size=200x200", name);
+        let res = get(url)?;
+        let bytes = res.bytes()?;
+
+        let base64_string = general_purpose::STANDARD.encode(&bytes);
+        let photo = format!("data:image/png;base64,{}", base64_string);
+
+        Student::create(
+            &name,
+            class.id,
+            section,
+            session.id,
+            dobnd,
+            "MALE",
+            "ISLAM",
+            &address,
+            phone,
+            Local::now().naive_local().date(),
+            i % 3 == 0,
+            -1,
+            Some(photo),
+            Some(healtnote),
+            Some(gnote),
+        )?;
     }
 
-    // Student::
     Ok(())
+}
+
+pub fn generate_fake_attendacne(){
+
 }

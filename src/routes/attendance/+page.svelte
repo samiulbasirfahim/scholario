@@ -36,7 +36,7 @@
 	});
 
 	let students_d = $state<Student[]>([]);
-	let attendanceRecords = $state([]);
+	let attendanceRecords: Attendance[] = $state([]);
 	let loading = $state(false);
 
 	$effect(() => {
@@ -82,6 +82,21 @@
 		return status.charAt(0) + status.slice(1).toLowerCase();
 	}
 
+	function getAttendanceInfo(day: number, m: { year: number; month: number; days: number }) {
+		const dateStr = `${m.year}-${String(m.month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+		const record = attendanceRecords.find((r) => r.date === dateStr);
+
+		let bg = 'bg-base-300';
+
+		if (record) {
+			if (record.status.startsWith('PRESENT')) bg = 'bg-green-400';
+			else if (record.status.startsWith('ABSENT')) bg = 'bg-red-500';
+			else if (record.status.startsWith('LATE')) bg = 'bg-yellow-400';
+		}
+
+		return { bg, tooltip: record?.status ?? '' };
+	}
+
 	async function saveAttendance() {
 		const today = new Date().toISOString().slice(0, 10);
 
@@ -110,6 +125,28 @@
 			}
 		}
 	}
+
+	import { format, getDaysInMonth, startOfMonth, subMonths } from 'date-fns';
+
+	const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+	const today = new Date();
+	const months = Array.from({ length: 3 }, (_, i) => {
+		const date = subMonths(today, i);
+		const year = date.getFullYear();
+		const month = date.getMonth();
+		const firstDayOfMonth = startOfMonth(date);
+		const startDay = firstDayOfMonth.getDay();
+		const days = getDaysInMonth(date);
+
+		return {
+			label: format(date, 'MMMM yyyy'),
+			startDay,
+			days,
+			year,
+			month
+		};
+	});
 </script>
 
 <Navbar>
@@ -239,7 +276,9 @@
 			</div>
 
 			<div class="w-1/2">
-				<div class="bg-base-100 border-base-300 text-accent w-full rounded border p-4">
+				<div
+					class="bg-base-100 border-base-300 text-accent max-h-[80vh] w-full overflow-y-auto rounded border p-4"
+				>
 					<h2 class="text-primary border-accent mb-3 border-b-1 pb-2 text-xl font-bold">
 						Attendance History
 					</h2>
@@ -255,23 +294,30 @@
 							No attendance records found for {selectedStudentData.name}.
 						</div>
 					{:else}
-						<ul class="divide-base-300 divide-y">
-							{#each attendanceRecords.sort((a, b) => b.date.localeCompare(a.date)) as record}
-								<li class="py-2">
-									<div class="flex items-center justify-between">
-										<span class="text-base-content">
-											<span class="font-semibold">{record.date}</span>
-										</span>
-										<span class="badge badge-outline">
-											{formatStatus(record.status)}
-										</span>
+						<div class="flex flex-wrap gap-4">
+							{#each months as m (m.label)}
+								<div class="p-4">
+									<h1 class="mb-2 text-xl font-bold">{m.label}</h1>
+									<div class="grid grid-cols-7 gap-2">
+										{#each daysOfWeek as day (day)}
+											<span class="rounded bg-primary p-2 text-center text-primary-content">{day}</span>
+										{/each}
+
+										{#each Array(m.startDay) as _, i (i)}
+											<span></span>
+										{/each}
+										{#each Array.from({ length: m.days }, (_, i) => i + 1) as day (day)}
+											<span
+												class={`rounded p-2 text-center ${getAttendanceInfo(day, m).bg}`}
+												title={getAttendanceInfo(day, m).tooltip}
+											>
+												{day}
+											</span>
+										{/each}
 									</div>
-									{#if record.notes}
-										<p class="text-secondary mt-1 text-xs">{record.notes}</p>
-									{/if}
-								</li>
+								</div>
 							{/each}
-						</ul>
+						</div>
 					{/if}
 				</div>
 			</div>

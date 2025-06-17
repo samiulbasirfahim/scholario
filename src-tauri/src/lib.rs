@@ -15,7 +15,7 @@ pub fn run() {
         .setup(|app| {
             database::setup(app);
             if cfg!(debug_assertions) {
-                fake::generate_fake_data();
+                // fake::generate_fake_data()?;
                 app.handle().plugin(
                     tauri_plugin_log::Builder::default()
                         .level(log::LevelFilter::Info)
