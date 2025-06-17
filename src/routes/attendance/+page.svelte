@@ -226,6 +226,26 @@
 			index = newIndex;
 		}
 	}
+
+	function hasDateExceededEndDate() {
+		const endDateStr = sessions.selectedSession?.end_date;
+
+		if (!endDateStr || endDateStr.trim() === '') {
+			console.log('endDateStr missing or empty:', endDateStr);
+			return true;
+		}
+
+		const endDate = parseISO(endDateStr);
+		if (!isValid(endDate)) {
+			console.log('Invalid endDateStr:', endDateStr);
+			return true;
+		}
+
+		const currentDate = new Date();
+		const isExceeded = isAfter(currentDate, endDate);
+		console.log('Current:', currentDate, 'End:', endDate, 'Exceeded:', isExceeded);
+		return isExceeded;
+	}
 </script>
 
 <Navbar>
@@ -276,10 +296,12 @@
 			<Icon icon="tabler:filter-filled" font-size="18" />
 			FILTER
 		</button>
-		<button class="btn btn-secondary btn-sm" on:click={saveAttendance}>
-			<Icon icon="material-symbols:save" font-size="18" />
-			Save
-		</button>
+		{#if !hasDateExceededEndDate()}
+			<button class="btn btn-secondary btn-sm" on:click={saveAttendance}>
+				<Icon icon="material-symbols:save" font-size="18" />
+				Save
+			</button>
+		{/if}
 	</div>
 </Navbar>
 
@@ -302,7 +324,10 @@
 									{#if filter.section === ''}
 										<th>Section</th>
 									{/if}
-									<th>Status</th>
+
+									{#if !hasDateExceededEndDate()}
+										<th>Status</th>
+									{/if}
 								</tr>
 							</thead>
 							<tbody>
@@ -330,22 +355,25 @@
 												{/if}
 											</td>
 										{/if}
-										<td>
-											<select
-												class="select bg-secondary text-secondary-content select-sm"
-												on:change={(e) => {
-													takeAttendance(
-														student.id,
-														(e.target as HTMLSelectElement).value as AttendanceStatus
-													);
-												}}
-											>
-												<option disabled selected>Pick status</option>
-												<option value="present">Present</option>
-												<option value="late">Late</option>
-												<option value="absent">Absent</option>
-											</select>
-										</td>
+
+										{#if !hasDateExceededEndDate()}
+											<td>
+												<select
+													class="select bg-secondary text-secondary-content select-sm"
+													on:change={(e) => {
+														takeAttendance(
+															student.id,
+															(e.target as HTMLSelectElement).value as AttendanceStatus
+														);
+													}}
+												>
+													<option disabled selected>Pick status</option>
+													<option value="present">Present</option>
+													<option value="late">Late</option>
+													<option value="absent">Absent</option>
+												</select>
+											</td>
+										{/if}
 									</tr>
 								{/each}
 							</tbody>
@@ -377,7 +405,7 @@
 						</div>
 						<div class="flex max-h-[72vh] flex-col items-center gap-4 overflow-auto">
 							{#each months as m (m.label)}
-								<div class="">
+								<div class="border-t-2 pt-4">
 									<h1 class="mb-2 text-xl font-bold">{m.label}</h1>
 									<div class="grid grid-cols-7 gap-2">
 										{#each daysOfWeek as day (day)}
