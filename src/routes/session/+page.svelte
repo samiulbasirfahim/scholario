@@ -88,15 +88,11 @@
 				toast.set({ message: 'Failed to delete session', type: 'error' });
 			});
 	}
-
-	$effect(() => {
-		console.log($state.snapshot(sessions.data));
-	});
 </script>
 
 <h2 class="text-primary mb-3 text-xl font-bold">Manage Sessions</h2>
-<div class="flex gap-2">
-	<div class="w-1/2">
+<div class="mt-4 flex flex-col gap-2 xl:flex-row">
+	<div class="w-full xl:w-1/2">
 		<form class="bg-base-100 border-base-300 space-y-3 rounded border p-4">
 			<h2 class="text-primary mb-3 text-lg font-semibold">
 				{isEditing ? 'Edit Session' : 'Create New Session'}
@@ -159,7 +155,7 @@
 		</div>
 	</div>
 
-	<div class="w-1/2">
+	<div class="w-full xl:w-1/2">
 		<div class="bg-base-100 border-base-300 text-accent w-full rounded border p-4">
 			<h2 class="text-primary mb-3 text-xl font-bold">Session Details</h2>
 			{#if sessions.selected}

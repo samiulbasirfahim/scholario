@@ -1,4 +1,6 @@
 <script lang="ts">
+	import type { Attendance } from '$lib/types/attendance.js';
+	import type { Student } from '$lib/types/student';
 	import { goto } from '$app/navigation';
 	import Navbar from '$lib/components/global/Navbar.svelte';
 	import Filter from '$lib/components/students/Filter.svelte';
@@ -6,8 +8,6 @@
 	import { classes, sections } from '$lib/store/class.svelte';
 	import { sessions } from '$lib/store/session.svelte';
 	import { students } from '$lib/store/student.svelte';
-	import type { Attendance } from '$lib/types/attendance.js';
-	import type { Student } from '$lib/types/student';
 	import Icon from '@iconify/svelte';
 	import { invoke } from '@tauri-apps/api/core';
 	import { onMount } from 'svelte';
@@ -71,17 +71,6 @@
 		attendance = { ...attendance, [id]: status };
 	}
 
-	$effect(() => {
-		console.log(attendance);
-	});
-
-	function formatStatus(status: string) {
-		if (status.startsWith('LATE-')) {
-			return `Late (${status.slice(5)})`;
-		}
-		return status.charAt(0) + status.slice(1).toLowerCase();
-	}
-
 	function getAttendanceInfo(day: number, m: { year: number; month: number; days: number }) {
 		const dateStr = `${m.year}-${String(m.month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 		const record = attendanceRecords.find((r) => r.date === dateStr);
@@ -126,15 +115,32 @@
 		}
 	}
 
-	import { format, getDaysInMonth, startOfMonth, subMonths } from 'date-fns';
+	import {
+		addMonths,
+		format,
+		getDaysInMonth,
+		isAfter,
+		isValid,
+		parse,
+		parseISO,
+		startOfMonth
+	} from 'date-fns';
 
 	const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-	const today = new Date();
-	const months = Array.from({ length: 3 }, (_, i) => {
-		const date = subMonths(today, i);
-		const year = date.getFullYear();
+	let availableMonths = $state([]);
+	let index = $state(-1);
+	let months = $state([]);
+
+	function getMonth(i: number) {
+		console.log('Reactivity calling by index', index);
+
+		if (!availableMonths[i] || i < 0) return null;
+		const date = parse(availableMonths[i], 'MMMM yyyy', new Date());
+		if (!isValid(date)) return null;
+
 		const month = date.getMonth();
+		const year = date.getFullYear();
 		const firstDayOfMonth = startOfMonth(date);
 		const startDay = firstDayOfMonth.getDay();
 		const days = getDaysInMonth(date);
@@ -146,7 +152,80 @@
 			year,
 			month
 		};
+	}
+
+	function getCurrentOrLastMonthIndex() {
+		const todayStr = format(new Date(), 'MMMM yyyy');
+		const currentIndex = availableMonths.indexOf(todayStr);
+		return currentIndex !== -1 ? currentIndex : availableMonths.length - 1;
+	}
+
+	$effect(() => {
+		const startDate = sessions.selectedSession?.start_date;
+		const endDate = sessions.selectedSession?.end_date;
+
+		if (!startDate || !endDate) {
+			availableMonths = [];
+			return;
+		}
+
+		const startingDate = parseISO(startDate);
+		const endingDate = parseISO(endDate);
+
+		if (!isValid(startingDate) || !isValid(endingDate)) {
+			availableMonths = [];
+			return;
+		}
+
+		const temp = [];
+		let current = startingDate;
+		while (!isAfter(current, endingDate)) {
+			temp.push(format(current, 'MMMM yyyy'));
+			current = addMonths(current, 1);
+		}
+
+		if (JSON.stringify(temp) !== JSON.stringify(availableMonths)) {
+			availableMonths = temp;
+		}
 	});
+
+	$effect(() => {
+		if (availableMonths.length > 0) {
+			index = getCurrentOrLastMonthIndex();
+		}
+	});
+
+	$effect(() => {
+		if (index >= 0 && availableMonths.length > 0) {
+			const newMonths = [];
+			for (let i = 0; i < 3; i++) {
+				const monthIndex = index - i;
+				if (monthIndex >= 0) {
+					const month = getMonth(monthIndex);
+					if (month) newMonths.push(month);
+				}
+			}
+			if (JSON.stringify(newMonths) !== JSON.stringify(months)) {
+				months = newMonths;
+			}
+		} else {
+			months = [];
+		}
+	});
+
+	function goBackThreeMonths() {
+		const newIndex = Math.max(0, index - 3);
+		if (newIndex !== index) {
+			index = newIndex;
+		}
+	}
+
+	function goForwardThreeMonths() {
+		const newIndex = Math.min(availableMonths.length - 1, index + 3);
+		if (newIndex !== index) {
+			index = newIndex;
+		}
+	}
 </script>
 
 <Navbar>
@@ -208,8 +287,8 @@
 	<div class="alert alert-warning">Please create a session first</div>
 {:else if classes.get_by_current_session().length > 0}
 	{#if students_d.length > 0}
-		<div class="mt-4 flex gap-2">
-			<div class="w-1/2">
+		<div class="mt-4 flex flex-col gap-2 xl:flex-row">
+			<div class="w-full xl:w-1/2">
 				<div class="bg-base-100 border-base-300 w-full flex-1 overflow-auto rounded border">
 					<div class="max-h-[85vh] overflow-x-auto">
 						<table class="table-pin-rows table">
@@ -275,10 +354,8 @@
 				</div>
 			</div>
 
-			<div class="w-1/2">
-				<div
-					class="bg-base-100 border-base-300 text-accent max-h-[80vh] w-full overflow-y-auto rounded border p-4"
-				>
+			<div class="w-full xl:w-1/2">
+				<div class="bg-base-100 border-base-300 text-accent w-full rounded border p-4">
 					<h2 class="text-primary border-accent mb-3 border-b-1 pb-2 text-xl font-bold">
 						Attendance History
 					</h2>
@@ -294,13 +371,19 @@
 							No attendance records found for {selectedStudentData.name}.
 						</div>
 					{:else}
-						<div class="flex flex-wrap gap-4">
+						<div class="mb-5">
+							<button class="btn btn-sm btn-primary" on:click={goBackThreeMonths}>PREV</button>
+							<button class="btn btn-sm btn-primary" on:click={goForwardThreeMonths}>NEXT</button>
+						</div>
+						<div class="flex max-h-[72vh] flex-col items-center gap-4 overflow-auto">
 							{#each months as m (m.label)}
-								<div class="p-4">
+								<div class="">
 									<h1 class="mb-2 text-xl font-bold">{m.label}</h1>
 									<div class="grid grid-cols-7 gap-2">
 										{#each daysOfWeek as day (day)}
-											<span class="rounded bg-primary p-2 text-center text-primary-content">{day}</span>
+											<span class="bg-primary text-primary-content rounded p-2 text-center text-sm"
+												>{day}</span
+											>
 										{/each}
 
 										{#each Array(m.startDay) as _, i (i)}
@@ -308,7 +391,7 @@
 										{/each}
 										{#each Array.from({ length: m.days }, (_, i) => i + 1) as day (day)}
 											<span
-												class={`rounded p-2 text-center ${getAttendanceInfo(day, m).bg}`}
+												class={`rounded p-2 text-center text-sm ${getAttendanceInfo(day, m).bg}`}
 												title={getAttendanceInfo(day, m).tooltip}
 											>
 												{day}

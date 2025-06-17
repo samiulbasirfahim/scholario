@@ -162,8 +162,8 @@
 	<div class="alert alert-warning">Please create a session first</div>
 {:else if classes.get_by_current_session().length > 0}
 	{#if students_d.length > 0}
-		<div class="mt-4 flex gap-2">
-			<div class="w-1/2">
+		<div class="mt-4 flex flex-col gap-2 xl:flex-row">
+			<div class="w-full xl:w-1/2">
 				<div class="bg-base-100 border-base-300 w-full flex-1 overflow-auto rounded border">
 					<div class="max-h-[85vh] overflow-x-auto">
 						<table class="table-pin-rows table">
@@ -204,7 +204,7 @@
 				</div>
 			</div>
 
-			<div class="w-1/2">
+			<div class="w-full xl:w-1/2">
 				<div class="bg-base-100 border-base-300 text-accent w-full rounded border p-4">
 					<h2 class="text-primary border-accent mb-3 border-b-1 pb-2 text-xl font-bold">
 						Student Details

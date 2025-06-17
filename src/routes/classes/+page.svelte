@@ -234,8 +234,8 @@
 	<div class="alert alert-warning mt-4">Please create a session first</div>
 {:else if sessions.selectedSession}
 	{#if classes.get_by_current_session()?.length > 0}
-		<div class="mt-4 flex gap-2">
-			<div class="w-1/2">
+		<div class="mt-4 flex flex-col gap-2 xl:flex-row">
+			<div class="w-full xl:w-1/2">
 				<div class="bg-base-100 border-base-300 max-h-[85vh] w-full overflow-auto rounded border">
 					<div class="overflow-x-auto">
 						<table class="table">
@@ -270,7 +270,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="w-1/2">
+			<div class="w-full xl:w-1/2">
 				<div class="bg-base-100 border-base-300 text-accent w-full rounded border p-4">
 					<h2 class="text-primary mb-3 text-xl font-bold">Class Details</h2>
 

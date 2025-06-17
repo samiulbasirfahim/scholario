@@ -5,7 +5,7 @@
 <div class="toast space-y-3">
 	{#each toast.toasts as t, i (i)}
 		<div
-			class="alert alert-soft alert-{t.type}"
+			class="alert alert-soft alert-{t.type} text-{t.type}-content"
 			onclickcapture={() => {
 				toast.toasts = toast.toasts.filter((tt) => tt != t);
 			}}
