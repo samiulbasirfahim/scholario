@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import { classes, sections } from '$lib/store/class.svelte';
 
 	let { filter = $bindable({}) } = $props();
@@ -7,6 +8,10 @@
 		console.log($state.snapshot(filter));
 		(document.getElementById('filter-modal') as HTMLDialogElement)?.close();
 	}
+
+	$effect(() => {
+		console.log();
+	});
 </script>
 
 <dialog id="filter-modal" class="modal">
@@ -49,27 +54,29 @@
 				</div>
 			{/if}
 
-			<div>
-				<label class="label" for="sort">
-					<span class="label-text text-sm font-medium">Fee Status</span>
-				</label>
-				<select bind:value={filter.fee} class="select select-bordered w-full">
-					<option value="">None</option>
-					<option value="unpaid-desc">Unpaid: High → Low</option>
-					<option value="unpaid-asc">Unpaid: Low → High</option>
-				</select>
-			</div>
+			{#if page.url.pathname !== '/attendance'}
+				<div>
+					<label class="label" for="sort">
+						<span class="label-text text-sm font-medium">Fee Status</span>
+					</label>
+					<select bind:value={filter.fee} class="select select-bordered w-full">
+						<option value="">None</option>
+						<option value="unpaid-desc">Unpaid: High → Low</option>
+						<option value="unpaid-asc">Unpaid: Low → High</option>
+					</select>
+				</div>
 
-			<div>
-				<label class="label" for="rollsort">
-					<span class="label-text text-sm font-medium">Sort by Roll</span>
-				</label>
-				<select bind:value={filter.roll} class="select select-bordered w-full">
-					<option value="">None</option>
-					<option value="asc">Roll: Low → High</option>
-					<option value="desc">Roll: High → Low</option>
-				</select>
-			</div>
+				<div>
+					<label class="label" for="rollsort">
+						<span class="label-text text-sm font-medium">Sort by Roll</span>
+					</label>
+					<select bind:value={filter.roll} class="select select-bordered w-full">
+						<option value="">None</option>
+						<option value="asc">Roll: Low → High</option>
+						<option value="desc">Roll: High → Low</option>
+					</select>
+				</div>
+			{/if}
 		</form>
 	</div>
 </dialog>

@@ -61,8 +61,6 @@ class Students {
             const fetchedStudents: Student[] = await invoke('get_students', args);
             this.fillCache(fetchedStudents);
 
-            toast.warning('FETCHING STUDENTS');
-
             let newKey: string;
             if (section_id !== undefined) {
                 newKey = sectionKey;
@@ -86,7 +84,8 @@ class Students {
     }
 
     getById(id: number): Student | undefined {
-        console.log('Reactive counter', this.reactiveCounter);
+        const cnt = this.reactiveCounter;
+        // console.log('Reactive counter', this.reactiveCounter);
         const classMap = this.data.get(sessions.selected as number);
         if (!classMap) return undefined;
 
@@ -101,7 +100,8 @@ class Students {
     }
 
     async get(session_id: number, class_id?: number, section_id?: number): Promise<Student[]> {
-        console.log('Reactive counter', this.reactiveCounter);
+        const cnt = this.reactiveCounter;
+        // console.log('Reactive counter', this.reactiveCounter);
         await this.fetch(session_id, class_id, section_id);
 
         const classMap = this.data.get(session_id);

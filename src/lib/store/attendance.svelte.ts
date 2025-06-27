@@ -1,60 +1,70 @@
+import { toast } from '$lib/store/toast.svelte';
 import type { Attendance } from '$lib/types/attendance';
 import { invoke } from '@tauri-apps/api/core';
-import { toast } from './toast.svelte';
 
 class AttendanceStore {
     data = new Map<number, Map<string, Attendance[]>>();
+
     fetchedKeys = new Set<string>();
     reactiveCounter = $state(0);
+
+    private insert(attendance: Attendance) {
+        const { student_id, date: date } = attendance;
+        const key = date.slice(0, 7);
+
+        if (!this.data.has(student_id)) {
+            console.log('Student entry missing');
+            this.data.set(student_id, new Map());
+        }
+
+        const studentMap = this.data.get(student_id);
+
+        if (!studentMap?.has(key)) {
+            studentMap?.set(key, []);
+        }
+
+        const store: Attendance[] = studentMap?.get(key) ?? [];
+        const exist = store.find((a) => a.date === attendance.date);
+
+        if (exist) {
+            const new_store = store.filter((a) => a.date !== attendance.date);
+            new_store.push(attendance);
+            studentMap?.set(key, new_store);
+        } else {
+            store.push(attendance);
+        }
+    }
+
+    private fillCache(attendances: Attendance[]) {
+        for (const attendance of attendances) this.insert(attendance);
+    }
 
     private makeKey(student_id: number, year: number, month: number): string {
         const paddedMonth = month.toString().padStart(2, '0');
         return `${student_id}-${year}-${paddedMonth}`;
     }
 
-    private insert(attendance: Attendance) {
-        const studentId = attendance.student_id;
-        const key = attendance.date.slice(0, 7); // "YYYY-MM"
-
-        if (!this.data.has(studentId)) {
-            this.data.set(studentId, new Map());
-        }
-
-        const studentMap = this.data.get(studentId)!;
-        if (!studentMap.has(key)) {
-            studentMap.set(key, []);
-        }
-
-        studentMap.get(key)!.push(attendance);
-    }
-
-    private fillCache(attendances: Attendance[]) {
-        for (const record of attendances) {
-            this.insert(record);
-        }
-    }
-
     async fetch(student_id: number, year?: string, month?: string) {
-        const now = new Date();
-        const yearNum = year ? parseInt(year) : now.getFullYear();
-        const monthNum = month ? parseInt(month) : now.getMonth() + 1;
+        const today = new Date();
+
+        const yearNum = year ? parseInt(year) : today.getFullYear();
+        const monthNum = month ? parseInt(month) : today.getMonth() + 1;
 
         const key = this.makeKey(student_id, yearNum, monthNum);
         if (this.fetchedKeys.has(key)) return;
 
         try {
-            const args = {
+            const attendances: Attendance[] = await invoke('get_attendance_by_student', {
                 student_id,
                 year: yearNum,
                 month: monthNum
-            };
+            });
 
-            const records: Attendance[] = await invoke('get_attendance_by_student', args);
+            console.log(attendances);
 
-            this.fillCache(records);
+            this.fillCache(attendances);
             this.fetchedKeys.add(key);
             this.reactiveCounter++;
-            toast.warning('Fetching attendance.');
         } catch (err) {
             console.error('Failed to fetch attendance:', err);
             toast.error('Failed to fetch attendance.');
@@ -68,11 +78,9 @@ class AttendanceStore {
 
         await this.fetch(student_id, year, month);
 
-        const key = `${year}-${month}`;
         const studentMap = this.data.get(student_id);
         if (!studentMap) return [];
-
-        return studentMap.get(key) ?? [];
+        return studentMap.get(`${year}-${month}`) ?? [];
     }
 
     add(record: Attendance) {
@@ -80,27 +88,11 @@ class AttendanceStore {
         this.reactiveCounter++;
     }
 
-    update(updated: Attendance) {
-        const key = updated.date.slice(0, 7);
-        const studentId = updated.student_id;
-        const studentMap = this.data.get(studentId);
-        if (!studentMap) return;
-
-        const list = studentMap.get(key);
-        if (!list) return;
-
-        const index = list.findIndex((r) => r.id === updated.id);
-        if (index !== -1) {
-            list[index] = updated;
-            this.reactiveCounter++;
-        }
-    }
-
     remove(studentId: number, attendanceId: number) {
         const studentMap = this.data.get(studentId);
         if (!studentMap) return;
 
-        for (const [month, list] of studentMap) {
+        for (const [_, list] of studentMap) {
             const index = list.findIndex((r) => r.id === attendanceId);
             if (index !== -1) {
                 list.splice(index, 1);

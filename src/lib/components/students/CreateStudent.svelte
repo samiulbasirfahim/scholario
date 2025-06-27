@@ -32,6 +32,11 @@
 		selectedGuardians = selectedGuardians.filter((g) => g.id !== id);
 	}
 
+	const today = new Date();
+	const localISOString = new Date(
+		today.getTime() - today.getTimezoneOffset() * 60000
+	).toISOString();
+
 	let form_data = $state({
 		name: '',
 		class_id: '',
@@ -41,7 +46,7 @@
 		religion: '',
 		address: '',
 		phone: '',
-		admission_date: new Date().toISOString().split('T')[0],
+		admission_date: localISOString.split('T')[0],
 		is_resident: false,
 		roll: '',
 		photo: '',
@@ -91,7 +96,7 @@
 				religion: '',
 				address: '',
 				phone: '',
-				admission_date: new Date().toISOString().split('T')[0],
+				admission_date: localISOString.split('T')[0],
 				is_resident: false,
 				roll: '',
 				photo: '',
@@ -197,7 +202,7 @@
 				form_data.religion = '';
 				form_data.address = '';
 				form_data.phone = '';
-				form_data.admission_date = new Date().toISOString().split('T')[0];
+				form_data.admission_date = localISOString.split('T')[0];
 				form_data.is_resident = false;
 				form_data.roll = '';
 				form_data.photo = '';

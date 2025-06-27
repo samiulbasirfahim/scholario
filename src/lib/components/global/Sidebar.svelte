@@ -67,7 +67,7 @@
 			<div class="text-accent hover:text-accent">
 				<li class="border-accent flex flex-row justify-between border-b-1">
 					<button
-						class="btn btn-ghost tooltip-right tooltip-accent tooltip m-1 text-xl"
+						class="btn btn-ghost tooltip-right tooltip-accent tooltip btn-square m-1 text-xl"
 						data-tip="Backward"
 						onclick={() => {
 							window.history.back();
@@ -76,7 +76,7 @@
 						<Icon icon="mingcute:arrow-left-fill" />
 					</button>
 					<button
-						class="btn btn-ghost tooltip tooltip-left tooltip-accent m-1 text-xl"
+						class="btn btn-ghost tooltip tooltip-left tooltip-accent btn-square m-1 text-xl"
 						data-tip="Forward"
 						onclick={() => {
 							window.history.forward();
