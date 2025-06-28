@@ -1,7 +1,10 @@
-use super::conn;
+use std::result;
+
+use super::{class, conn};
 use chrono::{Datelike, Local, NaiveDate};
 use rusqlite::{params, Result};
 use serde::{Deserialize, Serialize};
+use tauri::http::uri::PathAndQuery;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Student {
@@ -181,6 +184,40 @@ impl Student {
             general_notes,
         ))
     }
+
+    pub fn get_by_id(id: i32) -> Result<Self> {
+        let db = conn()?;
+
+        let mut stmt = db.prepare(
+            "SELECT id, name, class_id, section_id, session_id, dob, gender, religion, address,
+                phone, admission_date, is_resident, roll, photo, health_notes, general_notes
+         FROM students WHERE id = ?",
+        )?;
+
+        let student = stmt.query_row([id], |row| {
+            Ok(Student {
+                id: row.get(0)?,
+                name: row.get(1)?,
+                class_id: row.get(2)?,
+                section_id: row.get::<_, Option<i32>>(3)?,
+                session_id: row.get(4)?,
+                dob: row.get(5)?,
+                gender: row.get(6)?,
+                religion: row.get(7)?,
+                address: row.get(8)?,
+                phone: row.get(9)?,
+                admission_date: row.get(10)?,
+                is_resident: row.get(11)?,
+                roll: row.get(12)?,
+                photo: row.get(13)?,
+                health_notes: row.get(14)?,
+                general_notes: row.get(15)?,
+            })
+        })?;
+
+        Ok(student)
+    }
+
     pub fn get(
         session_id: i32,
         class_id: Option<i32>,
@@ -414,16 +451,39 @@ impl Attendance {
         Ok(Self::new(id, student_id, date, status.to_string()))
     }
 
-    pub fn get_by_date(date: NaiveDate) -> Result<Vec<Self>> {
+    pub fn get_by_date(
+        date: NaiveDate,
+        session_id: i32,
+        class_id: Option<i32>,
+        section_id: Option<i32>,
+    ) -> Result<Vec<Self>, rusqlite::Error> {
         let db = conn()?;
-        let mut stmt = db.prepare(
-            "SELECT id, student_id, date, status
-             FROM attendance
-             WHERE date = ?
-             ORDER BY student_id ASC",
-        )?;
 
-        let rows = stmt.query_map(params![date], |row| {
+        let mut query = String::from(
+            "SELECT a.id, a.student_id, a.date, a.status
+         FROM attendance a
+         JOIN students s ON a.student_id = s.id
+         WHERE a.date = ? AND s.session_id = ?",
+        );
+
+        let mut params: Vec<Box<dyn rusqlite::ToSql>> = vec![Box::new(date), Box::new(session_id)];
+
+        if let Some(cid) = class_id {
+            query.push_str(" AND s.class_id = ?");
+            params.push(Box::new(cid));
+        }
+
+        if let Some(sid) = section_id {
+            query.push_str(" AND s.section_id = ?");
+            params.push(Box::new(sid));
+        }
+
+        query.push_str(" ORDER BY a.student_id ASC");
+
+        let param_refs: Vec<&dyn rusqlite::ToSql> = params.iter().map(|p| p.as_ref()).collect();
+        let mut stmt = db.prepare(&query)?;
+
+        let rows = stmt.query_map(param_refs.as_slice(), |row| {
             Ok(Self {
                 id: row.get(0)?,
                 student_id: row.get(1)?,
@@ -432,7 +492,8 @@ impl Attendance {
             })
         })?;
 
-        rows.collect()
+        let result: Result<Vec<Self>, rusqlite::Error> = rows.collect();
+        result
     }
 
     pub fn get_by_student(

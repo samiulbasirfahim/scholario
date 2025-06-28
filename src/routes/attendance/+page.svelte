@@ -102,6 +102,14 @@
 			}
 		}
 	}
+
+	onMount(() => {
+		let today: Date | string = new Date();
+		const localISOString = new Date(
+			today.getTime() - today.getTimezoneOffset() * 60000
+		).toISOString();
+		selectedDate = localISOString.slice(0, 10);
+	});
 </script>
 
 <Navbar>
@@ -153,8 +161,7 @@
 							const localISOString = new Date(
 								today.getTime() - today.getTimezoneOffset() * 60000
 							).toISOString();
-							today = localISOString.slice(0, 10);
-							selectedDate = today;
+							selectedDate = localISOString.slice(0, 10);
 							alert('Selected date is out of range.');
 						}
 					}}
@@ -206,7 +213,7 @@
 		/>
 		<div class="flex w-full flex-col gap-4 xl:w-1/2">
 			<RightRaw {selectedStudentData} />
-			<RightBottom />
+			<RightBottom {selectedDate} {filter} />
 		</div>
 	</div>
 {/if}

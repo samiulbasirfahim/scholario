@@ -13,6 +13,7 @@
 		let cnt = attendanceStore.reactiveCounter;
 		(async () => {
 			if (selectedStudentData && selectedStudentData.id) {
+				attendances = [];
 				attendances = (await attendanceStore.get(
 					selectedStudentData.id,
 					selected_month.year_month
@@ -23,9 +24,9 @@
 
 	const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-	function getInfo(day: number) {
-		console.log('Getting info for ', `${selected_month}-${day}`);
+	function getInfo(day: string): { bg: string; tooltip: string } {
 		let rec = attendances.find((r) => r.date === `${selected_month.year_month}-${day}`);
+
 		if (!rec) return { bg: 'bg-primary/20 tooltip-primary', tooltip: 'No entry.' };
 
 		switch (rec.status) {
@@ -51,10 +52,18 @@
 				<span></span>
 			{/each}
 
-			{#each Array.from({ length: getDaysInMonth(selected_month.date) ?? 0 }, (_, i) => i + 1) as day (day)}
+			{#each Array.from({ length: getDaysInMonth(selected_month.date) ?? 0 }, (_, i) => {
+				let d = i + 1;
+				if (i + 1 < 10) {
+					return `0${d}`;
+				} else {
+					return `${d}`;
+				}
+			}) as day (day)}
 				<span
 					class={`tooltip tooltip-top rounded p-2 text-center text-sm ${getInfo(day).bg}`}
 					data-tip={getInfo(day).tooltip}
+					onclickcapture={() => console.log(getInfo(day))}
 				>
 					{day}
 				</span>

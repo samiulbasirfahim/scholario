@@ -132,11 +132,16 @@ pub fn create_attendance(
 }
 
 #[command(rename_all = "snake_case")]
-pub fn get_attendance_by_date(date: String) -> Result<Vec<Attendance>, String> {
+pub fn get_attendance_by_date(
+    date: String,
+    session_id: i32,
+    class_id: Option<i32>,
+    section_id: Option<i32>,
+) -> Result<Vec<Attendance>, String> {
     let date =
         NaiveDate::parse_from_str(&date, "%Y-%m-%d").map_err(|e| format!("Invalid date: {}", e))?;
 
-    Attendance::get_by_date(date).map_err(|e| e.to_string())
+    Attendance::get_by_date(date, session_id, class_id, section_id).map_err(|e| e.to_string())
 }
 
 #[command(rename_all = "snake_case")]
