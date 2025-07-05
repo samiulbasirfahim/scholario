@@ -48,57 +48,66 @@
 	}
 </script>
 
-{#snippet stat(data: Attendance[], title: string)}
-	{#if data.length > 0}
-		<div class="collapse-plus bg-base-200 collapse mb-2">
-			<input type="radio" name="attendance-stats" />
-			<div class="collapse-title flex items-center p-4 font-semibold">
-				<p>Total {title}: {data.length}</p>
-			</div>
-			<div class="collapse-content">
-				<ul class=" grid max-h-40 grid-cols-2 gap-2 overflow-y-scroll text-sm">
-					{#each data as rec (rec.id)}
-						<a
-							class="bg-base-300 flex cursor-pointer items-center gap-4 rounded p-2 shadow-sm"
-							href={`/students?selectedStudent=${rec.student_id}`}
-						>
-							<div class="size-12 flex-shrink-0 overflow-hidden rounded-full">
-								<img
-									src={getStudent(rec.student_id)?.photo}
-									alt={`Photo of ${getStudent(rec.student_id)?.name}`}
-									class="h-full w-full object-cover object-center"
-								/>
-							</div>
-							<div class="min-w-0 flex-1">
-								<p class="truncate font-medium">{getStudent(rec.student_id)?.name}</p>
-								<p class="truncate text-sm text-gray-500">
-									<!-- {getStudent(rec.student_id)?.class_id ?? '—'} • {g.phone} -->
-									{classes.get(sessions.selected, getStudent(rec.student_id)?.class_id)?.name}
-									•
-									{sections.get(getStudent(rec.student_id)?.section_id)?.name ?? ''}
-								</p>
+{#snippet stat(data: Attendance[])}
+	<ul class="grid grid-cols-2 gap-2 pb-20">
+		{#each data as rec (rec.id)}
+			<a
+				class="bg-base-300 flex cursor-pointer items-center gap-4 rounded p-2 shadow-sm"
+				href={`/students?selectedStudent=${rec.student_id}`}
+			>
+				<div class="size-12 flex-shrink-0 overflow-hidden rounded-full">
+					<img
+						src={getStudent(rec.student_id)?.photo}
+						alt={`Photo of ${getStudent(rec.student_id)?.name}`}
+						class="h-full w-full object-cover object-center"
+					/>
+				</div>
+				<div class="min-w-0 flex-1">
+					<p class="truncate font-medium">{getStudent(rec.student_id)?.name}</p>
+					<p class="truncate text-sm text-gray-500">
+						<!-- {getStudent(rec.student_id)?.class_id ?? '—'} • {g.phone} -->
+						{classes.get(sessions.selected, getStudent(rec.student_id)?.class_id)?.name}
+						•
+						{sections.get(getStudent(rec.student_id)?.section_id)?.name ?? ''}
+					</p>
 
-								<p class="truncate text-sm text-gray-500">
-									{getStudent(rec.student_id)?.address ?? 'No address'}
-								</p>
-							</div>
-						</a>
-					{/each}
-				</ul>
-			</div>
-		</div>
-	{:else}
-		<div class="bg-base-200 mb-2 flex items-center rounded p-4 font-semibold">
-			<p>Total {title}: {data.length}</p>
-		</div>
-	{/if}
+					<p class="truncate text-sm text-gray-500">
+						{getStudent(rec.student_id)?.address ?? 'No address'}
+					</p>
+				</div>
+			</a>
+		{/each}
+	</ul>
 {/snippet}
 
-<div class="bg-base-100 border-base-300 text-accent w-full rounded border p-4">
-	<h2 class="text-primary border-accent mb-3 border-b-1 pb-2 text-xl font-bold">{selectedDate}</h2>
-	<p class="mb-4 font-semibold">Total Students: {total_students}</p>
+<div class="flex flex-1 flex-col overflow-hidden">
+	<div class="bg-base-100 flex flex-col gap-2 rounded p-4 overflow-hidden">
+		<div class="flex justify-between">
+			<p class="font-semibold">Total Students: {total_students}</p>
+			<p class="font-semibold">Date: {selectedDate}</p>
+		</div>
 
-	{@render stat(presents, 'Presents')}
-	{@render stat(lates, 'Lates')}
-	{@render stat(absents, 'Absents')}
+		<div class="tabs tabs-border flex-1 overflow-hidden">
+			<input
+				type="radio"
+				name="attendance"
+				class="tab"
+				aria-label="Presents - {presents.length}"
+				checked
+			/>
+			<div class="tab-content mt-4 box-border overflow-auto">
+				{@render stat(presents)}
+			</div>
+
+			<input type="radio" name="attendance" class="tab" aria-label="Lates - {lates.length}" />
+			<div class="tab-content mt-4 overflow-auto">
+				{@render stat(lates)}
+			</div>
+
+			<input type="radio" name="attendance" class="tab" aria-label="Absents - {absents.length}" />
+			<div class="tab-content mt-4 overflow-auto">
+				{@render stat(absents)}
+			</div>
+		</div>
+	</div>
 </div>

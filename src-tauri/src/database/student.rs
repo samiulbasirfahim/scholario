@@ -1,10 +1,7 @@
-use std::result;
-
-use super::{class, conn};
+use super::conn;
 use chrono::{Datelike, Local, NaiveDate};
 use rusqlite::{params, Result};
 use serde::{Deserialize, Serialize};
-use tauri::http::uri::PathAndQuery;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Student {

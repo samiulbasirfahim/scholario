@@ -6,3 +6,10 @@ export interface Attendance {
     date: string;
     status: AttendanceState;
 }
+
+export interface AttendanceStaff {
+    id: number;
+    staff_id: number;
+    date: string;
+    status: AttendanceState;
+}

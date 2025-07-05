@@ -46,5 +46,6 @@ pub fn init() -> Result<()> {
     Student::init()?;
     StudentRelationship::init()?;
     Attendance::init()?;
+    staff::init_all()?;
     Ok(())
 }

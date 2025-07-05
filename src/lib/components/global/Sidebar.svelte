@@ -35,15 +35,17 @@
 
 <div class="drawer drawer-open">
 	<input id="sidebar" type="checkbox" class="drawer-toggle" />
-	<div class="drawer-content bg-base-300 space-y-4 p-3">
-		{@render children()}
+	<div class="drawer-content bg-base-300 box-border h-screen">
+		<div class="flex h-full flex-col p-4">
+			{@render children()}
+		</div>
 	</div>
 	<div class="drawer-side">
 		<label for="my-drawer-2" aria-label="close sidebar" class="drawer-overlay"></label>
 		<ul class="menu min-h-full w-80 justify-between">
 			<div class="flex h-full flex-col justify-between">
 				<div class="flex flex-col items-center justify-center pt-4">
-					<h1 class="text-center text-xl font-semibold">{setting.title}</h1>
+					<h1 class="text-center text-base font-semibold">{setting.title}</h1>
 					<h1 class="text-center opacity-90">{setting.address}</h1>
 				</div>
 				<div class="divider"></div>

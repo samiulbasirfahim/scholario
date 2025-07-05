@@ -26,7 +26,7 @@
 				<div class="stat-desc opacity-70">Excellent</div>
 			</div>
 		</div>
-		<div class="stats from-neutral to-base-300 text-neutral-content bg-gradient-to-br shadow ">
+		<div class="stats from-neutral to-base-300 text-neutral-content bg-gradient-to-br shadow">
 			<div class="stat">
 				<div class="stat-title opacity-80">Broadcasts Sent</div>
 				<div class="stat-value text-white">14</div>

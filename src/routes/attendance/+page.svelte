@@ -5,7 +5,9 @@
 	import { classes, sections } from '$lib/store/class.svelte';
 	import { sessions } from '$lib/store/session.svelte';
 	import { students } from '$lib/store/student.svelte';
-	import type { Student } from '$lib/types/student.js';
+	import { staff } from '$lib/store/staff.svelte';
+	import type { Student } from '$lib/types/student';
+	import type { Staff } from '$lib/types/staff';
 	import Icon from '@iconify/svelte';
 	import { isAfter, isValid, parseISO } from 'date-fns';
 	import { onMount } from 'svelte';
@@ -14,6 +16,7 @@
 	import { invoke } from '@tauri-apps/api/core';
 	import type { Attendance } from '$lib/types/attendance';
 	import { attendanceStore } from '$lib/store/attendance.svelte';
+	import { staffAttendanceStore } from '$lib/store/attendance.svelte';
 	import RightBottom from './RightBottom.svelte';
 	const { data } = $props();
 
@@ -24,7 +27,8 @@
 	$effect(() => {
 		if (selectedStudent) {
 			goto('?selectedStudent=' + selectedStudent, { replaceState: true });
-			selectedStudentData = students.getById(selectedStudent);
+			selectedStudentData =
+				for_whom === 'STUDENT' ? students.getById(selectedStudent) : staff.getById(selectedStudent);
 		}
 	});
 
@@ -53,55 +57,84 @@
 	}
 
 	let students_d = $state<Student[]>([]);
+	let staff_d = $state<Staff[]>([]);
 	let selectedStudent = $state<number | null>(null);
-	let selectedStudentData = $state<Student | null>();
+	let selectedStudentData = $state<Student | Staff | null>();
 	let selectedDate = $state();
 
+	let for_whom = $state<'STUDENT' | 'STAFF'>('STUDENT');
+
 	$effect(() => {
-		const sessionId = sessions.selected as number;
+		if (for_whom === 'STUDENT') {
+			const sessionId = sessions.selected as number;
 
-		const classId = filter.class === '' ? undefined : Number(filter.class);
-		const sectionId = filter.section === '' ? undefined : Number(filter.section);
+			const classId = filter.class === '' ? undefined : Number(filter.class);
+			const sectionId = filter.section === '' ? undefined : Number(filter.section);
 
-		students.get(sessionId, classId, sectionId).then((d) => {
-			students_d = d;
-		});
+			students.get(sessionId, classId, sectionId).then((d) => {
+				students_d = d;
+			});
+		} else {
+			// For staff, no session/class/section filtering assumed
+			staff.get().then((d) => {
+				staff_d = d;
+			});
+		}
 	});
 
 	let attendance = $state.raw<Record<string, string>>({});
 
 	async function saveAttendance() {
-		// let today: Date | string = new Date();
-		// const localISOString = new Date(
-		// 	today.getTime() - today.getTimezoneOffset() * 60000
-		// ).toISOString();
-		// today = localISOString.slice(0, 10);
-
 		for (const [idStr, rawStatus] of Object.entries(attendance)) {
-			const student_id = Number(idStr);
+			const id = Number(idStr);
 			let status = rawStatus.toUpperCase();
 
 			if (status === 'LATE') {
-				const custom = prompt(
-					`Late by how much for ${students.getById(student_id)?.name} (e.g., 10m or 2p)`
-				);
+				const name = for_whom === 'STUDENT' ? students.getById(id)?.name : staff.getById(id)?.name;
+
+				const custom = prompt(`Late by how much for ${name} (e.g., 10m or 2p)`);
 				if (!custom || custom.trim() === '') continue;
 				status = `LATE-${custom.trim()}`;
 			}
 
 			try {
-				const record = await invoke<Attendance>('create_attendance', {
-					student_id,
-					date: selectedDate,
-					status
-				});
-
-				attendanceStore.add(record);
+				if (for_whom === 'STUDENT') {
+					const record = await invoke<Attendance>('create_attendance', {
+						student_id: id,
+						date: selectedDate,
+						status
+					});
+					attendanceStore.add(record);
+				} else {
+					const record = await invoke<Attendance>('create_attendance_staff', {
+						staff_id: id,
+						date: selectedDate,
+						status
+					});
+					staffAttendanceStore.add(record);
+				}
 			} catch (err) {
-				console.error(`Failed to save attendance for student ${student_id}`, err);
+				console.error(
+					`Failed to save attendance for ${for_whom === 'STUDENT' ? 'student' : 'staff'} ${id}`,
+					err
+				);
 			}
 		}
 	}
+
+	$effect(() => {
+		if (selectedStudent && selectedDate) {
+			if (for_whom === 'STUDENT') {
+				attendanceStore.fetch(selectedStudent, selectedDate.slice(0, 4), selectedDate.slice(5, 7));
+			} else {
+				staffAttendanceStore.fetch(
+					selectedStudent,
+					selectedDate.slice(0, 4),
+					selectedDate.slice(5, 7)
+				);
+			}
+		}
+	});
 
 	onMount(() => {
 		let today: Date | string = new Date();
@@ -151,6 +184,7 @@
 					bind:value={selectedDate}
 					onblur={(e) => {
 						const value = (e.target as HTMLDataElement).value;
+
 						if (!(sessions.selectedSession?.start_date && sessions.selectedSession?.end_date))
 							return;
 						if (
@@ -178,6 +212,11 @@
 			{/each}
 		</select>
 
+		<select class="select select-sm select-accent" bind:value={for_whom}>
+			<option value="STUDENT">Student</option>
+			<option value="STAFF">Staff</option>
+		</select>
+
 		<button
 			class="btn btn-secondary btn-sm"
 			onclick={() => {
@@ -188,7 +227,7 @@
 			FILTER
 		</button>
 		{#if !hasDateExceededEndDate()}
-			<button class="btn btn-secondary btn-sm" onclick={saveAttendance}>
+			<button class="btn btn-primary btn-sm" onclick={saveAttendance}>
 				<Icon icon="material-symbols:save" font-size="18" />
 				Save
 			</button>
@@ -203,7 +242,7 @@
 {:else if students_d.length === 0}
 	<p class="alert alert-warning text-sm">You haven't created any student yet.</p>
 {:else}
-	<div class="mt-4 flex flex-col gap-2 xl:flex-row">
+	<div class="flex flex-1 flex-col gap-2 overflow-hidden xl:flex-row">
 		<LeftRaw
 			{filter}
 			bind:selectedStudent
@@ -211,7 +250,8 @@
 			bind:students_d
 			bind:attendance
 		/>
-		<div class="flex w-full flex-col gap-4 xl:w-1/2">
+
+		<div class="flex flex-1 flex-col gap-2 rounded">
 			<RightRaw {selectedStudentData} />
 			<RightBottom {selectedDate} {filter} />
 		</div>

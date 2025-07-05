@@ -35,6 +35,32 @@ pub fn run() {
             get_attendance_by_date,
             get_attendance_by_student,
             delete_attendance,
+            //
+            //
+            // Staff
+            commands::staff::create_staff,
+            commands::staff::get_staff,
+            commands::staff::update_staff,
+            commands::staff::delete_staff,
+            //
+            // Complaint
+            commands::staff::create_complaint,
+            commands::staff::get_complaints_by_staff,
+            commands::staff::update_complaint,
+            commands::staff::delete_complaint,
+            //
+            // Attendance
+            commands::staff::create_attendance_staff,
+            commands::staff::get_attendance_by_staff,
+            commands::staff::update_attendance,
+            commands::staff::delete_attendance_staff,
+            //
+            // Teacher-Class-Subject Link
+            commands::staff::create_teacher_subject_link,
+            commands::staff::get_teacher_subject_links,
+            commands::staff::update_teacher_subject_link,
+            commands::staff::delete_teacher_subject_link,
+            //
             // guardian commands
             create_guardian,
             get_guardians,
