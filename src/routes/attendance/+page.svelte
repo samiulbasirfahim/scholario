@@ -13,23 +13,16 @@
 	import { onMount } from 'svelte';
 	import LeftRaw from './LeftRaw.svelte';
 	import RightRaw from './RightRaw.svelte';
+	import RightBottom from './RightBottom.svelte';
 	import { invoke } from '@tauri-apps/api/core';
 	import type { Attendance } from '$lib/types/attendance';
 	import { attendanceStore } from '$lib/store/attendance.svelte';
 	import { staffAttendanceStore } from '$lib/store/attendance.svelte';
-	import RightBottom from './RightBottom.svelte';
+
 	const { data } = $props();
 
 	onMount(() => {
 		selectedStudent = Number(data.selectedStudent);
-	});
-
-	$effect(() => {
-		if (selectedStudent) {
-			goto('?selectedStudent=' + selectedStudent, { replaceState: true });
-			selectedStudentData =
-				for_whom === 'STUDENT' ? students.getById(selectedStudent) : staff.getById(selectedStudent);
-		}
 	});
 
 	let filter = $state({
@@ -52,22 +45,32 @@
 		}
 
 		const currentDate = new Date();
-		const isExceeded = isAfter(currentDate, endDate);
-		return isExceeded;
+		return isAfter(currentDate, endDate);
 	}
 
 	let students_d = $state<Student[]>([]);
 	let staff_d = $state<Staff[]>([]);
 	let selectedStudent = $state<number | null>(null);
-	let selectedStudentData = $state<Student | Staff | null>();
-	let selectedDate = $state();
+	let selectedStudentData = $state<Student | Staff | null>(null);
+	let selectedDate = $state<string>('');
 
 	let for_whom = $state<'STUDENT' | 'STAFF'>('STUDENT');
 
+	// Update selectedStudentData whenever selectedStudent or for_whom changes
+	$effect(() => {
+		if (selectedStudent) {
+			selectedStudentData =
+				for_whom === 'STUDENT' ? students.getById(selectedStudent) : staff.getById(selectedStudent);
+			goto(`?selectedStudent=${selectedStudent}`, { replaceState: true });
+		} else {
+			selectedStudentData = null;
+		}
+	});
+
+	// Load students or staff list according to for_whom
 	$effect(() => {
 		if (for_whom === 'STUDENT') {
 			const sessionId = sessions.selected as number;
-
 			const classId = filter.class === '' ? undefined : Number(filter.class);
 			const sectionId = filter.section === '' ? undefined : Number(filter.section);
 
@@ -75,7 +78,6 @@
 				students_d = d;
 			});
 		} else {
-			// For staff, no session/class/section filtering assumed
 			staff.get().then((d) => {
 				staff_d = d;
 			});
@@ -91,7 +93,6 @@
 
 			if (status === 'LATE') {
 				const name = for_whom === 'STUDENT' ? students.getById(id)?.name : staff.getById(id)?.name;
-
 				const custom = prompt(`Late by how much for ${name} (e.g., 10m or 2p)`);
 				if (!custom || custom.trim() === '') continue;
 				status = `LATE-${custom.trim()}`;
@@ -122,6 +123,7 @@
 		}
 	}
 
+	// Fetch attendance for selected student/staff and date
 	$effect(() => {
 		if (selectedStudent && selectedDate) {
 			if (for_whom === 'STUDENT') {
@@ -137,7 +139,7 @@
 	});
 
 	onMount(() => {
-		let today: Date | string = new Date();
+		let today = new Date();
 		const localISOString = new Date(
 			today.getTime() - today.getTimezoneOffset() * 60000
 		).toISOString();
@@ -149,22 +151,20 @@
 	<div class="flex-1">
 		<div class="breadcrumbs text-sm font-semibold">
 			<ul>
-				<li>Students</li>
-
+				<li>{for_whom === 'STUDENT' ? 'Students' : 'Staff'}</li>
 				{#if sessions.selectedSession}
 					<li>{sessions.selectedSession.name.trim().split(' ')[0]}</li>
 				{/if}
-
-				{#if filter.class}
+				{#if filter.class && for_whom === 'STUDENT'}
 					<li>{classes.get(sessions.selected as number, Number(filter.class))?.name}</li>
 				{/if}
-
-				{#if filter.section}
+				{#if filter.section && for_whom === 'STUDENT'}
 					<li>{sections.get(Number(filter.section))?.name}</li>
 				{/if}
 			</ul>
 		</div>
 	</div>
+
 	<div class="flex gap-2">
 		<div class="isolate">
 			<input
@@ -183,15 +183,15 @@
 					max={sessions.selectedSession?.end_date}
 					bind:value={selectedDate}
 					onblur={(e) => {
-						const value = (e.target as HTMLDataElement).value;
-
+						const value = (e.target as HTMLInputElement).value;
 						if (!(sessions.selectedSession?.start_date && sessions.selectedSession?.end_date))
 							return;
+
 						if (
 							value < sessions.selectedSession?.start_date ||
 							value > sessions.selectedSession?.end_date
 						) {
-							let today: Date | string = new Date();
+							let today = new Date();
 							const localISOString = new Date(
 								today.getTime() - today.getTimezoneOffset() * 60000
 							).toISOString();
@@ -202,6 +202,7 @@
 				/>
 			</div>
 		</div>
+
 		<select
 			class="select select-sm select-accent"
 			bind:value={sessions.selected}
@@ -219,13 +220,12 @@
 
 		<button
 			class="btn btn-secondary btn-sm"
-			onclick={() => {
-				(document.getElementById('filter-modal') as HTMLDialogElement).showModal();
-			}}
+			onclick={() => (document.getElementById('filter-modal') as HTMLDialogElement).showModal()}
 		>
 			<Icon icon="tabler:filter-filled" font-size="18" />
 			FILTER
 		</button>
+
 		{#if !hasDateExceededEndDate()}
 			<button class="btn btn-primary btn-sm" onclick={saveAttendance}>
 				<Icon icon="material-symbols:save" font-size="18" />
@@ -237,10 +237,12 @@
 
 {#if sessions.data.length === 0}
 	<p class="alert alert-warning text-sm">Please create a session first</p>
-{:else if classes.get_by_current_session().length === 0}
+{:else if for_whom === 'STUDENT' && classes.get_by_current_session().length === 0}
 	<p class="alert alert-warning text-sm">You haven't created any class yet.</p>
-{:else if students_d.length === 0}
+{:else if for_whom === 'STUDENT' && students_d.length === 0}
 	<p class="alert alert-warning text-sm">You haven't created any student yet.</p>
+{:else if for_whom === 'STAFF' && staff_d.length === 0}
+	<p class="alert alert-warning text-sm">You haven't created any staff yet.</p>
 {:else}
 	<div class="flex flex-1 flex-col gap-2 overflow-hidden xl:flex-row">
 		<LeftRaw
@@ -248,12 +250,14 @@
 			bind:selectedStudent
 			{hasDateExceededEndDate}
 			bind:students_d
+			bind:staff_d
 			bind:attendance
+			{for_whom}
 		/>
 
 		<div class="flex flex-1 flex-col gap-2 rounded">
-			<RightRaw {selectedStudentData} />
-			<RightBottom {selectedDate} {filter} />
+			<RightRaw {selectedStudentData} {for_whom} />
+			<RightBottom {selectedDate} {filter} {for_whom} />
 		</div>
 	</div>
 {/if}

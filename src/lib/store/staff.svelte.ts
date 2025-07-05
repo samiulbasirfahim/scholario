@@ -56,6 +56,10 @@ class StaffStore {
         }
     }
 
+    getNonTeachers(): Staff[] {
+        return this.data.filter((s) => !s.is_teacher);
+    }
+
     getTeachers(): Staff[] {
         return this.data.filter((s) => s.is_teacher);
     }

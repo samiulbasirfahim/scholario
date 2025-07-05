@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { attendanceStore } from '$lib/store/attendance.svelte';
+	import { staffAttendanceStore } from '$lib/store/attendance.svelte';
 
-	const { selectedStudentData, selected_month } = $props();
+	const { selectedStudentData, selected_month, for_whom } = $props();
 
 	import type { Attendance } from '$lib/types/attendance';
 	import { getDaysInMonth, startOfMonth } from 'date-fns';
@@ -9,15 +10,24 @@
 	let attendances = $state<Attendance[]>([]);
 
 	$effect(() => {
-		// console.log('Im fetching again, cause something changed', attendanceStore.reactiveCounter);
-		let cnt = attendanceStore.reactiveCounter;
+		let cnt =
+			for_whom === 'STUDENT'
+				? attendanceStore.reactiveCounter
+				: staffAttendanceStore.reactiveCounter;
 		(async () => {
 			if (selectedStudentData && selectedStudentData.id) {
 				attendances = [];
-				attendances = (await attendanceStore.get(
-					selectedStudentData.id,
-					selected_month.year_month
-				)) as Attendance[];
+				if (for_whom === 'STUDENT') {
+					attendances = (await attendanceStore.get(
+						selectedStudentData.id,
+						selected_month.year_month
+					)) as Attendance[];
+				} else {
+					attendances = (await staffAttendanceStore.get(
+						selectedStudentData.id,
+						selected_month.year_month
+					)) as Attendance[];
+				}
 			}
 		})();
 	});
@@ -63,7 +73,6 @@
 				<span
 					class={`tooltip tooltip-top rounded p-2 text-center text-sm ${getInfo(day).bg}`}
 					data-tip={getInfo(day).tooltip}
-					onclickcapture={() => console.log(getInfo(day))}
 				>
 					{day}
 				</span>

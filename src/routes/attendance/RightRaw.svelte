@@ -3,7 +3,7 @@
 	import Calendar from './Calendar.svelte';
 	import { sessions } from '$lib/store/session.svelte';
 	import { addMonths, format, isAfter, parseISO } from 'date-fns';
-	const { selectedStudentData } = $props();
+	const { selectedStudentData, for_whom } = $props();
 	interface Month {
 		title: string;
 		year_month: string;
@@ -63,7 +63,7 @@
 		</div>
 	{:else}
 		<div class="flex justify-between">
-			<Calendar {selectedStudentData} {selected_month} />
+			<Calendar {selectedStudentData} {selected_month} {for_whom} />
 			<select
 				bind:value={selected_month.year_month}
 				class="select select-accent mb-4 max-w-40"

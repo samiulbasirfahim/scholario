@@ -7,7 +7,9 @@
 		hasDateExceededEndDate,
 		selectedStudent = $bindable(),
 		attendance = $bindable(),
-		students_d = $bindable()
+		students_d = $bindable(),
+		staff_d = $bindable(),
+		for_whom = $bindable()
 	} = $props();
 
 	type AttendanceStatus = 'present' | 'absent' | 'late';
@@ -17,18 +19,21 @@
 	}
 </script>
 
-<div class="w-full flex-1 xl:w-1/2 overflow-hidden flex flex-col">
-	<div class="bg-base-100 rounded overflow-scroll w-full">
+<div class="flex w-full flex-1 flex-col overflow-hidden xl:w-1/2">
+	<div class="bg-base-100 w-full overflow-scroll rounded">
 		<table class="table-pin-rows table">
 			<thead>
 				<tr class="bg-base-200">
 					<th class="w-4">Roll</th>
 					<th>Name</th>
-					{#if filter.class === ''}
-						<th>Class</th>
-					{/if}
-					{#if filter.section === ''}
-						<th>Section</th>
+
+					{#if for_whom === 'STUDENT'}
+						{#if filter.class === ''}
+							<th>Class</th>
+						{/if}
+						{#if filter.section === ''}
+							<th>Section</th>
+						{/if}
 					{/if}
 
 					{#if !hasDateExceededEndDate()}
@@ -37,50 +42,80 @@
 				</tr>
 			</thead>
 			<tbody>
-				{#each students_d as student, i ((student.id, i))}
-					<tr
-						class="{student.id === selectedStudent
-							? 'bg-primary text-primary-content'
-							: ''} cursor-pointer"
-						onclick={() => {
-							selectedStudent = student.id;
-						}}
-					>
-						<td>{student.roll}</td>
-						<td>{student.name}</td>
-						{#if filter.class === ''}
-							<td>{classes.get(sessions.selected as number, student.class_id)?.name}</td>
-						{/if}
-						{#if filter.section === ''}
-							<td>
-								{#if student.section_id}
-									{sections.get(student.section_id)?.name}
-								{:else}
-									-
-								{/if}
-							</td>
-						{/if}
+				{#if for_whom === 'STUDENT'}
+					{#each students_d as student, i ((student.id, i))}
+						<tr
+							class="{student.id === selectedStudent
+								? 'bg-primary text-primary-content'
+								: ''} cursor-pointer"
+							onclick={() => {
+								selectedStudent = student.id;
+							}}
+						>
+							<td>{student.roll}</td>
+							<td>{student.name}</td>
 
-						{#if !hasDateExceededEndDate()}
-							<td>
-								<select
-									class="select bg-secondary text-secondary-content select-sm"
-									onchange={(e) => {
-										takeAttendance(
-											student.id,
-											(e.target as HTMLSelectElement).value as AttendanceStatus
-										);
-									}}
-								>
-									<option disabled selected>Pick status</option>
-									<option value="present">Present</option>
-									<option value="late">Late</option>
-									<option value="absent">Absent</option>
-								</select>
-							</td>
-						{/if}
-					</tr>
-				{/each}
+							{#if filter.class === ''}
+								<td>{classes.get(sessions.selected as number, student.class_id)?.name}</td>
+							{/if}
+							{#if filter.section === ''}
+								<td>{student.section_id ? sections.get(student.section_id)?.name : '-'}</td>
+							{/if}
+
+							{#if !hasDateExceededEndDate()}
+								<td>
+									<select
+										class="select bg-secondary text-secondary-content select-sm"
+										onchange={(e) => {
+											takeAttendance(
+												student.id,
+												(e.target as HTMLSelectElement).value as AttendanceStatus
+											);
+										}}
+									>
+										<option disabled selected>Pick status</option>
+										<option value="present">Present</option>
+										<option value="late">Late</option>
+										<option value="absent">Absent</option>
+									</select>
+								</td>
+							{/if}
+						</tr>
+					{/each}
+				{:else}
+					{#each staff_d as staffMember, i ((staffMember.id, i))}
+						<tr
+							class="{staffMember.id === selectedStudent
+								? 'bg-primary text-primary-content'
+								: ''} cursor-pointer"
+							onclick={() => {
+								selectedStudent = staffMember.id;
+							}}
+						>
+							<td>-</td>
+							<td>{staffMember.name}</td>
+
+							{#if !hasDateExceededEndDate()}
+								<td>
+									<select
+										class="select bg-secondary text-secondary-content select-sm"
+										onchange={(e) => {
+											takeAttendance(
+												staffMember.id,
+												(e.target as HTMLSelectElement).value as AttendanceStatus
+											);
+										}}
+									>
+										<option disabled selected>Pick status</option>
+										<option value="present">Present</option>
+										<option value="late">Late</option>
+										<option value="absent">Absent</option>
+									</select>
+								</td>
+							{/if}
+						</tr>
+					{/each}
+				{/if}
 			</tbody>
 		</table>
 	</div>

@@ -6,7 +6,7 @@
 	import type { Attendance } from '$lib/types/attendance';
 	import { invoke } from '@tauri-apps/api/core';
 
-	const { selectedDate, filter } = $props();
+	const { selectedDate, filter, for_whom } = $props();
 
 	let attendances = $state<Attendance[]>([]);
 
@@ -81,7 +81,7 @@
 {/snippet}
 
 <div class="flex flex-1 flex-col overflow-hidden">
-	<div class="bg-base-100 flex flex-col gap-2 rounded p-4 overflow-hidden">
+	<div class="bg-base-100 flex flex-col gap-2 overflow-hidden rounded p-4">
 		<div class="flex justify-between">
 			<p class="font-semibold">Total Students: {total_students}</p>
 			<p class="font-semibold">Date: {selectedDate}</p>

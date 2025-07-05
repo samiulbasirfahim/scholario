@@ -10,8 +10,6 @@
 	import { onMount } from 'svelte';
 
 	import { goto } from '$app/navigation';
-	import { invoke } from '@tauri-apps/api/core';
-	import { toast } from '$lib/store/toast.svelte.js';
 	import StudentTable from './StudentTable.svelte';
 	import StudentDetails from './StudentDetails.svelte';
 	const { data } = $props();
