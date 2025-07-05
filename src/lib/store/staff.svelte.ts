@@ -31,7 +31,7 @@ class StaffStore {
     }
 
     getById(id: number): Staff | undefined {
-        const _ = this.reactiveCounter; // trigger reactivity
+        const _ = this.reactiveCounter;
         return this.data.find((s) => s.id === id);
     }
 
@@ -56,11 +56,13 @@ class StaffStore {
         }
     }
 
-    getNonTeachers(): Staff[] {
+    async getNonTeachers(): Promise<Staff[]> {
+        await this.fetch();
         return this.data.filter((s) => !s.is_teacher);
     }
 
-    getTeachers(): Staff[] {
+    async getTeachers(): Promise<Staff[]> {
+        await this.fetch();
         return this.data.filter((s) => s.is_teacher);
     }
 }

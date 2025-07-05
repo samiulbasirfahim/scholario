@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { invoke } from '@tauri-apps/api/core';
 	import { toast } from '$lib/store/toast.svelte';
-	import { staff } from '$lib/store/staff.svelte'; // Assuming you have staff store
+	import { staff } from '$lib/store/staff.svelte';
 	import type { Staff } from '$lib/types/staff';
 	import { page } from '$app/state';
 
@@ -30,11 +30,10 @@
 		photo: ''
 	});
 
-	// Populate form when editing
 	$effect(() => {
 		if (isEditing && selectedStaffData) {
 			form_data.name = selectedStaffData.name ?? '';
-			form_data.role =  selectedStaffData.role ?? '';
+			form_data.role = selectedStaffData.role ?? '';
 			form_data.salary = selectedStaffData.salary?.toString() ?? '';
 			form_data.qualification = selectedStaffData.qualification ?? '';
 			form_data.phone = selectedStaffData.phone?.slice(4) ?? '';
@@ -69,10 +68,10 @@
 
 	async function submitStaffForm() {
 		try {
-			const staffMember = await invoke(isEditing ? 'edit_staff' : 'create_staff', {
+			let data = {
 				id: isEditing ? selectedStaffData?.id : undefined,
 				name: form_data.name,
-				role: (page.url.pathname === '/staffs' ? form_data.role : "teacher"),
+				role: page.url.pathname === '/staffs' ? form_data.role : 'teacher',
 				salary: Number(form_data.salary),
 				qualification: form_data.qualification,
 				is_teacher: page.url.pathname !== '/staffs',
@@ -80,10 +79,11 @@
 				address: form_data.address,
 				hire_date: form_data.hire_date,
 				photo: form_data.photo || null
-			});
+			};
+			const staffMember = await invoke<Staff>(isEditing ? 'update_staff' : 'create_staff', data);
 
 			if (isEditing) {
-				staff.update(staffMember as Staff);
+				staff.update(data as Staff);
 				toast.set({ message: 'Staff updated successfully!', type: 'success' });
 			} else {
 				staff.add(staffMember as Staff);
@@ -110,9 +110,7 @@
 		}
 	}
 
-	onMount(() => {
-		// No external data fetching needed for roles since using fakeRoles array
-	});
+	onMount(() => {});
 </script>
 
 <dialog id="create-staff-modal" class="modal">

@@ -1,13 +1,11 @@
 <script lang="ts">
 	import { sessions } from '$lib/store/session.svelte';
-	import type { Staff } from '$lib/types/staff';
 	import Icon from '@iconify/svelte';
 	import { invoke } from '@tauri-apps/api/core';
 	import { toast } from '$lib/store/toast.svelte';
+	import { staff } from '$lib/store/staff.svelte';
 
-	export let selectedStaff: number | null = null;
-	export let selectedStaffData: Staff | null = null;
-	export let isEditing = false;
+	let { selectedStaffData, selectedStaff, isEditing = $bindable() } = $props();
 
 	const deleteStaff = async () => {
 		if (!selectedStaff) return;
@@ -16,7 +14,6 @@
 				id: selectedStaff,
 				session_id: sessions.selected as number
 			});
-			// Ideally remove from store and update UI accordingly
 			toast.set({ message: 'Staff deleted', type: 'success' });
 			selectedStaff = null;
 		} catch (error) {
@@ -24,6 +21,10 @@
 			toast.set({ message: 'Failed to delete staff', type: 'error' });
 		}
 	};
+
+	$effect(() => {
+		if (selectedStaff) console.log($state.snapshot(staff.getById(selectedStaff)));
+	});
 </script>
 
 <div class="flex w-full flex-1 flex-col gap-0 overflow-hidden xl:w-1/2">

@@ -3,26 +3,19 @@
 	import { staff } from '$lib/store/staff.svelte';
 	import type { Staff } from '$lib/types/staff';
 	import Icon from '@iconify/svelte';
-	import { onMount } from 'svelte';
 
 	import { goto } from '$app/navigation';
 	import StaffTable from './StaffTable.svelte';
 	import StaffDetails from './StaffDetails.svelte';
 	import CreateStaff from '$lib/components/staff/CreateStaff.svelte';
-	const { data } = $props();
 
-	let selectedStaff = $state<number | null>(null);
-	let selectedStaffData = $state<Staff | null>();
+	let selectedStaff = $state<number>();
+	let selectedStaffData = $derived(staff.getById(selectedStaff ?? -1));
 
 	$effect(() => {
 		if (selectedStaff) {
 			goto('?selectedStaff=' + selectedStaff, { replaceState: true });
-			selectedStaffData = staff.getById(selectedStaff);
 		}
-	});
-
-	onMount(() => {
-		selectedStaff = Number(data.selectedStaff);
 	});
 
 	let filter = $state({
@@ -30,14 +23,15 @@
 		qualification: ''
 	});
 
-	let staffs = $state<Staff[]>([]);
-
 	let isEditing = $state(false);
 
-	onMount(async () => {
-		await staff.fetch();
-		staffs = staff.getNonTeachers();
-		console.log(staffs);
+	let staffs = $state<Staff[]>([]);
+
+	$effect(() => {
+		(async () => {
+			console.log(staff.reactiveCounter);
+			staffs = await staff.getNonTeachers();
+		})();
 	});
 </script>
 
@@ -96,4 +90,4 @@
 	<p class="text-secondary alert alert-warning text-sm">No staff found.</p>
 {/if}
 
-<CreateStaff />
+<CreateStaff bind:isEditing {selectedStaffData} />
