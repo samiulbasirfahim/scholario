@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { invoke } from '@tauri-apps/api/core';
 	import { toast } from '$lib/store/toast.svelte';
 	import { staff } from '$lib/store/staff.svelte';
@@ -27,7 +26,9 @@
 		phone: '',
 		address: '',
 		hire_date: '',
-		photo: ''
+		photo: '',
+		general_note: '',
+		health_note: ''
 	});
 
 	$effect(() => {
@@ -40,6 +41,8 @@
 			form_data.address = selectedStaffData.address ?? '';
 			form_data.hire_date = selectedStaffData.hire_date ?? '';
 			form_data.photo = selectedStaffData.photo ?? '';
+			form_data.general_note = selectedStaffData.general_note ?? '';
+			form_data.health_note = selectedStaffData.health_note ?? '';
 		} else {
 			form_data = {
 				name: '',
@@ -49,7 +52,9 @@
 				phone: '',
 				address: '',
 				hire_date: '',
-				photo: ''
+				photo: '',
+				general_note: '',
+				health_note: ''
 			};
 		}
 	});
@@ -78,7 +83,9 @@
 				phone: form_data.phone ? '+880' + form_data.phone : null,
 				address: form_data.address,
 				hire_date: form_data.hire_date,
-				photo: form_data.photo || null
+				photo: form_data.photo || null,
+				general_note: form_data.general_note || null,
+				health_note: form_data.health_note || null
 			};
 			const staffMember = await invoke<Staff>(isEditing ? 'update_staff' : 'create_staff', data);
 
@@ -98,7 +105,9 @@
 				phone: '',
 				address: '',
 				hire_date: '',
-				photo: ''
+				photo: '',
+				general_note: '',
+				health_note: ''
 			};
 			isEditing = false;
 		} catch (err) {
@@ -109,8 +118,6 @@
 			});
 		}
 	}
-
-	onMount(() => {});
 </script>
 
 <dialog id="create-staff-modal" class="modal">
@@ -119,9 +126,12 @@
 			<button class="btn btn-sm btn-circle btn-ghost absolute top-2 right-2">✕</button>
 		</form>
 
-		<h3 class="mb-4 text-lg font-bold">{isEditing ? 'Edit' : 'Create'} Staff</h3>
+		<h3 class="mb-4 text-lg font-bold">
+			{isEditing ? 'Edit' : 'Create'}
+			{page.url.pathname === '/teachers' ? 'Teacher' : 'Staff'}
+		</h3>
 
-		<form on:submit|preventDefault={submitStaffForm} class="space-y-4">
+		<form on:submit|preventDefault={submitStaffForm} class="grid grid-cols-2 gap-4">
 			<div>
 				<label class="mb-1 block text-sm font-medium">Name</label>
 				<input
@@ -150,6 +160,7 @@
 					</datalist>
 				</div>
 			{/if}
+
 			<div>
 				<label class="mb-1 block text-sm font-medium">Salary</label>
 				<input
@@ -218,7 +229,27 @@
 				/>
 			</div>
 
-			<div class="modal-action mt-6 flex justify-end">
+			<div class="col-span-2">
+				<label class="mb-1 block text-sm font-medium">General Note</label>
+				<textarea
+					class="textarea textarea-bordered w-full"
+					bind:value={form_data.general_note}
+					rows="3"
+					placeholder="General notes about staff"
+				></textarea>
+			</div>
+
+			<div class="col-span-2">
+				<label class="mb-1 block text-sm font-medium">Health Note</label>
+				<textarea
+					class="textarea textarea-bordered w-full"
+					bind:value={form_data.health_note}
+					rows="3"
+					placeholder="Health-related information"
+				></textarea>
+			</div>
+
+			<div class="modal-action col-span-2 mt-6 flex justify-end">
 				<button type="submit" class="btn btn-primary btn-sm">{isEditing ? 'Edit' : 'Create'}</button
 				>
 			</div>

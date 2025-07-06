@@ -3,10 +3,6 @@ use chrono::NaiveDate;
 use rusqlite::{params, Result};
 use serde::{Deserialize, Serialize};
 
-//
-// ─── STAFF ─────────────────────────────────────────────────────────────────────
-//
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Staff {
     pub id: i32,
@@ -19,6 +15,8 @@ pub struct Staff {
     pub is_teacher: bool,
     pub role: String,
     pub qualification: String,
+    pub general_note: Option<String>,
+    pub health_note: Option<String>,
 }
 
 impl Staff {
@@ -36,7 +34,9 @@ impl Staff {
                 photo TEXT,
                 is_teacher BOOLEAN NOT NULL,
                 role TEXT NOT NULL,
-                qualification TEXT NOT NULL
+                qualification TEXT NOT NULL,
+                general_note TEXT,
+                health_note TEXT
             )",
             [],
         )?;
@@ -53,12 +53,28 @@ impl Staff {
         is_teacher: bool,
         role: &str,
         qualification: &str,
+        general_note: Option<String>,
+        health_note: Option<String>,
     ) -> Result<Self> {
         let db = conn()?;
         db.execute(
-            "INSERT INTO staffs (name, phone, address, salary, hire_date, photo, is_teacher, role, qualification)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
-            params![name, phone, address, salary, hire_date, photo, is_teacher, role, qualification],
+            "INSERT INTO staffs (
+                name, phone, address, salary, hire_date, photo,
+                is_teacher, role, qualification, general_note, health_note
+            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)",
+            params![
+                name,
+                phone,
+                address,
+                salary,
+                hire_date,
+                photo,
+                is_teacher,
+                role,
+                qualification,
+                general_note,
+                health_note
+            ],
         )?;
         let id = db.last_insert_rowid() as i32;
         Ok(Self {
@@ -72,13 +88,15 @@ impl Staff {
             is_teacher,
             role: role.to_string(),
             qualification: qualification.to_string(),
+            general_note,
+            health_note,
         })
     }
 
     pub fn get_all() -> Result<Vec<Self>> {
         let db = conn()?;
         let mut stmt = db.prepare(
-            "SELECT id, name, phone, address, salary, hire_date, photo, is_teacher, role, qualification FROM staffs",
+            "SELECT id, name, phone, address, salary, hire_date, photo, is_teacher, role, qualification, general_note, health_note FROM staffs",
         )?;
         let rows = stmt.query_map([], |row| {
             Ok(Self {
@@ -92,6 +110,8 @@ impl Staff {
                 is_teacher: row.get(7)?,
                 role: row.get(8)?,
                 qualification: row.get(9)?,
+                general_note: row.get(10)?,
+                health_note: row.get(11)?,
             })
         })?;
         rows.collect()
@@ -108,11 +128,24 @@ impl Staff {
         is_teacher: bool,
         role: &str,
         qualification: &str,
+        general_note: Option<String>,
+        health_note: Option<String>,
     ) -> Result<()> {
         let db = conn()?;
         let affected = db.execute(
-            "UPDATE staffs SET name = ?1, phone = ?2, address = ?3, salary = ?4, hire_date = ?5, 
-             photo = ?6, is_teacher = ?7, role = ?8, qualification = ?9 WHERE id = ?10",
+            "UPDATE staffs SET
+                name = ?1,
+                phone = ?2,
+                address = ?3,
+                salary = ?4,
+                hire_date = ?5,
+                photo = ?6,
+                is_teacher = ?7,
+                role = ?8,
+                qualification = ?9,
+                general_note = ?10,
+                health_note = ?11
+             WHERE id = ?12",
             params![
                 name,
                 phone,
@@ -123,6 +156,8 @@ impl Staff {
                 is_teacher,
                 role,
                 qualification,
+                general_note,
+                health_note,
                 id
             ],
         )?;
@@ -233,10 +268,6 @@ impl Complaint {
     }
 }
 
-//
-// ─── ATTENDANCE ───────────────────────────────────────────────────────────────
-//
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Attendance {
     pub id: i32,
@@ -250,7 +281,7 @@ impl Attendance {
         let db = conn()?;
         db.execute("PRAGMA foreign_keys = ON", [])?;
         db.execute(
-            "CREATE TABLE IF NOT EXISTS attendance (
+            "CREATE TABLE IF NOT EXISTS attendance_staff (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 staff_id INTEGER NOT NULL,
                 date DATE NOT NULL,
@@ -266,7 +297,7 @@ impl Attendance {
     pub fn create(staff_id: i32, date: NaiveDate, status: &str) -> Result<Self> {
         let db = conn()?;
         db.execute(
-            "INSERT OR REPLACE INTO attendance (staff_id, date, status) VALUES (?1, ?2, ?3)",
+            "INSERT OR REPLACE INTO attendance_staff (staff_id, date, status) VALUES (?1, ?2, ?3)",
             params![staff_id, date, status],
         )?;
         let id = db.last_insert_rowid() as i32;
@@ -278,10 +309,26 @@ impl Attendance {
         })
     }
 
+    pub fn get_by_date(date: NaiveDate) -> Result<Vec<Self>> {
+        let db = conn()?;
+        let mut stmt = db.prepare(
+            "SELECT id, staff_id, date, status FROM attendance_staff WHERE date = ?1 ORDER BY staff_id ASC",
+        )?;
+        let rows = stmt.query_map(params![date], |row| {
+            Ok(Self {
+                id: row.get(0)?,
+                staff_id: row.get(1)?,
+                date: row.get(2)?,
+                status: row.get(3)?,
+            })
+        })?;
+        rows.collect()
+    }
+
     pub fn get_by_staff(staff_id: i32) -> Result<Vec<Self>> {
         let db = conn()?;
         let mut stmt = db.prepare(
-            "SELECT id, staff_id, date, status FROM attendance WHERE staff_id = ?1 ORDER BY date ASC",
+            "SELECT id, staff_id, date, status FROM attendance_staff WHERE staff_id = ?1 ORDER BY date ASC",
         )?;
         let rows = stmt.query_map(params![staff_id], |row| {
             Ok(Self {
@@ -297,7 +344,7 @@ impl Attendance {
     pub fn update(id: i32, staff_id: i32, date: NaiveDate, status: &str) -> Result<()> {
         let db = conn()?;
         let affected = db.execute(
-            "UPDATE attendance SET staff_id = ?1, date = ?2, status = ?3 WHERE id = ?4",
+            "UPDATE attendance_staff SET staff_id = ?1, date = ?2, status = ?3 WHERE id = ?4",
             params![staff_id, date, status, id],
         )?;
         if affected == 0 {
@@ -309,7 +356,7 @@ impl Attendance {
 
     pub fn delete(id: i32) -> Result<()> {
         let db = conn()?;
-        let affected = db.execute("DELETE FROM attendance WHERE id = ?1", params![id])?;
+        let affected = db.execute("DELETE FROM attendance_staff WHERE id = ?1", params![id])?;
         if affected == 0 {
             Err(rusqlite::Error::QueryReturnedNoRows)
         } else {
@@ -319,7 +366,7 @@ impl Attendance {
 }
 
 //
-// ─── TEACHER CLASS SUBJECT ─────────────────────────────────────────────────────
+// ─── TEACHER CLASS SUBJECT ───────────────────────────────────────────────────────────
 //
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

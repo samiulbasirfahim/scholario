@@ -71,7 +71,7 @@
 }
 
 @font-face {
-    src: url('../static/fonts/IBMPlexMono-Regular.ttf');
+    src: url('/fonts/IBMPlexMono-Regular.ttf');
     font-family: 'IBM Plex Mono';
 }
 

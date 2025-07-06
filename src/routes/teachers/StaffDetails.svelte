@@ -21,10 +21,6 @@
 			toast.set({ message: 'Failed to delete staff', type: 'error' });
 		}
 	};
-
-	$effect(() => {
-		if (selectedStaff) console.log($state.snapshot(staff.getById(selectedStaff)));
-	});
 </script>
 
 <div class="flex w-full flex-1 flex-col gap-0 overflow-hidden xl:w-1/2">
@@ -75,13 +71,13 @@
 						</div>
 
 						<div>
-							<p class="text-secondary">Phone</p>
-							<p class="font-medium">{selectedStaffData.phone || 'N/A'}</p>
+							<p class="text-secondary">Address</p>
+							<p class="font-medium">{selectedStaffData.address || 'N/A'}</p>
 						</div>
 
 						<div>
-							<p class="text-secondary">Address</p>
-							<p class="font-medium">{selectedStaffData.address || 'N/A'}</p>
+							<p class="text-secondary">Phone</p>
+							<p class="font-medium">{selectedStaffData.phone || 'N/A'}</p>
 						</div>
 
 						<div>
@@ -94,17 +90,32 @@
 						<img
 							src={selectedStaffData.photo}
 							alt="Photo of {selectedStaffData.name}"
-							class="h-28 w-28 flex-shrink-0 rounded object-cover"
+							class="h-40 w-40 flex-shrink-0 rounded object-cover"
 						/>
-						{#if selectedStaffData.notes}
+
+						{#if selectedStaffData.health_note}
 							<div>
-								<p class="text-secondary text-xs">Notes</p>
+								<p class="text-secondary text-xs">Health Notes</p>
 								<div
 									class="bg-base-200 overflow-y-auto rounded p-2"
 									style="max-height: 80px; transform: translateZ(0);"
 								>
 									<p class="text-sm leading-snug font-medium break-words antialiased">
-										{selectedStaffData.notes}
+										{selectedStaffData.health_note}
+									</p>
+								</div>
+							</div>
+						{/if}
+
+						{#if selectedStaffData.general_note}
+							<div>
+								<p class="text-secondary text-xs">General Notes</p>
+								<div
+									class="bg-base-200 overflow-y-auto rounded p-2"
+									style="max-height: 80px; transform: translateZ(0);"
+								>
+									<p class="text-sm leading-snug font-medium break-words antialiased">
+										{selectedStaffData.general_note}
 									</p>
 								</div>
 							</div>

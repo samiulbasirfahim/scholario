@@ -14,6 +14,8 @@ pub fn create_staff(
     is_teacher: bool,
     role: String,
     qualification: String,
+    general_note: Option<String>,
+    health_note: Option<String>,
 ) -> Result<Staff, String> {
     let hire_date = NaiveDate::parse_from_str(&hire_date, "%Y-%m-%d")
         .map_err(|e| format!("Invalid date: {}", e))?;
@@ -28,6 +30,8 @@ pub fn create_staff(
         is_teacher,
         &role,
         &qualification,
+        general_note,
+        health_note,
     )
     .map_err(|e| e.to_string())
 }
@@ -49,6 +53,8 @@ pub fn update_staff(
     is_teacher: bool,
     role: String,
     qualification: String,
+    general_note: Option<String>,
+    health_note: Option<String>,
 ) -> Result<(), String> {
     let hire_date = NaiveDate::parse_from_str(&hire_date, "%Y-%m-%d")
         .map_err(|e| format!("Invalid date: {}", e))?;
@@ -64,6 +70,8 @@ pub fn update_staff(
         is_teacher,
         &role,
         &qualification,
+        general_note,
+        health_note,
     )
     .map_err(|e| e.to_string())
 }
@@ -126,6 +134,13 @@ pub fn create_attendance_staff(
 #[command]
 pub fn get_attendance_by_staff(staff_id: i32) -> Result<Vec<Attendance>, String> {
     Attendance::get_by_staff(staff_id).map_err(|e| e.to_string())
+}
+
+#[command]
+pub fn get_staff_attendance_by_date(date: String) -> Result<Vec<Attendance>, String> {
+    let date =
+        NaiveDate::parse_from_str(&date, "%Y-%m-%d").map_err(|e| format!("Invalid date: {}", e))?;
+    Attendance::get_by_date(date).map_err(|e| e.to_string())
 }
 
 #[command(rename_all = "snake_case")]

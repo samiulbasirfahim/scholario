@@ -159,7 +159,7 @@ class StaffAttendanceStore {
 
         try {
             const attendances: AttendanceStaff[] = await invoke('get_attendance_by_staff', {
-                staff_id,
+                staffId: staff_id,
                 year: yearNum,
                 month: monthNum
             });

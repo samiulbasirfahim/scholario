@@ -8,6 +8,7 @@ use commands::guardian::*;
 use commands::session::*;
 use commands::student::*;
 use commands::subjects::*;
+use fake::generate_fake_data;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -15,7 +16,6 @@ pub fn run() {
         .setup(|app| {
             database::setup(app);
             if cfg!(debug_assertions) {
-                // fake::generate_fake_data()?;
                 app.handle().plugin(
                     tauri_plugin_log::Builder::default()
                         .level(log::LevelFilter::Info)
@@ -25,6 +25,7 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            generate_fake_data,
             // Student commands
             create_student,
             get_students,
@@ -53,6 +54,7 @@ pub fn run() {
             commands::staff::create_attendance_staff,
             commands::staff::get_attendance_by_staff,
             commands::staff::update_attendance,
+            commands::staff::get_staff_attendance_by_date,
             commands::staff::delete_attendance_staff,
             //
             // Teacher-Class-Subject Link

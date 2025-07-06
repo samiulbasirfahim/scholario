@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import { setting } from '$lib/store/setting.svelte';
 	import Icon from '@iconify/svelte';
+	import { invoke } from '@tauri-apps/api/core';
 	import { onMount } from 'svelte';
 	const { children } = $props();
 
@@ -113,6 +114,13 @@
 							tabindex="0"
 							class="dropdown-content menu bg-base-100 rounded-box text-base-content z-1 w-52 p-2 shadow-sm"
 						>
+							<li>
+								<button
+									onclick={() => {
+										invoke('generate_fake_data');
+									}}>Generate fake students</button
+								>
+							</li>
 							<li>
 								<a class="flex items-center justify-start gap-2 p-2" href="/broadcast">Broadcast</a>
 							</li>

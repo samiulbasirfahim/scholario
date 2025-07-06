@@ -10,7 +10,12 @@ use crate::database::class::{Class, Section};
 use crate::database::session::Session;
 use crate::database::student::Student;
 
-pub fn generate_fake_data() -> Result<(), Box<dyn std::error::Error>> {
+#[tauri::command()]
+pub fn generate_fake_data() -> Result<(), String> {
+    generate_fake_data_handler().map_err(|_| "Something went wrong".to_string())
+}
+
+pub fn generate_fake_data_handler() -> Result<(), Box<dyn std::error::Error>> {
     let sessions = Session::get_all()?;
     let sections = Section::get()?;
     if sessions.is_empty() {
@@ -78,6 +83,4 @@ pub fn generate_fake_data() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-pub fn generate_fake_attendacne(){
-
-}
+pub fn generate_fake_attendacne() {}
