@@ -4,7 +4,7 @@ export interface Student {
     class_id: number;
     section_id: number;
     session_id: number;
-    dob: string; // ISO date string
+    dob: string;
     gender: string;
     religion: string;
     address: string;

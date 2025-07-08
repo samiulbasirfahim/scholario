@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { attendanceStore } from '$lib/store/attendance.svelte';
+	import { attendanceStore, staffAttendanceStore } from '$lib/store/attendance.svelte';
 	import { classes, sections } from '$lib/store/class.svelte';
 	import { sessions } from '$lib/store/session.svelte';
 	import { students } from '$lib/store/student.svelte';
@@ -32,8 +32,9 @@
 	});
 
 	$effect(() => {
+		console.log(staffAttendanceStore.reactiveCounter);
+		console.log(attendanceStore.reactiveCounter);
 		(async () => {
-			console.log(attendanceStore.reactiveCounter);
 			try {
 				if (for_whom === 'STAFF') {
 					attendances = await invoke<Attendance[]>('get_staff_attendance_by_date', {
@@ -109,10 +110,12 @@
 					<p class="truncate font-medium">{info?.name}</p>
 
 					{#if for_whom === 'STUDENT'}
+						{@const section_ = sections.get(info?.section_id)}
 						<p class="truncate text-sm text-gray-500">
 							{classes.get(sessions.selected, info?.class_id)?.name}
-							•
-							{sections.get(info?.section_id)?.name ?? ''}
+							{#if section_}
+								• {section_.name}
+							{/if}
 						</p>
 					{/if}
 

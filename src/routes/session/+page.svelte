@@ -118,39 +118,41 @@
 			</div>
 		</form>
 
-		<div class="bg-base-100 border-base-300 mt-4 space-y-3 rounded border p-4">
+		<div class="mt-4 space-y-3">
 			{#if sessions.data.length > 0}
-				<div class="overflow-x-auto">
-					<table class="table">
-						<thead>
-							<tr>
-								<th>#</th>
-								<th>Name</th>
-								<th>Start date</th>
-								<th>End date</th>
-							</tr>
-						</thead>
-						<tbody>
-							{#each sessions.data as session, i (session.id)}
-								<tr
-									class="{session.id === sessions.selected
-										? 'bg-primary text-primary-content'
-										: ''} cursor-pointer"
-									onclick={() => {
-										sessions.select(session.id);
-									}}
-								>
-									<th>{i + 1}</th>
-									<td>{session.name}</td>
-									<td>{session.start_date}</td>
-									<td>{session.end_date}</td>
+				<div class="bg-base-100 w-full overflow-scroll rounded">
+					<div class="h-full overflow-auto">
+						<table class="table-pin-rows table">
+							<thead>
+								<tr>
+									<th>#</th>
+									<th>Name</th>
+									<th>Start date</th>
+									<th>End date</th>
 								</tr>
-							{/each}
-						</tbody>
-					</table>
+							</thead>
+							<tbody>
+								{#each sessions.data as session, i (session.id)}
+									<tr
+										class="{session.id === sessions.selected
+											? 'bg-primary text-primary-content'
+											: ''} cursor-pointer"
+										onclick={() => {
+											sessions.select(session.id);
+										}}
+									>
+										<th>{i + 1}</th>
+										<td>{session.name}</td>
+										<td>{session.start_date}</td>
+										<td>{session.end_date}</td>
+									</tr>
+								{/each}
+							</tbody>
+						</table>
+					</div>
 				</div>
 			{:else}
-				<p class="text-secondary text-sm">No sessions added yet.</p>
+				<p class="text-sm alert alert-info">No sessions added yet.</p>
 			{/if}
 		</div>
 	</div>

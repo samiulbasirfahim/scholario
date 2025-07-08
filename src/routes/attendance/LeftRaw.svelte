@@ -24,7 +24,9 @@
 		<table class="table-pin-rows table">
 			<thead>
 				<tr class="bg-base-200">
-					<th class="w-4">Roll</th>
+					{#if for_whom === 'STUDENT'}
+						<th class="w-4">Roll</th>
+					{/if}
 					<th>Name</th>
 
 					{#if for_whom === 'STUDENT'}
@@ -34,6 +36,8 @@
 						{#if filter.section === ''}
 							<th>Section</th>
 						{/if}
+                    {:else}
+                        <th>Role</th>
 					{/if}
 
 					{#if !hasDateExceededEndDate()}
@@ -92,8 +96,8 @@
 								selectedStudent = staffMember.id;
 							}}
 						>
-							<td>-</td>
 							<td>{staffMember.name}</td>
+							<td>{staffMember.role}</td>
 
 							{#if !hasDateExceededEndDate()}
 								<td>

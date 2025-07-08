@@ -199,6 +199,16 @@ impl Section {
 
         let id = db.last_insert_rowid() as i32;
 
+        let mut stmt = db.prepare("SELECT COUNT(*) FROM sections WHERE class_id = ?1")?;
+        let count: i32 = stmt.query_row(params![class_id], |row| row.get(0))?;
+
+        if count == 1 {
+            db.execute(
+                "UPDATE students SET section_id = ?1 WHERE class_id = ?2 AND section_id IS NULL",
+                params![id, class_id],
+            )?;
+        }
+
         Ok(Section {
             id,
             class_id,

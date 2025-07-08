@@ -2,10 +2,7 @@
 	import { classes, sections } from '$lib/store/class.svelte';
 	import { guardians, studentRelationships } from '$lib/store/guardian.svelte';
 	import { sessions } from '$lib/store/session.svelte';
-	import { students } from '$lib/store/student.svelte';
-	import { toast } from '$lib/store/toast.svelte';
 	import Icon from '@iconify/svelte';
-	import { invoke } from '@tauri-apps/api/core';
 
 	type Guardian = {
 		id: number;
@@ -16,7 +13,7 @@
 		photo: string;
 	};
 
-	let { selectedStudentData, selectedStudent, isEditing = $bindable() } = $props();
+	let { deleteStudent, selectedStudentData, selectedStudent, isEditing = $bindable() } = $props();
 
 	let guardians_s = $state<Guardian[]>([]);
 
@@ -32,53 +29,14 @@
 					relation: srl.relationship as string
 				}));
 
-				guardians_s = [
-					...guardiansList,
-					...guardiansList,
-					...guardiansList,
-					...guardiansList,
-					...guardiansList,
-					...guardiansList,
-					...guardiansList,
-					...guardiansList,
-					...guardiansList,
-					...guardiansList,
-					...guardiansList,
-					...guardiansList,
-					...guardiansList,
-					...guardiansList,
-					...guardiansList,
-					...guardiansList,
-					...guardiansList,
-					...guardiansList,
-					...guardiansList,
-					...guardiansList,
-					...guardiansList
-				];
+				guardians_s = guardiansList;
 			}
 		})();
 	});
-
-	const deleteStudent = async () => {
-		try {
-			if (selectedStudent) {
-				await invoke('delete_student', {
-					id: selectedStudent,
-					session_id: sessions.selected as number
-				});
-				students.remove(selectedStudent);
-				selectedStudent = null;
-				toast.set({ message: 'Student deleted', type: 'success' });
-			}
-		} catch (err) {
-			console.log(err);
-			toast.set({ message: 'Failed to delete student', type: 'error' });
-		}
-	};
 </script>
 
 <div class="flex w-full flex-1 flex-col gap-0 overflow-hidden xl:w-1/2">
-	<div class="bg-base-100 flex flex-col rounded p-4 overflow-hidden">
+	<div class="bg-base-100 flex flex-col overflow-hidden rounded p-4">
 		<div
 			class="border-accent mb-3 flex items-center justify-between border-b-1 pb-2 text-xl font-bold"
 		>
@@ -98,7 +56,7 @@
 				<button
 					class="btn btn-error tooltip tooltip-bottom btn-sm join-item text-xl"
 					data-tip="Delete"
-					onclick={deleteStudent}
+					onclick={() => deleteStudent(Number(selectedStudent))}
 				>
 					<Icon icon="mdi:delete" />
 				</button>
@@ -144,7 +102,7 @@
 							</p>
 						</div>
 
-						{#if selectedStudentData.section_id !== null}
+						{#if selectedStudentData.section_id >= 0}
 							<div>
 								<p class="text-secondary">Section</p>
 								<p class="font-medium">
@@ -223,7 +181,7 @@
 			<p class="text-secondary alert alert-warning text-sm">Select a student to view details.</p>
 		{/if}
 		{#if guardians_s.length > 0}
-			<div class="border-accent flex flex-1 flex-col overflow-hidden mt-4">
+			<div class="border-accent mt-4 flex flex-1 flex-col overflow-hidden">
 				<h2 class="text-primary border-accent mb-3 border-b-1 pb-2 text-xl font-bold">Guardians</h2>
 				<ul class="grid flex-1 grid-cols-2 gap-4 overflow-auto">
 					{#each guardians_s as g, i ((g.id, i))}

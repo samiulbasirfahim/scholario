@@ -22,13 +22,21 @@ class Students {
         if (!classMap.has(student.class_id)) {
             classMap.set(student.class_id, new Map());
         }
+
+        if (student.section_id == null) {
+            student.section_id = -1;
+        }
+
         const sectionMap = classMap.get(student.class_id)!;
 
         if (!sectionMap.has(student.section_id)) {
             sectionMap.set(student.section_id, []);
         }
 
-        sectionMap.get(student.section_id)!.push(student);
+        const list = sectionMap.get(student.section_id)!;
+        if (!list.some((s) => s.id === student.id)) {
+            list.push(student);
+        }
     }
 
     private fillCache(students: Student[]) {
@@ -142,20 +150,28 @@ class Students {
     }
 
     update(updatedStudent: Student): void {
-        const { session_id, class_id, section_id, id } = updatedStudent;
+        const { session_id, class_id, id } = updatedStudent;
+        let { section_id } = updatedStudent;
         const classMap = this.data.get(session_id);
         if (!classMap) return;
+
+        if (section_id == null) {
+            section_id = -1;
+        }
+        console.log('Inside update, ', updatedStudent.section_id);
 
         const sectionMap = classMap.get(class_id);
         if (!sectionMap) return;
 
         const studentList = sectionMap.get(section_id);
+
         if (!studentList) return;
 
         const index = studentList.findIndex((s) => s.id === id);
         if (index !== -1) {
             studentList[index] = updatedStudent;
         }
+
         this.reactiveCounter++;
     }
 
@@ -181,12 +197,37 @@ class Students {
 
         for (const s of studentList) {
             if (s.roll > roll) {
-                console.log(s);
                 s.roll -= 1;
             }
         }
 
         this.reactiveCounter--;
+    }
+
+    assignMissingSection(session_id: number, class_id: number, new_section_id: number): void {
+        const classMap = this.data.get(session_id);
+        if (!classMap) return;
+
+        const sectionMap = classMap.get(class_id);
+        console.log('Class id: ', class_id);
+        console.log('section map: ', sectionMap);
+        if (!sectionMap) return;
+
+        const unassigned = sectionMap.get(-1);
+        console.log('Students with null section: ', unassigned);
+        if (!unassigned || unassigned.length === 0) return;
+
+        const targetSection = sectionMap.get(new_section_id) ?? [];
+
+        for (const student of unassigned) {
+            student.section_id = new_section_id;
+            targetSection.push(student);
+        }
+
+        sectionMap.set(new_section_id, targetSection);
+        sectionMap.delete(-1);
+
+        this.reactiveCounter++;
     }
 }
 

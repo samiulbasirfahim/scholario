@@ -58,6 +58,7 @@
 				<label class="mb-1 block text-sm font-medium">Name</label>
 				<input
 					type="text"
+					placeholder="Enter subject name"
 					class="input input-bordered w-full"
 					required
 					bind:value={formData.name}
@@ -68,6 +69,7 @@
 				<label class="mb-1 block text-sm font-medium">Code</label>
 				<input
 					type="number"
+					placeholder="Enter numeric code"
 					class="input input-bordered w-full"
 					required
 					bind:value={formData.code}

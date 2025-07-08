@@ -3,9 +3,10 @@
 	import { invoke } from '@tauri-apps/api/core';
 	import Toast from '../global/Toast.svelte';
 
-	import type { Section } from '$lib/types/class';
-
 	import { classes, sections } from '$lib/store/class.svelte';
+	import type { Section } from '$lib/types/section';
+	import { students } from '$lib/store/student.svelte';
+	import { sessions } from '$lib/store/session.svelte';
 
 	let formData = $state({
 		class_id: '',
@@ -22,6 +23,15 @@
 				toast.set({ message: 'Successfully created section', type: 'success' });
 				formData.class_id = '';
 				formData.name = '';
+
+				if (sections.get_by_class((section as Section).class_id).length === 1) {
+					students.assignMissingSection(
+						sessions.selected as number,
+						(section as Section).class_id,
+						(section as Section).id
+					);
+				}
+
 				(document.getElementById('create-section-modal') as HTMLDialogElement).close();
 			})
 			.catch((err: string) => {

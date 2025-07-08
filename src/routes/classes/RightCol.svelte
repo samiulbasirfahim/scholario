@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { classes, classSubjects, sections, subjects } from '$lib/store/class.svelte';
+	import { goto } from '$app/navigation'; import { classes, classSubjects, sections, subjects } from '$lib/store/class.svelte';
 	import { sessions } from '$lib/store/session.svelte';
 	import { students } from '$lib/store/student.svelte';
 	import { toast } from '$lib/store/toast.svelte';
@@ -166,13 +165,17 @@
 </script>
 
 <div class="flex w-full flex-1 flex-col overflow-hidden xl:w-1/2">
-	<div class="bg-base-100 w-full overflow-scroll rounded p-4 text-accent">
-		<h2 class="border-accent mb-3 flex items-center justify-between border-b-1 pb-2 text-xl font-bold">Class Details</h2>
+	<div class="bg-base-100 text-accent w-full overflow-scroll rounded p-4">
+		<h2
+			class="border-accent mb-3 flex items-center justify-between border-b-1 pb-2 text-xl font-bold"
+		>
+			Class Details
+		</h2>
 		{#if selectedClass}
 			<div class="space-y-3 text-sm">
 				<div class="flex w-full">
 					<div class="w-1/2">
-						<div class="space-y-2">
+						<div class="space-y-3">
 							<div>
 								<p class="text-secondary">Name</p>
 								<p class="font-medium">{selectedClassData?.name}</p>
@@ -209,7 +212,7 @@
 						</div>
 					</div>
 
-					<div class="space-y-2">
+					<div class="space-y-3">
 						<div>
 							<p class="text-secondary">Total Students</p>
 							<p class="font-medium">
@@ -241,79 +244,65 @@
 
 				<hr class="border-base-300 my-3" />
 
-				<div class="grid grid-cols-2 gap-2 text-sm">
+				<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 					<div>
+						<h3 class="mb-3 text-xl font-semibold text-gray-800">Subjects</h3>
+
 						{#if subjects.data.length > 0}
-							<h3 class="mb-3 text-lg font-bold">Subjects</h3>
-							<ul class="bg-base-300 max-h-54 space-y-2 overflow-y-auto rounded p-2 text-sm">
+							<ul
+								class="bg-base-200 max-h-60 space-y-2 overflow-y-auto rounded border p-3 shadow-sm"
+							>
 								{#each subjects.data as subject, i (i)}
-									<li class="bg-base-200 rounded p-2">
-										<div class="flex items-center justify-between">
-											<label class="flex cursor-pointer items-center gap-2">
+									<li class="bg-base-100 flex items-start justify-between rounded p-3 shadow">
+										<label class="flex cursor-pointer items-start gap-3">
+											<input
+												type="checkbox"
+												class="checkbox checkbox-sm mt-1"
+												checked={isSelected(subject.id)}
+												onchange={() => toggleSubject(subject.id)}
+											/>
+											<span class="text-sm font-medium">{subject.name} • {subject.code}</span>
+										</label>
+
+										{#if isSelected(subject.id)}
+											<label class="flex items-center gap-2 text-xs text-gray-600">
 												<input
 													type="checkbox"
-													class="checkbox checkbox-sm"
-													checked={isSelected(subject.id)}
-													onchange={() => toggleSubject(subject.id)}
+													class="checkbox checkbox-xs"
+													checked={isMandatory(subject.id)}
+													onchange={() => toggleMandatory(subject.id)}
 												/>
-												<span class="font-medium">{subject.name} • {subject.code}</span>
+												Mandatory
 											</label>
-
-											{#if isSelected(subject.id)}
-												<label class="flex cursor-pointer items-center gap-1 text-xs">
-													<input
-														type="checkbox"
-														class="checkbox checkbox-xs"
-														checked={isMandatory(subject.id)}
-														onchange={() => toggleMandatory(subject.id)}
-													/>
-													Mandatory
-												</label>
-											{/if}
-										</div>
+										{/if}
 									</li>
 								{/each}
 							</ul>
 						{:else}
-							<p class="text-secondary alert alert-warning text-sm">
-								You haven’t created any subjects yet.
-							</p>
+							<div class="alert alert-warning text-sm">You haven’t created any subjects yet.</div>
 						{/if}
-
-						<!-- <div class="mt-2 flex justify-end"> -->
-						<!-- 	{#if subjects.data.length > 0} -->
-						<!-- 		<button -->
-						<!-- 			class="btn btn-primary btn-sm" -->
-						<!-- 			on:click={(e) => { -->
-						<!-- 				e.preventDefault(); -->
-						<!-- 				submit(); -->
-						<!-- 			}} -->
-						<!-- 		> -->
-						<!-- 			Save -->
-						<!-- 		</button> -->
-						<!-- 	{/if} -->
-						<!-- </div> -->
 					</div>
+
+					<!-- Sections -->
 					<div>
-						<div class="">
-							{#if sections.get_by_class(selectedClass).length > 0}
-								<h3 class="mb-3 text-lg font-bold">Sections</h3>
-								<ul class="bg-base-300 max-h-54 space-y-2 overflow-y-auto rounded p-2 text-sm">
-									{#each sections.get_by_class(selectedClass) as section, i (i)}
-										<li class="bg-base-200 flex items-center justify-between rounded p-2">
-											<span>{section.name}</span>
-											<button class="btn btn-error btn-xs" onclick={() => deleteSection(section.id)}
-												>Delete</button
-											>
-										</li>
-									{/each}
-								</ul>
-							{:else}
-								<p class="text-secondary alert alert-warning text-sm">
-									You haven't created any sections yet.
-								</p>
-							{/if}
-						</div>
+						<h3 class="mb-3 text-xl font-semibold text-gray-800">Sections</h3>
+
+						{#if sections.get_by_class(selectedClass).length > 0}
+							<ul
+								class="bg-base-200 max-h-60 space-y-2 overflow-y-auto rounded border p-3 shadow-sm"
+							>
+								{#each sections.get_by_class(selectedClass) as section, i (i)}
+									<li class="bg-base-100 flex items-center justify-between rounded p-3 shadow">
+										<span class="text-sm font-medium text-gray-700">{section.name}</span>
+										<button class="btn btn-xs btn-error" onclick={() => deleteSection(section.id)}>
+											Delete
+										</button>
+									</li>
+								{/each}
+							</ul>
+						{:else}
+							<div class="alert alert-warning text-sm">You haven't created any sections yet.</div>
+						{/if}
 					</div>
 				</div>
 			</div>

@@ -71,8 +71,11 @@
 }
 
 @font-face {
-    src: url('/fonts/IBMPlexMono-Regular.ttf');
-    font-family: 'IBM Plex Mono';
+    font-family: 'Victor Mono';
+    src: url('/fonts/VictorMono-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
 }
 
 * {
@@ -82,5 +85,5 @@
 html,
 body {
     scrollbar-gutter: stable;
-    font-family: 'IBM Plex Mono', monospace;
+    font-family: 'Victor Mono', monospace;
 }

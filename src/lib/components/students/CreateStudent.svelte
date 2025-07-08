@@ -129,7 +129,11 @@
 			id: isEditing ? selectedStudentData?.id : undefined,
 			name: form_data.name,
 			class_id: Number(form_data.class_id),
-			section_id: form_data.section_id ? Number(form_data.section_id) : null,
+			section_id: form_data.section_id
+				? Number(form_data.section_id) >= 0
+					? Number(form_data.section_id)
+					: null
+				: null,
 			session_id: sessions.selected,
 			dob: form_data.dob,
 			gender: form_data.gender,
@@ -145,6 +149,7 @@
 		})
 			.then(async (student) => {
 				if (isEditing) {
+                    console.log("Sending for update, ", students.section_id)
 					students.update(student as Student);
 
 					const guardianForDelete = selectedGuardians_s.filter(

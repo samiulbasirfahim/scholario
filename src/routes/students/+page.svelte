@@ -12,6 +12,8 @@
 	import { goto } from '$app/navigation';
 	import StudentTable from './StudentTable.svelte';
 	import StudentDetails from './StudentDetails.svelte';
+	import { invoke } from '@tauri-apps/api/core';
+	import { toast } from '$lib/store/toast.svelte';
 	const { data } = $props();
 
 	let selectedStudent = $state<number | null>(null);
@@ -49,6 +51,23 @@
 			students_d = d;
 		});
 	});
+
+	const deleteStudent = async (student_id: number) => {
+		try {
+			if (student_id) {
+				await invoke('delete_student', {
+					id: student_id,
+					session_id: sessions.selected as number
+				});
+				students.remove(student_id);
+				if (selectedStudent === student_id) selectedStudent = null;
+				toast.set({ message: 'Student deleted', type: 'success' });
+			}
+		} catch (err) {
+			console.log(err);
+			toast.set({ message: 'Failed to delete student', type: 'error' });
+		}
+	};
 </script>
 
 <Navbar>
@@ -83,7 +102,7 @@
 		<select
 			class="select select-sm select-accent"
 			bind:value={sessions.selected}
-			on:change={(e) => sessions.select(Number((e.target as HTMLOptionElement).value))}
+			onchange={(e) => sessions.select(Number((e.target as HTMLOptionElement).value))}
 		>
 			{#each sessions.data as session (session.id)}
 				<option value={session.id}>{session.name}</option>
@@ -92,7 +111,7 @@
 
 		<button
 			class="btn btn-secondary btn-sm"
-			on:click={() => {
+			onclick={() => {
 				(document.getElementById('filter-modal') as HTMLDialogElement).showModal();
 			}}
 		>
@@ -101,7 +120,7 @@
 		</button>
 		<button
 			class="btn btn-primary btn-sm"
-			on:click={() => {
+			onclick={() => {
 				isEditing = false;
 				(document.getElementById('create-student-modal') as HTMLDialogElement).showModal();
 			}}
@@ -117,12 +136,12 @@
 {:else if classes.get_by_current_session().length > 0}
 	{#if students_d.length > 0}
 		<div class="flex flex-1 gap-2 overflow-hidden">
-			<StudentTable {students_d} bind:selectedStudent />
-			<StudentDetails {selectedStudent} {selectedStudentData} bind:isEditing />
+			<StudentTable {students_d} bind:selectedStudent {deleteStudent} />
+			<StudentDetails {selectedStudent} {selectedStudentData} bind:isEditing {deleteStudent} />
 		</div>
-	{:else}
-		<p class="text-secondary alert alert-warning text-sm">You haven't created any class yet.</p>
 	{/if}
+{:else}
+	<p class="alert alert-warning text-sm">You haven't created any class yet.</p>
 {/if}
 
 <Filter bind:filter />
