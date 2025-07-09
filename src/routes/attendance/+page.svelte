@@ -19,11 +19,9 @@
 	import { attendanceStore } from '$lib/store/attendance.svelte';
 	import { staffAttendanceStore } from '$lib/store/attendance.svelte';
 
-	const { data } = $props();
-
-	onMount(() => {
-		selectedStudent = Number(data.selectedStudent);
-	});
+	// onMount(() => {
+	// 	selectedStudent = Number(data.selectedStudent);
+	// });
 
 	let filter = $state({
 		class: '',

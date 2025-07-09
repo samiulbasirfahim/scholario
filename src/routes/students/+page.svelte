@@ -15,7 +15,6 @@
 	import { invoke } from '@tauri-apps/api/core';
 	import { toast } from '$lib/store/toast.svelte';
 	import { Confirm } from '$lib/utility/Confirm';
-	const { data } = $props();
 
 	let selectedStudent = $state<number | null>(null);
 	let selectedStudentData = $state<Student | null>();
@@ -27,9 +26,9 @@
 		}
 	});
 
-	onMount(() => {
-		selectedStudent = Number(data.selectedStudent);
-	});
+	// onMount(() => {
+	// 	selectedStudent = Number(data.selectedStudent);
+	// });
 
 	let filter = $state({
 		class: '',
