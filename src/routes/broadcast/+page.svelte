@@ -4,7 +4,7 @@
 <div>
 	<h2 class="text-primary mb-3 text-xl font-bold">Message</h2>
 	<textarea name="" id="" rows="8" class="textarea-primary textarea w-full"></textarea>
-	<div class="flex gap-4">
+	<div class="flex gap-4 my-2">
 		<label class="label">
 			<input type="checkbox" checked class="checkbox checkbox-sm" />
 			Students

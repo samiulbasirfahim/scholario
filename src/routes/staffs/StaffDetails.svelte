@@ -4,10 +4,15 @@
 	import { invoke } from '@tauri-apps/api/core';
 	import { toast } from '$lib/store/toast.svelte';
 	import { staff } from '$lib/store/staff.svelte';
+	import { Confirm } from '$lib/utility/Confirm';
 
 	let { selectedStaff, isEditing = $bindable(), selectedStaffData } = $props();
 
 	const deleteStaff = async () => {
+
+		let answer: boolean = await Confirm();
+		if (!answer) return;
+
 		if (!selectedStaff) return;
 		try {
 			await invoke('delete_staff', {
@@ -124,7 +129,7 @@
 				</div>
 			</div>
 		{:else}
-			<p class="text-secondary alert alert-warning text-sm">
+			<p class="alert alert-warning text-sm">
 				Select a staff member to view details.
 			</p>
 		{/if}

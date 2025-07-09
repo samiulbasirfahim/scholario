@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { classes, sections } from '$lib/store/class.svelte';
 	import { sessions } from '$lib/store/session.svelte';
+	import { Confirm } from '$lib/utility/Confirm';
 
 	let { deleteStudent, students_d, selectedStudent = $bindable() } = $props();
 
@@ -16,7 +17,10 @@
 		console.log('Promoting:', selected_students);
 	}
 
-	function deleteStudents() {
+	async function deleteStudents() {
+		let answer: boolean = await Confirm();
+		if (!answer) return;
+
 		for (const id in selected_students) {
 			deleteStudent(Number(id));
 		}
@@ -80,8 +84,8 @@
 
 <div class="fixed right-4 bottom-4 z-50">
 	{#if is_selecting}
-		<div class="bg-base-100 w-64 rounded-lg border border-gray-300 p-3 shadow-xl">
-			<h3 class="mb-2 text-base font-semibold text-gray-700">
+		<div class="bg-base-100 w-64 rounded-lg border p-3 shadow-xl">
+			<h3 class="mb-2 text-base font-semibold">
 				Selected: <span class="text-primary font-bold">{selected_students.length}</span>
 			</h3>
 
@@ -96,7 +100,7 @@
 			</div>
 
 			<button
-				class="mt-3 w-full rounded-md bg-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-300"
+				class="mt-3 w-full btn-sm btn font-medium transition"
 				onclick={toggleSelection}
 			>
 				Cancel

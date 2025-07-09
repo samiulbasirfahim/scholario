@@ -66,7 +66,7 @@
 			<Calendar {selectedStudentData} {selected_month} {for_whom} />
 			<select
 				bind:value={selected_month.year_month}
-				class="select select-accent mb-4 max-w-40"
+				class="select select-accent mb-4 select-sm max-w-32"
 				onchange={() => {
 					let date = months_for_session.find(
 						(m) => m.year_month === selected_month.year_month

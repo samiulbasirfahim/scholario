@@ -28,7 +28,7 @@
 	<div class="flex w-full justify-end gap-2">
 		<div>
 			<select
-				class="select select-sm select-accent"
+				class="select select-sm select-accent border-dashed"
 				bind:value={sessions.selected}
 				onchange={(e) => sessions.select(Number((e.target as HTMLOptionElement).value))}
 			>
@@ -79,7 +79,7 @@
 	</div>
 {/if}
 
-<CreateSection />
+<CreateSection class_id={selectedClass} />
 <CreateSubject />
 <ListSubject />
 <CreateClass bind:isEditing {selectedClass} />

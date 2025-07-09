@@ -4,6 +4,7 @@
 	import { sessions } from '$lib/store/session.svelte';
 	import { invoke } from '@tauri-apps/api/core';
 	import type { Session } from '$lib/types/session';
+	import { Confirm } from '$lib/utility/Confirm';
 
 	function formatDate(date: Date): string {
 		return date.toISOString().split('T')[0];
@@ -74,7 +75,9 @@
 		isEditing = true;
 	}
 
-	function removeSession(id: number) {
+	async function removeSession(id: number) {
+		let answer: boolean = await Confirm();
+		if (!answer) return;
 		invoke('delete_session', { id })
 			.then(() => {
 				sessions.remove(id);
@@ -90,8 +93,7 @@
 	}
 </script>
 
-<h2 class="text-primary mb-3 text-xl font-bold">Manage Sessions</h2>
-<div class="mt-4 flex flex-col gap-2 xl:flex-row">
+<div class="flex flex-col gap-2 xl:flex-row">
 	<div class="w-full xl:w-1/2">
 		<form class="bg-base-100 border-base-300 space-y-3 rounded border p-4">
 			<h2 class="text-primary mb-3 text-lg font-semibold">
@@ -152,7 +154,7 @@
 					</div>
 				</div>
 			{:else}
-				<p class="text-sm alert alert-info">No sessions added yet.</p>
+				<p class="alert alert-info text-sm">No sessions added yet.</p>
 			{/if}
 		</div>
 	</div>

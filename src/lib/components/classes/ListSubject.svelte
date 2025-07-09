@@ -22,7 +22,7 @@
 
 		{#if subjects.data.length > 0}
 			<div class="max-h-80 overflow-x-auto">
-				<table class="table w-full">
+				<table class="table-pin-rows table-sm table">
 					<thead>
 						<tr>
 							<th class="w-6">#</th>
@@ -70,6 +70,10 @@
 			</button>
 		</div>
 	</div>
+
+	<form method="dialog" class="modal-backdrop bg-base-100/60 blurred">
+		<button aria-label="Close modal" class="h-full w-full" />
+	</form>
 </dialog>
 
 <EditSubject {selectedSubject} />

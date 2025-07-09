@@ -36,8 +36,8 @@
 						{#if filter.section === ''}
 							<th>Section</th>
 						{/if}
-                    {:else}
-                        <th>Role</th>
+					{:else}
+						<th>Role</th>
 					{/if}
 
 					{#if !hasDateExceededEndDate()}
@@ -67,9 +67,9 @@
 							{/if}
 
 							{#if !hasDateExceededEndDate()}
-								<td>
+								<td class="max-w-24">
 									<select
-										class="select bg-secondary text-secondary-content select-sm"
+										class="select select-sm text-base-content"
 										onchange={(e) => {
 											takeAttendance(
 												student.id,
@@ -100,9 +100,9 @@
 							<td>{staffMember.role}</td>
 
 							{#if !hasDateExceededEndDate()}
-								<td>
+								<td class="max-w-24">
 									<select
-										class="select bg-secondary text-secondary-content select-sm"
+										class="select select-sm text-base-content"
 										onchange={(e) => {
 											takeAttendance(
 												staffMember.id,

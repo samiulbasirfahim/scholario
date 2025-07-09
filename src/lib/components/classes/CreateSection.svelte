@@ -8,9 +8,17 @@
 	import { students } from '$lib/store/student.svelte';
 	import { sessions } from '$lib/store/session.svelte';
 
+	const { class_id } = $props();
+
 	let formData = $state({
 		class_id: '',
 		name: ''
+	});
+
+	$effect(() => {
+		if (class_id && class_id >= 0) {
+			formData.class_id = class_id;
+		}
 	});
 
 	const submitForm = () => {
@@ -100,4 +108,9 @@
 	</div>
 
 	<Toast />
+
+	<form method="dialog" class="modal-backdrop bg-base-100/60 blurred">
+		<button>close</button>
+	</form>
 </dialog>
+

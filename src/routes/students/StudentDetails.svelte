@@ -2,6 +2,7 @@
 	import { classes, sections } from '$lib/store/class.svelte';
 	import { guardians, studentRelationships } from '$lib/store/guardian.svelte';
 	import { sessions } from '$lib/store/session.svelte';
+	import { Confirm } from '$lib/utility/Confirm';
 	import Icon from '@iconify/svelte';
 
 	type Guardian = {
@@ -56,7 +57,11 @@
 				<button
 					class="btn btn-error tooltip tooltip-bottom btn-sm join-item text-xl"
 					data-tip="Delete"
-					onclick={() => deleteStudent(Number(selectedStudent))}
+					onclick={async () => {
+						let answer: boolean = await Confirm();
+						if (!answer) return;
+						deleteStudent(Number(selectedStudent));
+					}}
 				>
 					<Icon icon="mdi:delete" />
 				</button>
@@ -178,7 +183,7 @@
 				</div>
 			</div>
 		{:else}
-			<p class="text-secondary alert alert-warning text-sm">Select a student to view details.</p>
+			<p class="alert alert-warning text-sm">Select a student to view details.</p>
 		{/if}
 		{#if guardians_s.length > 0}
 			<div class="border-accent mt-4 flex flex-1 flex-col overflow-hidden">

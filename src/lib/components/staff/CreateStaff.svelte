@@ -255,4 +255,8 @@
 			</div>
 		</form>
 	</div>
+
+	<form method="dialog" class="modal-backdrop bg-base-100/60 blurred">
+		<button>close</button>
+	</form>
 </dialog>

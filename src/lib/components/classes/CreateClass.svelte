@@ -82,7 +82,7 @@
 </script>
 
 <dialog id="create-class-modal" class="modal">
-	<div class="modal-box">
+	<div class="modal-box backdrop-blur-sm">
 		<form method="dialog">
 			<button
 				class="btn btn-sm btn-circle btn-ghost absolute top-2 right-2"
@@ -173,8 +173,9 @@
 			<div class="alert alert-warning">Please create a session first</div>
 		{/if}
 	</div>
-	<form method="dialog" class="modal-backdrop">
-		<button>close</button>
+
+	<form method="dialog" class="modal-backdrop bg-base-100/60 blurred">
+		<button aria-label="Close modal" class="h-full w-full" />
 	</form>
 	<Toast />
 </dialog>

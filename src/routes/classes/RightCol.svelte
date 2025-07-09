@@ -1,9 +1,11 @@
 <script lang="ts">
-	import { goto } from '$app/navigation'; import { classes, classSubjects, sections, subjects } from '$lib/store/class.svelte';
+	import { goto } from '$app/navigation';
+	import { classes, classSubjects, sections, subjects } from '$lib/store/class.svelte';
 	import { sessions } from '$lib/store/session.svelte';
 	import { students } from '$lib/store/student.svelte';
 	import { toast } from '$lib/store/toast.svelte';
 	import type { Class, ClassSubject } from '$lib/types/class';
+	import { Confirm } from '$lib/utility/Confirm';
 	import { invoke } from '@tauri-apps/api/core';
 	import { onMount } from 'svelte';
 
@@ -60,14 +62,11 @@
 	};
 
 	const isSelected = (id: number) => selectedSubjects.some((s) => s.subject_id === id);
+
 	const isMandatory = (id: number) =>
 		selectedSubjects.find((s) => s.subject_id === id)?.isMandatory ?? false;
-	const submit = async () => {
-		if (!selectedClass || selectedSubjects.length === 0) {
-			toast.set({ message: 'Please select at least one subject', type: 'warning' });
-			return;
-		}
 
+	const submit = async () => {
 		const existing = classSubjects.get(selectedClass);
 		const selected = selectedSubjects;
 
@@ -139,6 +138,9 @@
 	}
 
 	const deleteSection = async (id: number) => {
+		let answer: boolean = await Confirm();
+		if (!answer) return;
+
 		try {
 			await invoke('delete_section', { id });
 			sections.remove(id);
@@ -150,6 +152,9 @@
 	};
 
 	const deleteClass = async () => {
+		let answer: boolean = await Confirm();
+		if (!answer) return;
+
 		try {
 			await invoke('delete_class', {
 				id: selectedClass,
@@ -167,7 +172,7 @@
 <div class="flex w-full flex-1 flex-col overflow-hidden xl:w-1/2">
 	<div class="bg-base-100 text-accent w-full overflow-scroll rounded p-4">
 		<h2
-			class="border-accent mb-3 flex items-center justify-between border-b-1 pb-2 text-xl font-bold"
+			class="border-base-300 mb-3 flex items-center justify-between border-b-1 pb-2 text-xl font-bold"
 		>
 			Class Details
 		</h2>
@@ -246,18 +251,18 @@
 
 				<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 					<div>
-						<h3 class="mb-3 text-xl font-semibold text-gray-800">Subjects</h3>
+						<h3 class="mb-3 text-xl font-semibold">Subjects</h3>
 
 						{#if subjects.data.length > 0}
 							<ul
-								class="bg-base-200 max-h-60 space-y-2 overflow-y-auto rounded border p-3 shadow-sm"
+								class="bg-base-200 border-base-300 max-h-60 space-y-2 overflow-y-auto rounded border p-3 shadow-sm"
 							>
 								{#each subjects.data as subject, i (i)}
-									<li class="bg-base-100 flex items-start justify-between rounded p-3 shadow">
-										<label class="flex cursor-pointer items-start gap-3">
+									<li class="bg-base-100 flex items-center justify-between rounded p-3 shadow">
+										<label class="flex cursor-pointer items-center gap-3">
 											<input
 												type="checkbox"
-												class="checkbox checkbox-sm mt-1"
+												class="checkbox checkbox-sm"
 												checked={isSelected(subject.id)}
 												onchange={() => toggleSubject(subject.id)}
 											/>
@@ -265,7 +270,7 @@
 										</label>
 
 										{#if isSelected(subject.id)}
-											<label class="flex items-center gap-2 text-xs text-gray-600">
+											<label class="flex items-center gap-2 text-xs">
 												<input
 													type="checkbox"
 													class="checkbox checkbox-xs"
@@ -285,15 +290,15 @@
 
 					<!-- Sections -->
 					<div>
-						<h3 class="mb-3 text-xl font-semibold text-gray-800">Sections</h3>
+						<h3 class="mb-3 text-xl font-semibold">Sections</h3>
 
 						{#if sections.get_by_class(selectedClass).length > 0}
 							<ul
-								class="bg-base-200 max-h-60 space-y-2 overflow-y-auto rounded border p-3 shadow-sm"
+								class="bg-base-200 border-base-300 max-h-60 space-y-2 overflow-y-auto rounded border p-3 shadow-sm"
 							>
 								{#each sections.get_by_class(selectedClass) as section, i (i)}
 									<li class="bg-base-100 flex items-center justify-between rounded p-3 shadow">
-										<span class="text-sm font-medium text-gray-700">{section.name}</span>
+										<span class="text-sm font-medium">{section.name}</span>
 										<button class="btn btn-xs btn-error" onclick={() => deleteSection(section.id)}>
 											Delete
 										</button>
@@ -307,7 +312,7 @@
 				</div>
 			</div>
 		{:else}
-			<p class="text-secondary alert alert-warning text-sm">Select a class to view details.</p>
+			<p class="alert alert-warning text-sm">Select a class to view details.</p>
 		{/if}
 	</div>
 </div>

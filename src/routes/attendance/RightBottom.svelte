@@ -107,19 +107,21 @@
 					/>
 				</div>
 				<div class="min-w-0 flex-1">
-					<p class="truncate font-medium">{info?.name}</p>
+					<p class="truncate font-semibold">{info?.name}</p>
 
 					{#if for_whom === 'STUDENT'}
 						{@const section_ = sections.get(info?.section_id)}
-						<p class="truncate text-sm text-gray-500">
+						<p class="truncate text-sm opacity-80">
 							{classes.get(sessions.selected, info?.class_id)?.name}
 							{#if section_}
 								• {section_.name}
 							{/if}
 						</p>
+					{:else}
+						<p class="truncate text-sm opacity-80">{info?.role}</p>
 					{/if}
 
-					<p class="truncate text-sm text-gray-500">
+					<p class="truncate text-sm opacity-80">
 						{info?.address ?? 'No address'}
 					</p>
 				</div>

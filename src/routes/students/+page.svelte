@@ -14,6 +14,7 @@
 	import StudentDetails from './StudentDetails.svelte';
 	import { invoke } from '@tauri-apps/api/core';
 	import { toast } from '$lib/store/toast.svelte';
+	import { Confirm } from '$lib/utility/Confirm';
 	const { data } = $props();
 
 	let selectedStudent = $state<number | null>(null);
@@ -53,6 +54,7 @@
 	});
 
 	const deleteStudent = async (student_id: number) => {
+
 		try {
 			if (student_id) {
 				await invoke('delete_student', {

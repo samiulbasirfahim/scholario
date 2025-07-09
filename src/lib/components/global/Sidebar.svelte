@@ -15,6 +15,7 @@
 		['Staffs', '/staffs'],
 		['Billing', '/billing'],
 		['Exams', '/exams'],
+		['Events', '/events'],
 		['Session', '/session'],
 		['Broadcast', '/broadcast']
 	];
@@ -37,7 +38,7 @@
 <div class="drawer drawer-open">
 	<input id="sidebar" type="checkbox" class="drawer-toggle" />
 	<div class="drawer-content bg-base-300 box-border h-screen">
-		<div class="flex h-full flex-col p-4">
+		<div class="flex h-full flex-col p-2">
 			{@render children()}
 		</div>
 	</div>

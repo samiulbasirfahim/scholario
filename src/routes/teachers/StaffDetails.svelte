@@ -3,7 +3,6 @@
 	import Icon from '@iconify/svelte';
 	import { invoke } from '@tauri-apps/api/core';
 	import { toast } from '$lib/store/toast.svelte';
-	import { staff } from '$lib/store/staff.svelte';
 
 	let { selectedStaffData, selectedStaff, isEditing = $bindable() } = $props();
 
@@ -124,7 +123,7 @@
 				</div>
 			</div>
 		{:else}
-			<p class="text-secondary alert alert-warning text-sm">
+			<p class="alert alert-warning text-sm">
 				Select a staff member to view details.
 			</p>
 		{/if}

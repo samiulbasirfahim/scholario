@@ -149,7 +149,7 @@
 		})
 			.then(async (student) => {
 				if (isEditing) {
-                    console.log("Sending for update, ", students.section_id)
+					console.log('Sending for update, ', students.section_id);
 					students.update(student as Student);
 
 					const guardianForDelete = selectedGuardians_s.filter(
@@ -240,7 +240,7 @@
 </script>
 
 <dialog id="create-student-modal" class="modal">
-	<div class="modal-box w-11/12 max-w-3xl">
+	<div class="modal-box w-11/12 max-w-3xl backdrop-blur-3xl">
 		<form method="dialog">
 			<button class="btn btn-sm btn-circle btn-ghost absolute top-2 right-2">✕</button>
 		</form>
@@ -442,6 +442,11 @@
 		</form>
 	</div>
 	<Toast />
+
+	<form method="dialog" class="modal-backdrop bg-base-100/60 blurred">
+		<button>close</button>
+	</form>
+
 </dialog>
 
 <Guardians bind:guardians={selectedGuardians} />

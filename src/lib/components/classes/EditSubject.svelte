@@ -97,4 +97,9 @@
 	</div>
 
 	<Toast />
+
+	<form method="dialog" class="modal-backdrop bg-base-100/60 blurred">
+		<button aria-label="Close modal" class="h-full w-full" />
+	</form>
+
 </dialog>
