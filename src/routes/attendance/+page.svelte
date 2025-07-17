@@ -18,10 +18,11 @@
 	import type { Attendance } from '$lib/types/attendance';
 	import { attendanceStore } from '$lib/store/attendance.svelte';
 	import { staffAttendanceStore } from '$lib/store/attendance.svelte';
+	import { page } from '$app/state';
 
-	// onMount(() => {
-	// 	selectedStudent = Number(data.selectedStudent);
-	// });
+	onMount(() => {
+		selectedStudent = Number(page.url.searchParams.get('selectedStudent'));
+	});
 
 	let filter = $state({
 		class: '',

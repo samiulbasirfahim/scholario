@@ -122,7 +122,7 @@
 
 		<div class="mt-4 space-y-3">
 			{#if sessions.data.length > 0}
-				<div class="bg-base-100 w-full overflow-scroll rounded">
+				<div class="bg-base-100 w-full overflow-auto rounded">
 					<div class="h-full overflow-auto">
 						<table class="table-pin-rows table">
 							<thead>

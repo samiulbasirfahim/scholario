@@ -3,7 +3,7 @@
 </script>
 
 <div class="flex w-full flex-1 flex-col overflow-hidden xl:w-1/2">
-	<div class="bg-base-100 w-full overflow-scroll rounded">
+	<div class="bg-base-100 w-full overflow-auto rounded">
 		<div class="h-full overflow-auto">
 			<table class="table-pin-rows table">
 				<thead>

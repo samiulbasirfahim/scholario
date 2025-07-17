@@ -88,7 +88,7 @@
 					<div class="flex items-center gap-3">
 						<Icon icon={s.icon} class="text-primary text-2xl" />
 						<div>
-							<p class="text-sm text-gray-500">{s.label}</p>
+							<p class="text-sm">{s.label}</p>
 							<p class="text-lg font-semibold">{s.value}</p>
 						</div>
 					</div>
@@ -100,7 +100,7 @@
 			<!-- Notices -->
 			<div class="bg-base-100 rounded p-4 shadow-sm">
 				<h2 class="mb-2 text-lg font-semibold">📌 Notices</h2>
-				<ul class="space-y-2 text-sm text-gray-700">
+				<ul class="space-y-2 text-sm">
 					{#each notices as n, i (i)}
 						<li class="flex items-center gap-3">
 							<Icon icon={n.icon} class="text-primary" />
@@ -113,11 +113,11 @@
 			<!-- Upcoming Events -->
 			<div class="bg-base-100 rounded p-4 shadow-sm">
 				<h2 class="mb-2 text-lg font-semibold">🎯 Upcoming Events</h2>
-				<ul class="space-y-2 text-sm text-gray-700">
+				<ul class="space-y-2 text-sm">
 					{#each upcomingEvents as e, i (i)}
 						<li class="flex justify-between">
 							<span>{e.title}</span>
-							<span class="text-xs text-gray-400">{e.date}</span>
+							<span class="text-xs">{e.date}</span>
 						</li>
 					{/each}
 				</ul>
@@ -126,11 +126,11 @@
 			<!-- Recent Admissions -->
 			<div class="bg-base-100 rounded p-4 shadow-sm">
 				<h2 class="mb-2 text-lg font-semibold">🧾 Recent Admissions</h2>
-				<ul class="space-y-2 text-sm text-gray-700">
+				<ul class="space-y-2 text-sm">
 					{#each recentAdmissions as s, i (i)}
 						<li class="flex justify-between">
-							<span>{s.name} <span class="text-xs text-gray-400">({s.class})</span></span>
-							<span class="text-xs text-gray-500">{s.date}</span>
+							<span>{s.name} <span class="text-xs">({s.class})</span></span>
+							<span class="text-xs">{s.date}</span>
 						</li>
 					{/each}
 				</ul>
@@ -143,7 +143,7 @@
 		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
 			{#each classStrength as c, i (i)}
 				<div class="bg-base-100 rounded p-4 shadow-sm">
-					<p class="text-sm text-gray-500">{c.name}</p>
+					<p class="text-sm">{c.name}</p>
 					<p class="text-2xl font-bold">{c.students}</p>
 				</div>
 			{/each}
@@ -155,11 +155,11 @@
 		<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 			<div class="bg-base-100 rounded p-4 shadow-sm">
 				<h2 class="mb-2 text-lg font-semibold">📥 Revenue Chart</h2>
-				<div class="flex h-32 items-center justify-center text-gray-400">[Chart Placeholder]</div>
+				<div class="flex h-32 items-center justify-center">[Chart Placeholder]</div>
 			</div>
 			<div class="bg-base-100 rounded p-4 shadow-sm">
 				<h2 class="mb-2 text-lg font-semibold">📤 Expenses Chart</h2>
-				<div class="flex h-32 items-center justify-center text-gray-400">[Chart Placeholder]</div>
+				<div class="flex h-32 items-center justify-center">[Chart Placeholder]</div>
 			</div>
 		</div>
 	{/if}
@@ -168,15 +168,15 @@
 	{#if activeTab === 'system'}
 		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
 			<div class="bg-base-100 rounded p-4 shadow-sm">
-				<p class="text-sm text-gray-500">📁 {systemStatus.backup}</p>
+				<p class="text-sm">📁 {systemStatus.backup}</p>
 			</div>
 			<div class="bg-base-100 rounded p-4 shadow-sm">
-				<p class="text-sm text-gray-500">
+				<p class="text-sm">
 					🗃️ Database: <span class="text-success font-semibold">{systemStatus.database}</span>
 				</p>
 			</div>
 			<div class="bg-base-100 rounded p-4 shadow-sm">
-				<p class="text-sm text-gray-500">
+				<p class="text-sm">
 					🌐 Server Status: <span class="text-success font-semibold">{systemStatus.server}</span>
 				</p>
 			</div>

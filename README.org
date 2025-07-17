@@ -1,0 +1,59 @@
+#+TITLE: Scholario
+#+AUTHOR: Samiul Basir Fahim
+#+LANGUAGE: en
+#+OPTIONS: toc:nil num:nil
+
+* 🎓 Scholario
+
+Scholario is a cross-platform school management dashboard that helps schools streamline their core operations.
+
+Built with simplicity and performance in mind, it combines a lightweight UI with native desktop speed using Svelte and Tauri.
+
+* 🚀 Features
+
+- 👩‍🎓 Manage students and their attendance
+- 👨‍🏫 Track teachers & staff attendance
+- 🧪 Handle exams and generate results
+- 🔁 Multi-session support for academic years
+- 📅 Event tracking and scheduling
+- 📢 Broadcast system to notify all parents instantly
+
+* 🛠 Tech Stack
+
+- [[https://svelte.dev][Svelte]] — for reactive UI
+- [[https://bun.sh][Bun]] — blazing fast JS runtime
+- [[https://tauri.app][Tauri]] — native backend (Rust)
+
+* 📦 Cross-platform Support
+
+- ✅ Linux
+- ✅ Windows
+- ⚠️ macOS (should work, not tested yet)
+
+* 📥 Installation
+
+⚠️ *Before you begin*, install required system dependencies:  
+👉 [[https://tauri.app/start/prerequisites/][Tauri Prerequisites Guide]]
+
+Then clone and build the app:
+
+#+BEGIN_SRC bash
+git clone https://github.com/samiulbasirfaihm/scholario
+cd scholario
+bun i
+bun tauri build
+#+END_SRC
+
+Once built, the output binary will be found in:
+
+#+BEGIN_SRC text
+src-tauri/target/release/bundle
+#+END_SRC
+
+You can copy and run it directly.
+
+* 📢 Status
+
+🧪 *Work in progress* — UI, features, and structure are evolving rapidly.  
+This is an early stage build not ready for production use.
+

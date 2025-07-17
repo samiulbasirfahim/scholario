@@ -14,7 +14,7 @@
 	import StudentDetails from './StudentDetails.svelte';
 	import { invoke } from '@tauri-apps/api/core';
 	import { toast } from '$lib/store/toast.svelte';
-	import { Confirm } from '$lib/utility/Confirm';
+	import { page } from '$app/state';
 
 	let selectedStudent = $state<number | null>(null);
 	let selectedStudentData = $state<Student | null>();
@@ -26,9 +26,9 @@
 		}
 	});
 
-	// onMount(() => {
-	// 	selectedStudent = Number(data.selectedStudent);
-	// });
+	onMount(() => {
+		selectedStudent = Number(page.url.searchParams.get('selectedStudent'));
+	});
 
 	let filter = $state({
 		class: '',
@@ -53,7 +53,6 @@
 	});
 
 	const deleteStudent = async (student_id: number) => {
-
 		try {
 			if (student_id) {
 				await invoke('delete_student', {

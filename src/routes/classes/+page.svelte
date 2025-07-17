@@ -9,9 +9,22 @@
 	import LeftCol from './LeftCol.svelte';
 	import RightCol from './RightCol.svelte';
 	import { classes } from '$lib/store/class.svelte';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
+	import { onMount } from 'svelte';
 
 	let isEditing = $state<boolean>(false);
 	let selectedClass: number | null = $state<number | null>(null);
+
+	onMount(() => {
+		selectedClass = Number(page.url.searchParams.get('selectedClass'));
+	});
+
+	$effect(() => {
+		if (selectedClass) {
+			goto('?selectedClass=' + selectedClass, { replaceState: true });
+		}
+	});
 </script>
 
 <Navbar>

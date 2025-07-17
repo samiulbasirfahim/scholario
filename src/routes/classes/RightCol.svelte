@@ -170,7 +170,7 @@
 </script>
 
 <div class="flex w-full flex-1 flex-col overflow-hidden xl:w-1/2">
-	<div class="bg-base-100 text-accent w-full overflow-scroll rounded p-4">
+	<div class="bg-base-100 text-accent w-full overflow-auto rounded p-4">
 		<h2
 			class="border-base-300 mb-3 flex items-center justify-between border-b-1 pb-2 text-xl font-bold"
 		>
