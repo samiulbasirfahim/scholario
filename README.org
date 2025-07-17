@@ -1,5 +1,4 @@
 #+TITLE: Scholario
-#+AUTHOR: Samiul Basir Fahim
 #+LANGUAGE: en
 #+OPTIONS: toc:nil num:nil
 
@@ -11,24 +10,26 @@ Built with simplicity and performance in mind, it combines a lightweight UI with
 
 * 🚀 Features
 
-- 👩‍🎓 Manage students and their attendance
-- 👨‍🏫 Track teachers & staff attendance
-- 🧪 Handle exams and generate results
-- 🔁 Multi-session support for academic years
-- 📅 Event tracking and scheduling
-- 📢 Broadcast system to notify all parents instantly
+- 👩‍🎓 Manage students and their attendance  
+- 👨‍🏫 Track teachers & staff attendance  
+- 🧪 Handle exams and generate results  
+- 🔁 Multi-session support for academic years  
+- 📅 Event tracking and scheduling  
+- 📢 Broadcast system to notify all parents instantly  
 
 * 🛠 Tech Stack
 
-- [[https://svelte.dev][Svelte]] — for reactive UI
-- [[https://bun.sh][Bun]] — blazing fast JS runtime
-- [[https://tauri.app][Tauri]] — native backend (Rust)
+- [[https://svelte.dev][Svelte]] — for reactive UI  
+- [[https://bun.sh][Bun]] — blazing fast JS runtime  
+- [[https://tauri.app][Tauri]] — native backend (Rust)  
+- [[https://www.sqlite.org][SQLite]] — lightweight embedded database  
+- [[https://www.chartjs.org][Chart.js]] — rich data visualization  
 
 * 📦 Cross-platform Support
 
-- ✅ Linux
-- ✅ Windows
-- ⚠️ macOS (should work, not tested yet)
+- ✅ Linux  
+- ✅ Windows  
+- ⚠️ macOS (should work, not tested yet)  
 
 * 📥 Installation
 
@@ -38,7 +39,7 @@ Built with simplicity and performance in mind, it combines a lightweight UI with
 Then clone and build the app:
 
 #+BEGIN_SRC bash
-git clone https://github.com/samiulbasirfaihm/scholario
+git clone https://github.com/samiulbasirfahim/scholario
 cd scholario
 bun i
 bun tauri build
@@ -52,8 +53,15 @@ src-tauri/target/release/bundle
 
 You can copy and run it directly.
 
+* 🖼 Gallery
+
+[[https://github.com/user-attachments/assets/e6b07427-d363-4784-9cad-da95e475cdf4][https://github.com/user-attachments/assets/e6b07427-d363-4784-9cad-da95e475cdf4]]
+[[https://github.com/user-attachments/assets/9afde43b-e1e7-4742-b917-f2fb6c7b6fe8][https://github.com/user-attachments/assets/9afde43b-e1e7-4742-b917-f2fb6c7b6fe8]]
+[[https://github.com/user-attachments/assets/8400ebf7-ea93-4288-85e4-32f97b3902f8][https://github.com/user-attachments/assets/8400ebf7-ea93-4288-85e4-32f97b3902f8]]
+[[https://github.com/user-attachments/assets/42df60f8-eb58-4787-9fc8-488685e54d01][https://github.com/user-attachments/assets/42df60f8-eb58-4787-9fc8-488685e54d01]]
+[[https://github.com/user-attachments/assets/96952143-bf7f-46cc-9f66-ccba4d739333][https://github.com/user-attachments/assets/96952143-bf7f-46cc-9f66-ccba4d739333]]
+
 * 📢 Status
 
 🧪 *Work in progress* — UI, features, and structure are evolving rapidly.  
-This is an early stage build not ready for production use.
-
+This is an early-stage build not ready for production use.
